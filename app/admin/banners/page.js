@@ -620,7 +620,7 @@ export default function BannersPage() {
                   {formData.imagePreview && (
                     <div className="relative h-32 w-48 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                       <Image
-                        src={formData.imagePreview.startsWith('http') || formData.imagePreview.startsWith('blob') ? formData.imagePreview : `http://localhost:5000${formData.imagePreview}`}
+                        src={formData.imagePreview.startsWith('blob:') ? formData.imagePreview : formData.imagePreview}
                         alt="Preview"
                         fill
                         className="object-cover"

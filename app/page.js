@@ -6,6 +6,20 @@ import PublicHeader from '@/components/PublicHeader';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/product/ProductCard';
 
+// Helper function to handle both S3 and local URLs
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  // Already a full URL (S3)
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  // Legacy local path
+  if (imagePath.startsWith('/')) {
+    return `http://localhost:5000${imagePath}`;
+  }
+  return null;
+};
+
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -29,7 +43,7 @@ export default function Home() {
           // Transform API data to match ProductCard expectations
           const transformedProducts = (result.data.products || []).map(product => ({
             ...product,
-            imageUrl: product.primary_image ? `http://localhost:5000${product.primary_image}` : null,
+            imageUrl: getImageUrl(product.primary_image),
             sellingPrice: parseFloat(product.selling_price) || 0,
             price: parseFloat(product.selling_price) || 0,
             stock: product.stock_quantity || 0,

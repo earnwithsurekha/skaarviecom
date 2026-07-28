@@ -226,8 +226,6 @@ export default function AnalyticsPage() {
                 onClick={() => handleSortChange(sort.value)}
                 className={sortBy === sort.value ? 'btn-primary btn-sm' : 'btn-outline btn-sm'}
               >
-                }`}
-              >
                 {sort.label}
               </button>
             ))}

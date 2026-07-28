@@ -56,8 +56,8 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' or 'razorpay'
 
   useEffect(() => {
-    // Redirect if cart is empty
-    if (items.length === 0) {
+    // Only redirect if cart is empty AND not currently processing an order
+    if (items.length === 0 && !orderLoading) {
       toast.error('Your cart is empty');
       router.push('/products');
       return;
@@ -78,7 +78,7 @@ export default function CheckoutPage() {
       // Show auth modal if not logged in
       setShowAuthModal(true);
     }
-  }, [items.length, isAuthenticated, user]);
+  }, [items.length, isAuthenticated, user, orderLoading]);
 
   const handleAuthModalClose = () => {
     setShowAuthModal(false);
@@ -310,20 +310,33 @@ export default function CheckoutPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success) {
+        // Show success message
         toast.success('Order placed successfully!');
         
-        // Clear cart
+        // Store order ID before clearing cart
+        const orderId = data.data?.orderId || data.data?.id;
+        
+        // Clear cart only after successful order creation
         dispatch(clearCart());
         
-        // Redirect to order confirmation or customer dashboard
-        router.push(`/customer/orders/${data.data.orderId}`);
+        // Small delay to ensure cart is cleared before navigation
+        setTimeout(() => {
+          // Redirect to order success page or order details
+          if (orderId) {
+            router.push(`/customer/orders/${orderId}`);
+          } else {
+            router.push('/customer/orders');
+          }
+        }, 100);
       } else {
-        toast.error(data.message || 'Failed to place order');
+        // Don't clear cart if order failed
+        toast.error(data.message || 'Failed to place order. Please try again.');
+        console.error('Order creation failed:', data);
       }
     } catch (error) {
       console.error('Place order error:', error);
-      toast.error('Failed to place order');
+      toast.error('Failed to place order. Please check your connection and try again.');
     } finally {
       setOrderLoading(false);
     }

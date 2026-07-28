@@ -332,7 +332,7 @@ router.post('/',
 
       console.log('Product created with ID:', product.id);
 
-      // Handle image uploads - save locally
+      // Handle image uploads - upload to S3
       if (req.files && req.files.images) {
         const imageFiles = req.files.images;
         console.log(`Processing ${imageFiles.length} images...`);
@@ -340,7 +340,7 @@ router.post('/',
         for (let i = 0; i < imageFiles.length; i++) {
           const file = imageFiles[i];
           const imageUrl = await uploadProductFile(file, req.user.manufacturerId, name, 'images');
-          console.log(`Image ${i + 1} saved:`, imageUrl);
+          console.log(`Image ${i + 1} uploaded to S3:`, imageUrl);
           
           await ProductImage.create({
             productId: product.id,
@@ -353,7 +353,7 @@ router.post('/',
         }
       }
 
-      // Handle video uploads - save locally
+      // Handle video uploads - upload to S3
       if (req.files && req.files.videos) {
         const videoFiles = req.files.videos;
         console.log(`Processing ${videoFiles.length} videos...`);
@@ -361,7 +361,7 @@ router.post('/',
         for (let i = 0; i < videoFiles.length; i++) {
           const file = videoFiles[i];
           const videoUrl = await uploadProductFile(file, req.user.manufacturerId, name, 'videos');
-          console.log(`Video ${i + 1} saved:`, videoUrl);
+          console.log(`Video ${i + 1} uploaded to S3:`, videoUrl);
           
           await ProductVideo.create({
             productId: product.id,
@@ -372,13 +372,13 @@ router.post('/',
         }
       }
 
-      // Handle catalog upload - save locally
+      // Handle catalog upload - upload to S3
       if (req.files && req.files.catalog && req.files.catalog[0]) {
         const catalogFile = req.files.catalog[0];
         console.log('Processing catalog file...');
         
         const catalogUrl = await uploadProductFile(catalogFile, req.user.manufacturerId, name, 'catalogs');
-        console.log('Catalog saved:', catalogUrl);
+        console.log('Catalog uploaded to S3:', catalogUrl);
         
         product.catalogUrl = catalogUrl;
         await product.save({ transaction });
@@ -539,15 +539,15 @@ router.put('/:id',
 
       await product.update(updateData, { transaction });
 
-      // Handle new image uploads - save locally
+      // Handle new image uploads - upload to S3
       if (req.files && req.files.images) {
-        // Delete old image records (files remain in local storage for audit purposes)
+        // Delete old image records (old S3 files can be cleaned up via lifecycle policies)
         await ProductImage.destroy({ 
           where: { productId: product.id },
           transaction 
         });
 
-        // Upload new images locally
+        // Upload new images to S3
         const imageFiles = req.files.images;
         const productName = name || product.name;
         console.log(`Updating ${imageFiles.length} images for product: ${productName}`);
@@ -555,7 +555,7 @@ router.put('/:id',
         for (let i = 0; i < imageFiles.length; i++) {
           const file = imageFiles[i];
           const imageUrl = await uploadProductFile(file, req.user.manufacturerId, productName, 'images');
-          console.log(`Image ${i + 1} saved:`, imageUrl);
+          console.log(`Image ${i + 1} uploaded to S3:`, imageUrl);
           
           await ProductImage.create({
             productId: product.id,
@@ -568,15 +568,15 @@ router.put('/:id',
         }
       }
 
-      // Handle new video uploads - save locally
+      // Handle new video uploads - upload to S3
       if (req.files && req.files.videos) {
-        // Delete old video records (files remain in local storage for audit purposes)
+        // Delete old video records (old S3 files can be cleaned up via lifecycle policies)
         await ProductVideo.destroy({ 
           where: { productId: product.id },
           transaction 
         });
 
-        // Upload new videos locally
+        // Upload new videos to S3
         const videoFiles = req.files.videos;
         const productName = name || product.name;
         console.log(`Updating ${videoFiles.length} videos for product: ${productName}`);
@@ -584,7 +584,7 @@ router.put('/:id',
         for (let i = 0; i < videoFiles.length; i++) {
           const file = videoFiles[i];
           const videoUrl = await uploadProductFile(file, req.user.manufacturerId, productName, 'videos');
-          console.log(`Video ${i + 1} saved:`, videoUrl);
+          console.log(`Video ${i + 1} uploaded to S3:`, videoUrl);
           
           await ProductVideo.create({
             productId: product.id,
@@ -595,14 +595,14 @@ router.put('/:id',
         }
       }
 
-      // Handle catalog upload - save locally
+      // Handle catalog upload - upload to S3
       if (req.files && req.files.catalog && req.files.catalog[0]) {
         const catalogFile = req.files.catalog[0];
         const productName = name || product.name;
-        console.log('Updating catalog file for product:', productName);
+        console.log('Processing catalog file for product update...');
         
         const catalogUrl = await uploadProductFile(catalogFile, req.user.manufacturerId, productName, 'catalogs');
-        console.log('Catalog saved:', catalogUrl);
+        console.log('Catalog uploaded to S3:', catalogUrl);
         
         await product.update({ catalogUrl }, { transaction });
       }

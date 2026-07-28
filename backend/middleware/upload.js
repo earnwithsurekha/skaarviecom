@@ -53,63 +53,59 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// Upload file locally
+// Upload file to S3 with user folder structure
 const uploadLocally = async (file, userId, email, subfolder = 'documents') => {
   const fileExtension = path.extname(file.originalname);
   const fileName = `${uuidv4()}${fileExtension}`;
   
-  // Create folder structure: uploads/{userId}/{email}/{subfolder}
-  const uploadDir = path.join(__dirname, '..', 'uploads', userId.toString(), email, subfolder);
+  // Create S3 folder structure: documents/{userId}/{email}/{subfolder}
+  const s3Key = `documents/${userId}/${email}/${subfolder}/${fileName}`;
   
-  // Create directories if they don't exist
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-  
-  const filePath = path.join(uploadDir, fileName);
+  const params = {
+    Bucket: bucket,
+    Key: s3Key,
+    Body: file.buffer,
+    ContentType: file.mimetype
+  };
   
   try {
-    // Write file buffer to disk
-    fs.writeFileSync(filePath, file.buffer);
-    
-    // Return relative path for storage in database
-    return `/uploads/${userId}/${email}/${subfolder}/${fileName}`;
+    const result = await s3.upload(params).promise();
+    // Return S3 URL
+    return result.Location;
   } catch (error) {
-    throw new Error(`Failed to save file locally: ${error.message}`);
+    throw new Error(`Failed to upload file to S3: ${error.message}`);
   }
 };
 
-// Upload product file locally with unique structure
+// Upload product file to S3 with unique structure
 const uploadProductFile = async (file, userId, productName, subfolder = 'images') => {
   const fileExtension = path.extname(file.originalname);
   const timestamp = Date.now();
   const uniqueId = uuidv4().split('-')[0]; // Use first part of UUID for brevity
   const fileName = `${timestamp}_${uniqueId}${fileExtension}`;
   
-  // Create folder structure: uploads/products/{userId}/{sanitized-product-name}/{subfolder}
+  // Create S3 folder structure: products/{userId}/{sanitized-product-name}/{subfolder}
   const sanitizedProductName = productName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with dashes
     .replace(/^-+|-+$/g, '') // Remove leading/trailing dashes
     .substring(0, 50); // Limit length
   
-  const uploadDir = path.join(__dirname, '..', 'uploads', 'products', userId.toString(), sanitizedProductName, subfolder);
+  const s3Key = `products/${userId}/${sanitizedProductName}/${subfolder}/${fileName}`;
   
-  // Create directories if they don't exist
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-  
-  const filePath = path.join(uploadDir, fileName);
+  const params = {
+    Bucket: bucket,
+    Key: s3Key,
+    Body: file.buffer,
+    ContentType: file.mimetype
+  };
   
   try {
-    // Write file buffer to disk
-    fs.writeFileSync(filePath, file.buffer);
-    
-    // Return relative path for storage in database
-    return `/uploads/products/${userId}/${sanitizedProductName}/${subfolder}/${fileName}`;
+    const result = await s3.upload(params).promise();
+    // Return S3 URL
+    return result.Location;
   } catch (error) {
-    throw new Error(`Failed to save product file locally: ${error.message}`);
+    throw new Error(`Failed to upload product file to S3: ${error.message}`);
   }
 };
 
@@ -122,8 +118,7 @@ const uploadToS3 = async (file, folder = 'products') => {
     Bucket: bucket,
     Key: fileName,
     Body: file.buffer,
-    ContentType: file.mimetype,
-    ACL: 'public-read'
+    ContentType: file.mimetype
   };
 
   try {

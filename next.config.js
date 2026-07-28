@@ -7,7 +7,9 @@ const nextConfig = {
       'localhost',
       's3.amazonaws.com',
       'skaarvi-marketplace.s3.amazonaws.com',
-      'skaarvi-marketplace.s3.ap-south-1.amazonaws.com'
+      'skaarvi-marketplace.s3.ap-south-1.amazonaws.com',
+      'skaarvi-reseller-files.s3.amazonaws.com',
+      'skaarvi-reseller-files.s3.ap-south-1.amazonaws.com'
     ],
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -16,6 +18,16 @@ const nextConfig = {
         hostname: 'localhost',
         port: '5000',
         pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'skaarvi-reseller-files.s3.amazonaws.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'skaarvi-reseller-files.s3.ap-south-1.amazonaws.com',
+        pathname: '/**',
       },
     ],
   },

@@ -21,6 +21,22 @@ import { addToCart } from '@/store/slices/cartSlice';
 import { getReferralCodeFromURL, saveReferralCodeToCookie, getReferralCodeFromStorage } from '@/lib/cartUtils';
 import { trackProductViewWithReferral } from '@/lib/referralTracking';
 
+// Helper functions to handle both S3 and local URLs
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+  if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
+  return null;
+};
+
+const getImageUrls = (images, urlField = 'imageUrl') => {
+  if (!Array.isArray(images) || images.length === 0) return [];
+  return images.map(img => {
+    const path = typeof img === 'string' ? img : img[urlField];
+    return getImageUrl(path);
+  }).filter(url => url !== null);
+};
+
 export default function CustomerProductDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -66,13 +82,13 @@ export default function CustomerProductDetailPage() {
         // Format product data with backend URL for images
         setProduct({
           ...productData,
-          images: images.map(img => `http://localhost:5000${img.image_url}`),
-          imageUrl: images.length > 0 ? `http://localhost:5000${images[0].image_url}` : null,
+          images: getImageUrls(images, 'image_url'),
+          imageUrl: images.length > 0 ? getImageUrl(images[0].image_url) : null,
           videos: videos.map(vid => ({
-            url: `http://localhost:5000${vid.video_url}`,
-            thumbnail: vid.thumbnail_url ? `http://localhost:5000${vid.thumbnail_url}` : null
+            url: getImageUrl(vid.video_url),
+            thumbnail: getImageUrl(vid.thumbnail_url)
           })),
-          catalog_url: productData.catalog_url || null,
+          catalog_url: getImageUrl(productData.catalog_url),
           brand: productData.brand_name || productData.brand || null,
           costPrice: parseFloat(productData.cost_price) || 0,
           skaarviMargin: parseFloat(productData.skaarvi_margin) || 0,

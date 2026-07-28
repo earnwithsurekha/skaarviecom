@@ -3,9 +3,10 @@ const router = express.Router();
 const { sequelize } = require('../../models');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 const { validateImageQuality } = require('../../middleware/upload');
+const { s3, bucket } = require('../../config/aws');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 // Apply authentication middleware to all routes
 router.use(authMiddleware);
@@ -30,20 +31,25 @@ const upload = multer({
   }
 });
 
-// Helper function to save banner file to disk after validation
-const saveBannerFile = (file) => {
-  const uploadDir = path.join(__dirname, '../../uploads/banners');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-  
+// Helper function to save banner file to S3 after validation
+const saveBannerFile = async (file) => {
   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
   const filename = 'banner-' + uniqueSuffix + path.extname(file.originalname);
-  const filepath = path.join(uploadDir, filename);
+  const s3Key = `banners/${filename}`;
   
-  fs.writeFileSync(filepath, file.buffer);
+  const params = {
+    Bucket: bucket,
+    Key: s3Key,
+    Body: file.buffer,
+    ContentType: file.mimetype
+  };
   
-  return `/uploads/banners/${filename}`;
+  try {
+    const result = await s3.upload(params).promise();
+    return result.Location;
+  } catch (error) {
+    throw new Error(`Failed to upload banner to S3: ${error.message}`);
+  }
 };
 
 /**
@@ -268,8 +274,8 @@ router.post('/', upload.single('image'), validateImageQuality, async (req, res) 
     // Get image URL from uploaded file or provided URL
     let imageUrl = req.body.imageUrl;
     if (req.file) {
-      // Save file to disk after validation
-      imageUrl = saveBannerFile(req.file);
+      // Upload file to S3 after validation
+      imageUrl = await saveBannerFile(req.file);
     }
 
     if (!imageUrl) {
@@ -362,14 +368,9 @@ router.put('/:id', upload.single('image'), validateImageQuality, async (req, res
     // Handle image update
     let imageUrl = req.body.imageUrl || currentBanner[0].image_url;
     if (req.file) {
-      // Save new file to disk after validation
-      imageUrl = saveBannerFile(req.file);
-      
-      // Delete old image if it exists
-      const oldImagePath = path.join(__dirname, '../../', currentBanner[0].image_url);
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-      }
+      // Upload new file to S3 after validation
+      imageUrl = await saveBannerFile(req.file);
+      // Note: Old S3 files can be cleaned up via lifecycle policies or manual cleanup
     }
 
     const updateQuery = `

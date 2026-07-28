@@ -4,6 +4,18 @@ import { useEffect, useState } from 'react';
 import { Search, Loader2, Package, Filter, X } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 
+// Helper function to handle both S3 and local URLs
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  if (imagePath.startsWith('/')) {
+    return `http://localhost:5000${imagePath}`;
+  }
+  return null;
+};
+
 export default function CustomerProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -70,7 +82,7 @@ export default function CustomerProductsPage() {
           // Transform API data to match ProductCard expectations
           const transformedProducts = (result.data.products || []).map(product => ({
             ...product,
-            imageUrl: product.primary_image ? `http://localhost:5000${product.primary_image}` : null,
+            imageUrl: getImageUrl(product.primary_image),
             sellingPrice: parseFloat(product.selling_price) || 0,
             price: parseFloat(product.selling_price) || 0,
             stock: product.stock_quantity || 0,

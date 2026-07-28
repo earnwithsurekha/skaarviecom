@@ -57,8 +57,8 @@ export default function CustomerCheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' or 'razorpay'
 
   useEffect(() => {
-    // Redirect if cart is empty (but not if we just placed an order)
-    if (items.length === 0 && !orderPlaced) {
+    // Only redirect if cart is empty AND not currently processing an order AND not just placed
+    if (items.length === 0 && !orderPlaced && !orderLoading) {
       toast.error('Your cart is empty');
       router.push('/customer/products');
       return;
@@ -74,7 +74,7 @@ export default function CustomerCheckoutPage() {
         email: user.email || '',
       }));
     }
-  }, [items.length, user, router]);
+  }, [items.length, user, router, orderPlaced, orderLoading]);
 
   const validateShippingInfo = () => {
     if (!shippingInfo.fullName?.trim()) {
@@ -141,21 +141,36 @@ export default function CustomerCheckoutPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success) {
+        // Mark order as placed
         setOrderPlaced(true);
+        
+        // Show success message
         toast.success('Order placed successfully!');
         
-        // Clear cart
+        // Store order ID before clearing cart
+        const orderId = data.data?.orderId || data.data?.id;
+        
+        // Clear cart only after successful order creation
         dispatch(clearCart());
         
-        // Redirect to order details
-        router.push(`/customer/orders/${data.data.orderId}`);
+        // Small delay to ensure cart is cleared before navigation
+        setTimeout(() => {
+          // Redirect to order details or orders list
+          if (orderId) {
+            router.push(`/customer/orders/${orderId}`);
+          } else {
+            router.push('/customer/orders');
+          }
+        }, 100);
       } else {
-        toast.error(data.message || 'Failed to place order');
+        // Don't clear cart if order failed
+        toast.error(data.message || 'Failed to place order. Please try again.');
+        console.error('Order creation failed:', data);
       }
     } catch (error) {
       console.error('Place order error:', error);
-      toast.error('Failed to place order');
+      toast.error('Failed to place order. Please check your connection and try again.');
     } finally {
       setOrderLoading(false);
     }

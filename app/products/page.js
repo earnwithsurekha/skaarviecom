@@ -6,6 +6,20 @@ import ProductCard from '@/components/product/ProductCard';
 import PublicHeader from '@/components/PublicHeader';
 import Footer from '@/components/Footer';
 
+// Helper function to handle both S3 and local URLs
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  // Already a full URL (S3)
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  // Legacy local path
+  if (imagePath.startsWith('/')) {
+    return `http://localhost:5000${imagePath}`;
+  }
+  return null;
+};
+
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -68,21 +82,27 @@ export default function ProductsPage() {
       
       if (response.ok) {
         const result = await response.json();
+        console.log('[Products Page] API Response:', result);
+        console.log('[Products Page] Products array:', result.data?.products);
         if (result.status === 'success') {
           // Transform API data to match ProductCard expectations
           const transformedProducts = (result.data.products || []).map(product => ({
             ...product,
-            imageUrl: product.primary_image ? `http://localhost:5000${product.primary_image}` : null,
+            imageUrl: getImageUrl(product.primary_image),
             sellingPrice: parseFloat(product.selling_price) || 0,
             price: parseFloat(product.selling_price) || 0,
             stock: product.stock_quantity || 0,
             resellerProfit: product.reseller_profit || 0
           }));
+          console.log('[Products Page] Transformed products count:', transformedProducts.length);
+          console.log('[Products Page] First product:', transformedProducts[0]);
           setProducts(transformedProducts);
         } else {
+          console.log('[Products Page] API status not success:', result.status);
           setProducts([]);
         }
       } else {
+        console.log('[Products Page] Response not OK:', response.status);
         setProducts([]);
       }
     } catch (error) {
@@ -107,6 +127,10 @@ export default function ProductsPage() {
 
     return matchesPrice;
   });
+
+  console.log('[Products Page] Total products:', products.length);
+  console.log('[Products Page] Filtered products:', filteredProducts.length);
+  console.log('[Products Page] Price range:', priceRange);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">

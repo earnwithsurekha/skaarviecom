@@ -9,6 +9,7 @@ const { uploadToS3, uploadLocally, validateImageQuality } = require('../middlewa
 const { User, Manufacturer, OTP } = require('../models/user');
 const { generateToken, generateRefreshToken } = require('../utils/jwt');
 const { sendOTPEmail, sendWelcomeEmail } = require('../utils/email');
+const smsService = require('../utils/sms');
 
 // ========================================
 // OTP BYPASSED - Direct login endpoint
@@ -269,8 +270,8 @@ router.post('/register',
         }
       }
 
-      // Upload documents locally with userId and email folder structure
-      console.log('Starting file uploads...');
+      // Upload documents to S3 with userId and email folder structure
+      console.log('Starting file uploads to S3...');
       let gstCertificateUrl = null;
       let panCardUrl = null;
       let cancelledChequeUrl = null;
@@ -295,7 +296,7 @@ router.post('/register',
         console.log('Uploading company logo...');
         companyLogoUrl = await uploadLocally(req.files.companyLogo[0], userId, userEmail, 'logo');
       }
-      console.log('File uploads completed');
+      console.log('File uploads to S3 completed');
 
       // Create manufacturer profile
       console.log('Creating manufacturer profile...');
@@ -982,18 +983,51 @@ router.post('/send-otp', async (req, res) => {
       // Send via email
       await sendOTPEmail(email, otpCode);
       console.log('✅ OTP sent to email:', email);
-    } else {
-      // Send via SMS (for now, just log it - SMS integration needed)
-      console.log('📱 OTP for mobile:', mobile, '- Code:', otpCode);
-      console.log('⚠️ SMS integration not yet implemented. OTP logged above.');
+    } else if (mobile) {
+      // Send via SMS using MSG91
+      console.log('📱 Sending OTP to mobile:', mobile, '- Code:', otpCode);
       
-      // TODO: Integrate SMS service (Twilio, MSG91, etc.)
-      // For development, return OTP in response
-      if (process.env.NODE_ENV === 'development') {
-        return res.status(200).json({
-          status: 'success',
-          message: 'OTP sent successfully (DEV MODE)',
-          data: { otp: otpCode }, // Only in development!
+      try {
+        const smsResult = await smsService.sendOTP(mobile, otpCode);
+        
+        if (smsResult.success) {
+          console.log('✅ OTP sent via SMS successfully');
+        } else {
+          console.error('❌ SMS sending failed:', smsResult.message);
+          
+          // In development, still return success with OTP for testing
+          if (process.env.NODE_ENV === 'development') {
+            return res.status(200).json({
+              status: 'success',
+              message: 'OTP generated (SMS failed, check console)',
+              data: { otp: otpCode }, // Only in development!
+              smsError: smsResult.message
+            });
+          }
+          
+          return res.status(500).json({
+            status: 'error',
+            message: 'Failed to send OTP via SMS',
+            error: smsResult.message
+          });
+        }
+      } catch (smsError) {
+        console.error('❌ SMS service error:', smsError);
+        
+        // In development, return OTP even if SMS fails
+        if (process.env.NODE_ENV === 'development') {
+          return res.status(200).json({
+            status: 'success',
+            message: 'OTP generated (SMS error, check console)',
+            data: { otp: otpCode },
+            smsError: smsError.message
+          });
+        }
+        
+        return res.status(500).json({
+          status: 'error',
+          message: 'SMS service unavailable',
+          error: smsError.message
         });
       }
     }

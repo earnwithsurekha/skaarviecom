@@ -3,9 +3,10 @@ const router = express.Router();
 const { sequelize } = require('../../models');
 const bcrypt = require('bcryptjs');
 const { validateImageQuality } = require('../../middleware/upload');
+const { s3, bucket } = require('../../config/aws');
 const multer = require('multer');
 const path = require('node:path');
-const fs = require('node:fs');
+const { v4: uuidv4 } = require('uuid');
 
 // Configure multer for profile photo upload - use memory storage for validation
 const storage = multer.memoryStorage();
@@ -25,20 +26,25 @@ const upload = multer({
   }
 });
 
-// Helper function to save profile photo after validation
-const saveProfilePhoto = (file) => {
-  const uploadDir = path.join(__dirname, '../../uploads/profiles');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-  
+// Helper function to save profile photo to S3 after validation
+const saveProfilePhoto = async (file) => {
   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
   const filename = 'profile-' + uniqueSuffix + path.extname(file.originalname);
-  const filepath = path.join(uploadDir, filename);
+  const s3Key = `profiles/${filename}`;
   
-  fs.writeFileSync(filepath, file.buffer);
+  const params = {
+    Bucket: bucket,
+    Key: s3Key,
+    Body: file.buffer,
+    ContentType: file.mimetype
+  };
   
-  return `/uploads/profiles/${filename}`;
+  try {
+    const result = await s3.upload(params).promise();
+    return result.Location;
+  } catch (error) {
+    throw new Error(`Failed to upload profile photo to S3: ${error.message}`);
+  }
 };
 
 // @route   GET /api/reseller/profile
@@ -319,8 +325,8 @@ router.post('/photo', upload.single('photo'), validateImageQuality, async (req, 
       });
     }
 
-    // Save photo to disk after validation
-    const photoUrl = saveProfilePhoto(req.file);
+    // Upload photo to S3 after validation
+    const photoUrl = await saveProfilePhoto(req.file);
 
     // Update profile photo URL
     await sequelize.query(`
