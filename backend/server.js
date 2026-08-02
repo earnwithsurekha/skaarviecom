@@ -70,6 +70,9 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API health check endpoint (for ALB)
+app.use('/api/health', require('./routes/health'));
+
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/manufacturers', require('./routes/manufacturers'));
