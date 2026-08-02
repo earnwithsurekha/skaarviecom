@@ -310,7 +310,7 @@ export default function CheckoutPage() {
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
+      if (response.ok && (data.success || data.status === 'success')) {
         // Show success message
         toast.success('Order placed successfully!');
         
