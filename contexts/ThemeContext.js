@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 const ThemeContext = createContext();
 
@@ -62,16 +63,33 @@ export const themes = {
 };
 
 export function ThemeProvider({ children }) {
+  const pathname = usePathname();
   const [currentTheme, setCurrentTheme] = useState('light');
   const [mounted, setMounted] = useState(false);
 
+  // Determine if we're in admin section
+  const isAdminSection = pathname?.startsWith('/admin') || pathname?.startsWith('/login/admin');
+  const isManufacturerSection = pathname?.startsWith('/manufacturer');
+  const isResellerSection = pathname?.startsWith('/reseller');
+
   useEffect(() => {
-    // Load theme from localStorage
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    // Load appropriate theme based on section
+    let savedTheme;
+    if (isAdminSection) {
+      savedTheme = localStorage.getItem('adminTheme') || 'light';
+    } else if (isManufacturerSection) {
+      savedTheme = localStorage.getItem('manufacturerTheme') || 'light';
+    } else if (isResellerSection) {
+      savedTheme = localStorage.getItem('resellerTheme') || 'light';
+    } else {
+      // Public pages always use light theme
+      savedTheme = 'light';
+    }
+    
     setCurrentTheme(savedTheme);
     applyTheme(savedTheme);
     setMounted(true);
-  }, []);
+  }, [isAdminSection, isManufacturerSection, isResellerSection]);
 
   const applyTheme = (themeName) => {
     const theme = themes[themeName];
@@ -89,8 +107,23 @@ export function ThemeProvider({ children }) {
 
   const changeTheme = (themeName) => {
     setCurrentTheme(themeName);
-    localStorage.setItem('theme', themeName);
+    
+    // Save to appropriate localStorage key based on section
+    if (isAdminSection) {
+      localStorage.setItem('adminTheme', themeName);
+    } else if (isManufacturerSection) {
+      localStorage.setItem('manufacturerTheme', themeName);
+    } else if (isResellerSection) {
+      localStorage.setItem('resellerTheme', themeName);
+    }
+    // Don't save theme for public pages
+    
     applyTheme(themeName);
+  };
+
+  const resetToLightTheme = () => {
+    setCurrentTheme('light');
+    applyTheme('light');
   };
 
   const value = {
@@ -98,6 +131,7 @@ export function ThemeProvider({ children }) {
     themeConfig: themes[currentTheme],
     themes,
     changeTheme,
+    resetToLightTheme,
   };
 
   // Prevent flash of unstyled content

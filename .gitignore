@@ -52,6 +52,10 @@ backups/
 *.temp
 .cache/
 
+# Uploads (product images, videos, catalogs)
+backend/uploads/
+uploads/
+
 # Optional
 .turbo
 .vercel

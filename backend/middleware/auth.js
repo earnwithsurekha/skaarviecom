@@ -4,9 +4,15 @@ const { ROLES } = require('../config/constants');
 // Verify JWT token
 const authMiddleware = async (req, res, next) => {
   try {
+    console.log('[Auth] Headers:', {
+      authorization: req.headers.authorization?.substring(0, 30) + '...',
+      hasAuth: !!req.headers.authorization
+    });
+    
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
+      console.log('[Auth] No token found');
       return res.status(401).json({
         status: 'error',
         message: 'Access denied. No token provided'
@@ -14,9 +20,11 @@ const authMiddleware = async (req, res, next) => {
     }
 
     const decoded = verifyToken(token);
+    console.log('[Auth] Token verified for user:', decoded.userId, decoded.role);
     req.user = decoded;
     next();
   } catch (error) {
+    console.error('[Auth] Token verification error:', error.message);
     return res.status(401).json({
       status: 'error',
       message: 'Invalid or expired token'

@@ -1,130 +1,38 @@
 import { NextResponse } from 'next/server';
-import { User, Manufacturer } from '@/models';
-import { sequelize } from '@/lib/database';
-import { uploadToS3 } from '@/lib/aws';
 
 // @route   POST /api/auth/register
-// @desc    Register new manufacturer
+// @desc    Proxy to backend register endpoint with file upload support
 // @access  Public
 export async function POST(request) {
   try {
     const formData = await request.formData();
+    const token = request.headers.get('authorization');
 
-    // Extract form fields
-    const mobile = formData.get('mobile');
-    const email = formData.get('email');
-    const companyName = formData.get('companyName');
-    const ownerName = formData.get('ownerName');
-    const businessType = formData.get('businessType');
-    const gstNumber = formData.get('gstNumber');
-    const panNumber = formData.get('panNumber');
-    const address = formData.get('address');
-    const city = formData.get('city');
-    const state = formData.get('state');
-    const pincode = formData.get('pincode');
-
-    // Extract files
-    const gstCertificate = formData.get('gstCertificate');
-    const panCard = formData.get('panCard');
-    const addressProof = formData.get('addressProof');
-
-    // Validate required fields
-    if (!mobile || !companyName || !ownerName) {
-      return NextResponse.json(
-        { status: 'error', message: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    // Initialize database
-    await sequelize.sync();
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { mobile } });
-    if (existingUser) {
-      const existingManufacturer = await Manufacturer.findOne({
-        where: { userId: existingUser.id },
-      });
-
-      if (existingManufacturer) {
-        return NextResponse.json(
-          { status: 'error', message: 'Manufacturer account already exists' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Upload documents to S3 (if provided)
-    const documents = {};
+    // Forward request to backend (FormData is automatically handled correctly)
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
     
-    if (gstCertificate) {
-      const gstUrl = await uploadToS3(gstCertificate, 'documents/gst');
-      documents.gstCertificate = gstUrl;
-    }
-    
-    if (panCard) {
-      const panUrl = await uploadToS3(panCard, 'documents/pan');
-      documents.panCard = panUrl;
-    }
-    
-    if (addressProof) {
-      const addressUrl = await uploadToS3(addressProof, 'documents/address');
-      documents.addressProof = addressUrl;
-    }
-
-    // Create or update user
-    let user = existingUser;
-    if (!user) {
-      user = await User.create({
-        mobile,
-        email: email || null,
-        role: 'manufacturer',
-        isActive: false, // Inactive until admin approval
-        isVerified: false,
-      });
-    } else {
-      await user.update({ email: email || user.email });
-    }
-
-    // Create manufacturer profile
-    const manufacturer = await Manufacturer.create({
-      userId: user.id,
-      companyName,
-      ownerName,
-      businessType,
-      gstNumber,
-      panNumber,
-      address,
-      city,
-      state,
-      pincode,
-      status: 'pending', // Pending admin approval
-      documents,
-    });
-
-    return NextResponse.json({
-      status: 'success',
-      message: 'Registration submitted successfully. Your account is pending approval.',
-      data: {
-        userId: user.id,
-        manufacturerId: manufacturer.id,
-        status: manufacturer.status,
+    const response = await fetch(`${backendUrl}/api/auth/register`, {
+      method: 'POST',
+      headers: {
+        // Don't set Content-Type for FormData - browser sets it automatically with boundary
+        ...(token && { 'Authorization': token }),
       },
+      body: formData,
     });
-  } catch (error) {
-    console.error('Registration error:', error);
-    
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return NextResponse.json(
-        { status: 'error', message: 'GST or PAN number already registered' },
-        { status: 400 }
-      );
-    }
 
+    const data = await response.json();
+    
+    // Log for debugging
+    console.log('Register response:', response.status, data);
+    
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Register proxy error:', error);
     return NextResponse.json(
-      {
-        status: 'error',
-        message: error.message || 'Internal server error',
+      { 
+        status: 'error', 
+        message: error.message || 'Failed to register',
+        details: error.toString()
       },
       { status: 500 }
     );

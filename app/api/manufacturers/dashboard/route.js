@@ -1,72 +1,37 @@
 import { NextResponse } from 'next/server';
-import { authMiddleware } from '@/middleware/auth';
-import { User, Manufacturer } from '@/models';
-import { sequelize } from '@/lib/database';
 
 // @route   GET /api/manufacturers/dashboard
-// @desc    Get manufacturer dashboard summary
+// @desc    Get manufacturer dashboard summary (proxy to backend)
 // @access  Private (Manufacturer)
 export async function GET(request) {
   try {
-    // Authenticate user
-    const authResult = await authMiddleware(request);
+    const authHeader = request.headers.get('authorization');
     
-    if (authResult instanceof NextResponse) {
-      return authResult; // Return error response
-    }
-
-    // Verify user is a manufacturer
-    if (authResult.role !== 'manufacturer') {
+    if (!authHeader) {
       return NextResponse.json(
-        { status: 'error', message: 'Access denied. Manufacturer account required.' },
-        { status: 403 }
+        { status: 'error', message: 'Authorization header required' },
+        { status: 401 }
       );
     }
 
-    // Initialize database
-    await sequelize.sync();
-
-    // Fetch manufacturer data
-    const manufacturer = await Manufacturer.findOne({
-      where: { userId: authResult.userId },
-      include: [{ model: User, as: 'user' }],
+    // Forward the request to the backend
+    const backendResponse = await fetch('http://localhost:5000/api/manufacturers/dashboard', {
+      headers: {
+        'Authorization': authHeader,
+      },
     });
 
-    if (!manufacturer) {
-      return NextResponse.json(
-        { status: 'error', message: 'Manufacturer profile not found' },
-        { status: 404 }
-      );
-    }
+    const data = await backendResponse.json();
 
-    // TODO: Fetch actual data from database
-    // For now, return mock data
-    const dashboardData = {
-      totalProducts: 45,
-      activeProducts: 38,
-      pendingProducts: 7,
-      totalOrders: 234,
-      totalSales: 458900,
-      totalEarnings: 234500,
-      pendingSettlements: 45600,
-      manufacturer: {
-        companyName: manufacturer.companyName,
-        status: manufacturer.status,
-      },
-    };
-
-    return NextResponse.json({
-      status: 'success',
-      data: dashboardData,
+    return NextResponse.json(data, { 
+      status: backendResponse.status,
     });
   } catch (error) {
-    console.error('Dashboard error:', error);
+    console.error('Manufacturer dashboard proxy error:', error);
     return NextResponse.json(
-      {
-        status: 'error',
-        message: error.message || 'Internal server error',
-      },
+      { status: 'error', message: 'Failed to fetch dashboard data' },
       { status: 500 }
     );
   }
 }
+

@@ -1,0 +1,3 @@
+Theme Update Script - All inputs/selects/textareas need to use className="input"
+All labels need style={{ color: 'rgb(var(--color-text))' }}
+All buttons should use btn classes (btn-primary, btn-secondary, btn-outline)

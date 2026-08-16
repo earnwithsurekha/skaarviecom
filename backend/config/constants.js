@@ -1,3 +1,32 @@
+const fs = require('fs');
+const path = require('path');
+
+// Load platform settings from file if exists
+let platformSettings = {
+  DEFAULT_FEE_PERCENTAGE: 5,
+  DEFAULT_RESELLER_COMMISSION: 10,
+  DEFAULT_SKAARVI_MARGIN: 5,
+  LOW_STOCK_THRESHOLD: 10,
+  SETTLEMENT_HOLD_DAYS: 7
+};
+
+try {
+  const settingsPath = path.join(__dirname, 'platformSettings.json');
+  if (fs.existsSync(settingsPath)) {
+    const fileSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    platformSettings = {
+      DEFAULT_FEE_PERCENTAGE: fileSettings.platformFeePercentage || 5,
+      DEFAULT_RESELLER_COMMISSION: fileSettings.defaultResellerCommission || 10,
+      DEFAULT_SKAARVI_MARGIN: fileSettings.defaultSkaarviMargin || 5,
+      LOW_STOCK_THRESHOLD: fileSettings.lowStockThreshold || 10,
+      SETTLEMENT_HOLD_DAYS: fileSettings.settlementHoldDays || 7
+    };
+    console.log('✓ Loaded platform settings from platformSettings.json');
+  }
+} catch (error) {
+  console.log('Using default platform settings');
+}
+
 module.exports = {
   // User Roles
   ROLES: {
@@ -78,11 +107,6 @@ module.exports = {
     MAX_LIMIT: 100
   },
 
-  // Platform Settings
-  PLATFORM: {
-    DEFAULT_FEE_PERCENTAGE: 5,
-    DEFAULT_RESELLER_COMMISSION: 10,
-    LOW_STOCK_THRESHOLD: 10,
-    SETTLEMENT_HOLD_DAYS: 7
-  }
+  // Platform Settings (loaded from platformSettings.json if exists, otherwise defaults)
+  PLATFORM: platformSettings
 };

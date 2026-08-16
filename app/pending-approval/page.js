@@ -63,10 +63,10 @@ export default function PendingApprovalPage() {
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => router.push('/login')}
+                onClick={() => router.push('/register')}
                 className="btn btn-outline flex-1"
               >
-                Back to Login
+                Back to Register
               </button>
               <a
                 href="mailto:support@skaarvi.com"
