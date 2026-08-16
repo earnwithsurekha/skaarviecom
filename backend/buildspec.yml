@@ -25,5 +25,5 @@ phases:
       - printf '[{"name":"skaarvi-backend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
   files: 
-    - backend/imagedefinitions.json
+    - imagedefinitions.json
   discard-paths: yes
