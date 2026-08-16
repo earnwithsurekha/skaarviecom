@@ -38,7 +38,7 @@ backend/
 ```bash
 cd backend
 npm install
-```
+``` 
 
 ### 2. Environment Configuration
 
