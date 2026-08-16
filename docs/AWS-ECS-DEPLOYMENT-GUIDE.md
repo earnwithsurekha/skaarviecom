@@ -4,12 +4,13 @@ Complete guide to deploy Frontend (Next.js) and Backend (Node.js/Express) to AWS
 
 ## Architecture Overview
 
-- **Frontend**: Next.js application running on ECS Fargate
-- **Backend**: Node.js/Express API running on ECS Fargate  
+- **Frontend**: Next.js application running on ECS with EC2
+- **Backend**: Node.js/Express API running on ECS with EC2
+- **Compute**: t3.medium EC2 instances (managed by Auto Scaling Group)
 - **Load Balancer**: Application Load Balancer (ALB) routing traffic to both services
 - **Container Registry**: Amazon ECR for Docker images
 - **CI/CD**: AWS CodePipeline triggered by GitHub commits
-- **Secrets**: AWS Secrets Manager for environment variables
+- **Environment Variables**: Configured directly in ECS Task Definitions
 - **Database**: RDS MySQL (if not already set up)
 
 ---
@@ -195,67 +196,41 @@ artifacts:
 
 ---
 
-## Phase 2: AWS Secrets Manager Setup
+## Phase 2: Prepare Environment Variables
 
-### Step 2.1: Create Secrets in AWS Console
+### Step 2.1: Document Your Environment Variables
 
-1. **Go to AWS Secrets Manager Console**
-   - Navigate to: https://console.aws.amazon.com/secretsmanager/
-   - Select Region: `ap-south-1` (Mumbai)
+Prepare your environment variables. You'll add these directly to ECS Task Definitions later.
 
-2. **Create Backend Secrets**
-   - Click **"Store a new secret"**
-   - Choose: **"Other type of secret"**
-   - Select: **"Plaintext"** tab
-   - Paste your environment variables in JSON format:
-   
-   ```json
-   {
-     "DB_HOST": "your-rds-endpoint.ap-south-1.rds.amazonaws.com",
-     "DB_USER": "admin",
-     "DB_PASSWORD": "your-db-password",
-     "DB_NAME": "skaarvi_db",
-     "DB_PORT": "3306",
-     "JWT_SECRET": "your-jwt-secret-key",
-     "JWT_REFRESH_SECRET": "your-refresh-secret-key",
-     "AWS_REGION": "ap-south-1",
-     "AWS_ACCESS_KEY_ID": "your-access-key",
-     "AWS_SECRET_ACCESS_KEY": "your-secret-key",
-     "AWS_S3_BUCKET": "skaarvi-uploads",
-     "SMTP_HOST": "email-smtp.ap-south-1.amazonaws.com",
-     "SMTP_PORT": "587",
-     "SMTP_USER": "AKIAUB26EX2DMIRWND5J",
-     "SMTP_PASS": "BPAm0q0PikK2jkNgllwbKnIblu6DRVH35pmpjkbJnmTJ",
-     "SMTP_FROM": "skaarvitelugudigitalacademy@gmail.com",
-     "NODE_ENV": "production",
-     "PORT": "5000"
-   }
-   ```
-   
-   - Click **"Next"**
-   - Secret name: `skaarvi/backend/env`
-   - Description: "Backend environment variables for Skaarvi"
-   - Click **"Next"** → **"Next"** → **"Store"**
-   - **Copy the Secret ARN** (you'll need it later)
+**Backend Environment Variables:**
+```
+DB_HOST=skaarvi-db.cxm0emkgszfj.ap-south-1.rds.amazonaws.com
+DB_USER=admin
+DB_PASSWORD=Skaarvi2026
+DB_NAME=skaarvi_db
+DB_PORT=3306
+JWT_SECRET=your-jwt-secret-key-here
+JWT_REFRESH_SECRET=your-refresh-secret-key-here
+AWS_REGION=ap-south-1
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_S3_BUCKET=skaarvi-uploads
+SMTP_HOST=email-smtp.ap-south-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USER=AKIAUB26EX2DMIRWND5J
+SMTP_PASS=BPAm0q0PikK2jkNgllwbKnIblu6DRVH35pmpjkbJnmTJ
+SMTP_FROM=skaarvitelugudigitalacademy@gmail.com
+NODE_ENV=production
+PORT=5000
+```
 
-3. **Create Frontend Secrets**
-   - Click **"Store a new secret"**
-   - Choose: **"Other type of secret"**
-   - Select: **"Plaintext"** tab
-   - Paste:
-   
-   ```json
-   {
-     "NEXT_PUBLIC_API_URL": "http://your-alb-dns/api",
-     "NODE_ENV": "production"
-   }
-   ```
-   
-   - Click **"Next"**
-   - Secret name: `skaarvi/frontend/env`
-   - Description: "Frontend environment variables for Skaarvi"
-   - Click **"Next"** → **"Next"** → **"Store"**
-   - **Copy the Secret ARN**
+**Frontend Environment Variables:**
+```
+NEXT_PUBLIC_API_URL=http://your-alb-dns/api
+NODE_ENV=production
+```
+
+⚠️ **Security Note**: Environment variables are visible in the ECS console and task definitions. For production, consider using AWS Secrets Manager instead.
 
 ---
 
@@ -324,7 +299,7 @@ artifacts:
 
 2. **Create Backend Target Group**
    - Click **"Create target group"**
-   - Target type: **IP addresses**
+   - Target type: **Instances** (for EC2 launch type with bridge networking)
    - Target group name: `skaarvi-backend-tg`
    - Protocol: **HTTP**
    - Port: **5000**
@@ -340,7 +315,7 @@ artifacts:
 
 3. **Create Frontend Target Group**
    - Click **"Create target group"**
-   - Target type: **IP addresses**
+   - Target type: **Instances** (for EC2 launch type with bridge networking)
    - Target group name: `skaarvi-frontend-tg`
    - Protocol: **HTTP**
    - Port: **3000**
@@ -428,14 +403,124 @@ artifacts:
 2. **Create Cluster**
    - Click **"Clusters"** → **"Create cluster"**
    - Cluster name: `skaarvi-cluster`
-   - Infrastructure: **AWS Fargate (serverless)**
+   - Infrastructure: **Amazon EC2 instances**
    - Click **"Create"**
+
+---
+
+## Phase 6A: Create Launch Template and Auto Scaling Group
+
+### Step 6A.1: Create Launch Template
+
+1. **Go to EC2 Console** → **Launch Templates**
+   - Navigate to: https://console.aws.amazon.com/ec2/v2/home#LaunchTemplates
+
+2. **Create Launch Template**
+   - Click **"Create launch template"**
+   - **Template name**: `skaarvi-ecs-launch-template`
+   - **Template version description**: `ECS optimized instance for Skaarvi`
+
+3. **Application and OS Images (AMI)**
+   - Click **"Browse more AMIs"**
+   - Search for: `amzn2-ami-ecs-hvm`
+   - Select the latest **Amazon ECS-Optimized Amazon Linux 2 AMI**
+   - AMI ID example: `ami-0abcdef1234567890`
+
+4. **Instance type**
+   - Instance type: **t3.medium** (2 vCPU, 4 GB RAM)
+
+5. **Key pair (login)**
+   - Key pair: Create new or select existing (for SSH access if needed)
+   - If creating new:
+     - Name: `skaarvi-ecs-key`
+     - Type: RSA
+     - Format: .pem
+     - Click **"Create key pair"** and save the file
+
+6. **Network settings**
+   - Don't configure here (will configure in Auto Scaling Group)
+
+7. **Storage (volumes)**
+   - Volume 1 (Root):
+     - Size: **30 GiB**
+     - Volume type: **gp3**
+     - Delete on termination: **Yes**
+
+8. **Advanced details**
+   - IAM instance profile: **ecsInstanceRole** (we'll create this in Phase 7)
+   - User data: Paste this script:
+   
+   ```bash
+   #!/bin/bash
+   echo ECS_CLUSTER=skaarvi-cluster >> /etc/ecs/ecs.config
+   echo ECS_ENABLE_TASK_IAM_ROLE=true >> /etc/ecs/ecs.config
+   ```
+
+9. **Click "Create launch template"**
+
+### Step 6A.2: Create Auto Scaling Group
+
+1. **Go to EC2 Console** → **Auto Scaling Groups**
+   - Navigate to: https://console.aws.amazon.com/ec2/v2/home#AutoScalingGroups
+
+2. **Create Auto Scaling Group**
+   - Click **"Create Auto Scaling group"**
+
+3. **Step 1: Choose launch template**
+   - Name: `skaarvi-ecs-asg`
+   - Launch template: Select `skaarvi-ecs-launch-template`
+   - Click **"Next"**
+
+4. **Step 2: Choose instance launch options**
+   - VPC: Select your VPC (`skaarvi_VPC`)
+   - Availability Zones and subnets: Select **private subnets**
+     - ✅ `private-subnet-1a`
+     - ✅ `private-subnet-1b`
+   - Click **"Next"**
+
+5. **Step 3: Configure advanced options**
+   - Load balancing: **No load balancer** (we'll attach ALB to ECS services directly)
+   - Health checks: **EC2**
+   - Click **"Next"**
+
+6. **Step 4: Configure group size and scaling**
+   - Desired capacity: **1**
+   - Minimum capacity: **1**
+   - Maximum capacity: **2**
+   - Automatic scaling: **No scaling policies** (for now)
+   - Click **"Next"**
+
+7. **Step 5: Add notifications** (optional)
+   - Skip or add SNS notifications
+   - Click **"Next"**
+
+8. **Step 6: Add tags**
+   - Add tag:
+     - Key: `Name`
+     - Value: `skaarvi-ecs-instance`
+   - Click **"Next"**
+
+9. **Step 7: Review**
+   - Review settings
+   - Click **"Create Auto Scaling group"**
+
+**Wait 5-10 minutes** for the EC2 instance to launch and register with the ECS cluster.
+
+### Step 6A.3: Verify EC2 Instance Registered
+
+1. **Go to ECS Console** → **Clusters** → `skaarvi-cluster`
+2. Click **"Infrastructure"** tab
+3. You should see **1 Container instance** registered
+4. If not visible after 10 minutes, check:
+   - EC2 instance is running
+   - Security group allows outbound HTTPS (port 443)
+   - User data script is correct
 
 ---
 
 ## Phase 7: Create IAM Roles
 
-### Step 7.1: Create ECS Task Execution Role
+### Step 7.1: Create ECS Container Instance Role
 
 1. **Go to IAM Console**
    - Navigate to: https://console.aws.amazon.com/iam/
@@ -443,49 +528,38 @@ artifacts:
 2. **Create Role**
    - Click **"Roles"** → **"Create role"**
    - Trusted entity: **AWS service**
-   - Use case: **Elastic Container Service** → **Elastic Container Service Task**
+   - Use case: **EC2**
    - Click **"Next"**
 
 3. **Add Permissions**
    - Search and select:
-     - `AmazonECSTaskExecutionRolePolicy`
-     - `SecretsManagerReadWrite` (or create custom policy for specific secrets)
-     - `AmazonEC2ContainerRegistryReadOnly`
+     - `AmazonEC2ContainerServiceforEC2Role`
+     - `AmazonSSMManagedInstanceCore` (optional, for Systems Manager access)
    - Click **"Next"**
 
 4. **Name and Create**
+   - Role name: `ecsInstanceRole`
+   - Click **"Create role"**
+
+### Step 7.2: Create ECS Task Execution Role
+
+1. **Create Role**
+   - Click **"Roles"** → **"Create role"**
+   - Trusted entity: **AWS service**
+   - Use case: **Elastic Container Service** → **Elastic Container Service Task**
+   - Click **"Next"**
+
+2. **Add Permissions**
+   - Search and select:
+     - `AmazonECSTaskExecutionRolePolicy`
+     - `AmazonEC2ContainerRegistryReadOnly`
+   - Click **"Next"**
+
+3. **Name and Create**
    - Role name: `ecsTaskExecutionRole`
    - Click **"Create role"**
 
-5. **Add Inline Policy for Secrets Manager** (Recommended for security)
-   - Click on the role: `ecsTaskExecutionRole`
-   - Click **"Add permissions"** → **"Create inline policy"**
-   - Click **"JSON"** tab
-   - Paste:
-   
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Action": [
-           "secretsmanager:GetSecretValue"
-         ],
-         "Resource": [
-           "arn:aws:secretsmanager:ap-south-1:YOUR-ACCOUNT-ID:secret:skaarvi/backend/env-*",
-           "arn:aws:secretsmanager:ap-south-1:YOUR-ACCOUNT-ID:secret:skaarvi/frontend/env-*"
-         ]
-       }
-     ]
-   }
-   ```
-   
-   - Replace `YOUR-ACCOUNT-ID` with your AWS account ID
-   - Policy name: `SecretsManagerAccess`
-   - Click **"Create policy"**
-
-### Step 7.2: Create ECS Task Role (for application permissions)
+### Step 7.3: Create ECS Task Role (for application permissions)
 
 1. **Create Role**
    - Click **"Roles"** → **"Create role"**
@@ -503,6 +577,17 @@ artifacts:
    - Role name: `ecsTaskRole`
    - Click **"Create role"**
 
+### Step 7.4: Update Launch Template with Instance Role
+
+1. **Go to EC2 Console** → **Launch Templates**
+2. **Select** `skaarvi-ecs-launch-template`
+3. Click **"Actions"** → **"Modify template (Create new version)"**
+4. **Advanced details**:
+   - IAM instance profile: Select **ecsInstanceRole**
+5. Click **"Create template version"**
+6. Click **"Actions"** → **"Set default version"**
+7. Select the new version → Click **"Set as default version"**
+
 ---
 
 ## Phase 8: Create Task Definitions
@@ -514,11 +599,11 @@ artifacts:
 
 2. **Configure Task Definition**
    - Task definition family: `skaarvi-backend`
-   - Launch type: **AWS Fargate**
+   - Launch type: **EC2**
    - Operating system: **Linux/X86_64**
+   - Network mode: **bridge**
    - Task size:
-     - CPU: **0.5 vCPU** (or 1 vCPU for production)
-     - Memory: **1 GB** (or 2 GB for production)
+     - Leave empty (not required for EC2 launch type)
    - Task role: `ecsTaskRole`
    - Task execution role: `ecsTaskExecutionRole`
 
@@ -526,27 +611,40 @@ artifacts:
    - Click **"Add container"**
    - Container name: `skaarvi-backend`
    - Image URI: `YOUR-ACCOUNT-ID.dkr.ecr.ap-south-1.amazonaws.com/skaarvi-backend:latest`
+   - Memory Limits:
+     - Memory hard limit: **512** MiB
    - Port mappings:
      - Container port: **5000**
+     - Host port: **0** (dynamic port mapping)
      - Protocol: **TCP**
      - Name: `skaarvi-backend-5000-tcp`
 
 4. **Environment Variables from Secrets Manager**
    - Scroll to **"Environment variables"**
-   - Click **"Add environment variable"**
-   - For each variable in your secrets:
-     - Value type: **ValueFrom**
-     - Value: `arn:aws:secretsmanager:ap-south-1:YOUR-ACCOUNT-ID:secret:skaarvi/backend/env-XXXXX:DB_HOST::`
-     
-   **Format**: `SECRET_ARN:key::`
+   - Click **"Add environment variable"** for each variable
+   - **Value type**: Select **"Value"** (not ValueFrom)
+   - Add all environment variables:
    
-   Add all keys from your secret:
-   - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`
-   - `JWT_SECRET`, `JWT_REFRESH_SECRET`
-   - `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-   - `AWS_S3_BUCKET`
-   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
-   - `NODE_ENV`, `PORT`
+   | Key | Value |
+   |-----|-------|
+   | DB_HOST | skaarvi-db.cxm0emkgszfj.ap-south-1.rds.amazonaws.com |
+   | DB_USER | admin |
+   | DB_PASSWORD | Skaarvi2026 |
+   | DB_NAME | skaarvi_db |
+   | DB_PORT | 3306 |
+   | JWT_SECRET | your-jwt-secret-key |
+   | JWT_REFRESH_SECRET | your-refresh-secret-key |
+   | AWS_REGION | ap-south-1 |
+   | AWS_ACCESS_KEY_ID | your-access-key |
+   | AWS_SECRET_ACCESS_KEY | your-secret-key |
+   | AWS_S3_BUCKET | skaarvi-uploads |
+   | SMTP_HOST | email-smtp.ap-south-1.amazonaws.com |
+   | SMTP_PORT | 587 |
+   | SMTP_USER | AKIAUB26EX2DMIRWND5J |
+   | SMTP_PASS | BPAm0q0PikK2jkNgllwbKnIblu6DRVH35pmpjkbJnmTJ |
+   | SMTP_FROM | skaarvitelugudigitalacademy@gmail.com |
+   | NODE_ENV | production |
+   | PORT | 5000 |
 
 5. **Logging**
    - Log configuration: **awslogs**
@@ -559,26 +657,34 @@ artifacts:
 
 1. **Create New Task Definition**
    - Task definition family: `skaarvi-frontend`
-   - Launch type: **AWS Fargate**
+   - Launch type: **EC2**
    - Operating system: **Linux/X86_64**
+   - Network mode: **bridge**
    - Task size:
-     - CPU: **0.5 vCPU**
-     - Memory: **1 GB**
+     - Leave empty (not required for EC2 launch type)
    - Task role: `ecsTaskRole`
    - Task execution role: `ecsTaskExecutionRole`
 
 2. **Container Configuration**
    - Container name: `skaarvi-frontend`
    - Image URI: `YOUR-ACCOUNT-ID.dkr.ecr.ap-south-1.amazonaws.com/skaarvi-frontend:latest`
+   - Memory Limits:
+     - Memory hard limit: **512** MiB
    - Port mappings:
      - Container port: **3000**
+     - Host port: **0** (dynamic port mapping)
      - Protocol: **TCP**
      - Name: `skaarvi-frontend-3000-tcp`
 
 3. **Environment Variables**
-   - Add from Secrets Manager:
-     - `NEXT_PUBLIC_API_URL` → `arn:aws:secretsmanager:...:skaarvi/frontend/env-...:NEXT_PUBLIC_API_URL::`
-     - `NODE_ENV` → `arn:aws:secretsmanager:...:skaarvi/frontend/env-...:NODE_ENV::`
+   - Add environment variables:
+   
+   | Key | Value |
+   |-----|-------|
+   | NEXT_PUBLIC_API_URL | http://your-alb-dns/api |
+   | NODE_ENV | production |
+   
+   **Note**: Update `NEXT_PUBLIC_API_URL` with your actual ALB DNS after load balancer is created.
 
 4. **Logging**
    - Log configuration: **awslogs**
@@ -600,7 +706,7 @@ artifacts:
 
 2. **Environment**
    - Compute options: **Launch type**
-   - Launch type: **FARGATE**
+   - Launch type: **EC2**
 
 3. **Deployment Configuration**
    - Application type: **Service**
@@ -611,16 +717,8 @@ artifacts:
    - Desired tasks: **2** (for high availability)
 
 4. **Networking**
-   - VPC: Select your VPC
-   - Subnets: Select **private subnets**
-   - Security group:
-     - Click **"Create a new security group"**
-     - Security group name: `skaarvi-backend-sg`
-     - Inbound rules:
-       - Type: **Custom TCP**, Port: **5000**, Source: `skaarvi-alb-sg` (ALB security group)
-     - Click **"Create"**
-   - Public IP: **Disabled** (if using private subnets with NAT Gateway)
-                **Enabled** (if using public subnets for testing)
+   - No need to select VPC/subnets (EC2 instances are already in VPC)
+   - Security group: Not configured here (EC2 instance security group handles this)
 
 5. **Load Balancing**
    - Load balancer type: **Application Load Balancer**
@@ -636,22 +734,43 @@ artifacts:
    - Policy name: `cpu-scaling`
    - Metric type: **ECSServiceAverageCPUUtilization**
    - Target value: **70**
+   
+   **Note**: With EC2, also ensure your Auto Scaling Group can scale to support additional tasks.
 
 7. **Create Service**
    - Click **"Create"**
 
-### Step 9.2: Create Frontend Service
+### Step 9.2: Update EC2 Instance Security Group
 
-1. **Create Service**
-   - Click **"Create"** in Services tab
-
-2. **Configuration**
-   - Launch type: **FARGATE**
+1. **Go to EC2 Console** → **Instances**
+2. **Select** the ECS instance (skaarvi-ecs-instance)
+3. **Security** tab EC2**
    - Task definition: `skaarvi-frontend` (latest)
    - Service name: `skaarvi-frontend-service`
    - Desired tasks: **2**
 
 3. **Networking**
+   - No additional configuration needed (using EC2 instances)
+
+4. **Load Balancing**
+   - Load balancer: `skaarvi-alb`
+   - Listener: **80:HTTP**
+   - Target group: `skaarvi-frontend-tg`
+   - Health check grace period: **60** seconds
+
+5. **Create Service**
+   - Click **"Create"**
+
+### Step 9.4: Verify Services
+
+1. **Go to ECS Cluster** → `skaarvi-cluster`
+2. **Services** tab should show:
+   - ✅ `skaarvi-backend-service` - Running count: 2/2
+   - ✅ `skaarvi-frontend-service` - Running count: 2/2
+3. **If tasks are pending:**
+   - Check EC2 instance has enough resources (CPU/Memory)
+   - May need to increase Auto Scaling Group to 2 instances
+   - Check task definitions memory limits (should be ≤ 2048 MiB total per instance)
    - VPC: Select your VPC
    - Subnets: Select **private subnets**
    - Security group:
@@ -880,20 +999,20 @@ git push origin main
 
 ## Phase 14: Update Frontend Environment Variable
 
-After deployment, update the frontend secret with the actual ALB DNS:
+After deployment, update the frontend API URL:
 
-1. **Go to Secrets Manager**
-2. **Edit `skaarvi/frontend/env`**
-3. **Update `NEXT_PUBLIC_API_URL`**:
-   ```json
-   {
-     "NEXT_PUBLIC_API_URL": "http://skaarvi-alb-123456789.ap-south-1.elb.amazonaws.com/api",
-     "NODE_ENV": "production"
-   }
-   ```
-4. **Force new deployment:**
-   - Go to ECS → Services → `skaarvi-frontend-service`
+1. **Go to ECS Console** → **Task Definitions** → `skaarvi-frontend`
+2. **Create new revision**:
+   - Select latest revision
+   - Click **"Create new revision"**
+3. **Update environment variable**:
+   - Find `NEXT_PUBLIC_API_URL`
+   - Change value to: `http://skaarvi-alb-123456789.ap-south-1.elb.amazonaws.com/api` (use your actual ALB DNS)
+4. **Create revision**
+5. **Update ECS Service**:
+   - Go to **Cluster** → `skaarvi-cluster` → **Services** → `skaarvi-frontend-service`
    - Click **"Update service"**
+   - Select the **new task definition revision**
    - Check **"Force new deployment"**
    - Click **"Update"**
 
@@ -982,17 +1101,26 @@ http://YOUR-ALB-DNS
 
 ## Cost Optimization Tips
 
-1. **Use Fargate Spot** for non-production environments
-2. **Enable Container Insights** only when debugging
-3. **Use NAT Gateway** in single AZ for dev/test
-4. **Set up auto-scaling** based on actual traffic
+1. **Use Reserved Instances** (1-year term) for EC2 to save 30-40%
+2. **Use Spot Instances** for non-production environments (up to 90% savings)
+3. **Right-size your EC2 instances** - Start with t3.medium, monitor usage
+4. **Enable Container Insights** only when debugging
 5. **Use CloudWatch Logs retention policies** (e.g., 7 days)
+6. **Scale EC2 Auto Scaling Group** based on actual demand
+7. **Consider Savings Plans** for long-term commitments
+
+**Estimated Monthly Costs (EC2):**
+- t3.medium (on-demand): ~$30/month
+- t3.medium (1-year Reserved): ~$15/month
+- RDS db.t3.medium: ~$50/month
+- ALB: ~$20/month
+- **Total: $65-100/month** (vs ~$128/month with Fargate)
 
 ---
 
 ## Security Best Practices
 
-1. ✅ **Use Secrets Manager** for all sensitive data
+1. ⚠️ **Environment variables in ECS** are visible in task definitions (consider Secrets Manager for production)
 2. ✅ **Private subnets** for ECS tasks
 3. ✅ **Security groups** with least privilege
 4. ✅ **Enable VPC Flow Logs**
@@ -1035,8 +1163,19 @@ http://YOUR-ALB-DNS
 
 ### Updating Environment Variables
 
-1. **Update Secrets Manager**
-2. **Force new deployment** in ECS service
+1. **Go to ECS Console** → **Task Definitions**
+2. **Select your task definition** (backend or frontend)
+3. **Create new revision**:
+   - Select latest revision
+   - Click **"Create new revision"**
+   - Update environment variables
+   - Click **"Create"**
+4. **Update ECS Service**:
+   - Go to Services → Select your service
+   - Click **"Update service"**
+   - Select new task definition revision
+   - Check **"Force new deployment"**
+   - Click **"Update"**
 
 ### Scaling
 
@@ -1061,7 +1200,6 @@ http://YOUR-ALB-DNS
 
 - **ECS Documentation**: https://docs.aws.amazon.com/ecs/
 - **CodePipeline Guide**: https://docs.aws.amazon.com/codepipeline/
-- **Secrets Manager**: https://docs.aws.amazon.com/secretsmanager/
 - **ALB Documentation**: https://docs.aws.amazon.com/elasticloadbalancing/
 
 ---
