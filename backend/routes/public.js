@@ -230,7 +230,6 @@ router.get('/categories', async (req, res) => {
         sort_order as sortOrder
       FROM categories
       WHERE is_active = 1
-      AND deleted_at IS NULL
       ORDER BY sort_order ASC, name ASC
     `, {
       type: sequelize.QueryTypes.SELECT
