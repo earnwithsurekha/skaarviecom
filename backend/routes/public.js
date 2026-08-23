@@ -214,4 +214,52 @@ router.get('/products', async (req, res) => {
   }
 });
 
+// @route   GET /api/public/categories
+// @desc    Get all active categories for public viewing
+// @access  Public
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await sequelize.query(`
+      SELECT 
+        id,
+        name,
+        slug,
+        description,
+        parent_id as parentId,
+        image_url as imageUrl,
+        sort_order as sortOrder
+      FROM categories
+      WHERE is_active = 1
+      AND deleted_at IS NULL
+      ORDER BY sort_order ASC, name ASC
+    `, {
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    // Build category tree (parent-child structure)
+    const categoryTree = categories
+      .filter(cat => !cat.parentId)
+      .map(parent => ({
+        ...parent,
+        children: categories.filter(child => child.parentId === parent.id)
+      }));
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Categories retrieved successfully',
+      data: {
+        categories: categoryTree,
+        allCategories: categories // Flat list for dropdowns
+      }
+    });
+  } catch (error) {
+    console.error('Get public categories error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to retrieve categories',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
