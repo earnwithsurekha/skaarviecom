@@ -53,7 +53,7 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
         o.refund_status,
         c.full_name as customer_name,
         u.email as customer_email,
-        u.phone as customer_phone,
+        u.mobile as customer_phone,
         (SELECT GROUP_CONCAT(
           CONCAT(p.name, ' (Qty: ', oi.quantity, ')')
           SEPARATOR ', '
@@ -120,7 +120,7 @@ router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
         o.*,
         c.full_name as customer_name,
         u.email as customer_email,
-        u.phone as customer_phone,
+        u.mobile as customer_phone,
         c.address as customer_address,
         r.business_name as reseller_name
       FROM orders o
