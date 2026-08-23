@@ -52,8 +52,8 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
         o.refund_amount,
         o.refund_status,
         c.full_name as customer_name,
-        c.email as customer_email,
-        c.phone as customer_phone,
+        u.email as customer_email,
+        u.phone as customer_phone,
         (SELECT GROUP_CONCAT(
           CONCAT(p.name, ' (Qty: ', oi.quantity, ')')
           SEPARATOR ', '
@@ -70,6 +70,7 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
          LIMIT 1) as product_image
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
+      LEFT JOIN users u ON c.user_id = u.id
       WHERE ${whereClause}
       ORDER BY o.return_requested_at DESC
       LIMIT ? OFFSET ?`,
@@ -118,12 +119,13 @@ router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
       `SELECT 
         o.*,
         c.full_name as customer_name,
-        c.email as customer_email,
-        c.phone as customer_phone,
+        u.email as customer_email,
+        u.phone as customer_phone,
         c.address as customer_address,
         r.business_name as reseller_name
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
+      LEFT JOIN users u ON c.user_id = u.id
       LEFT JOIN resellers r ON o.reseller_id = r.id
       WHERE o.id = ? AND o.return_status IS NOT NULL`,
       {
