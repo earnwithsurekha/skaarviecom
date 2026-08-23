@@ -6,9 +6,9 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
-// Create axios instance with auth interceptor
+// Create axios instance with auth interceptor using relative URLs (Next.js rewrites handle proxy)
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  baseURL: '', // Empty baseURL to use relative paths with Next.js rewrites
 });
 
 // Add auth token to requests
