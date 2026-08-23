@@ -17,10 +17,10 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP to allow image loading from backend
 }));
 
-// CORS - Allow frontend on port 3000
+// CORS - Allow all origins (temporary for development)
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: '*',
+  credentials: false // Must be false when origin is *
 }));
 
 // Rate limiting
