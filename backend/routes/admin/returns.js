@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { QueryTypes } = require('sequelize');
+const { authMiddleware, adminOnly } = require('../../middleware/auth');
 
 // @route   GET /api/admin/returns
 // @desc    Get all return requests (with optional filtering)
 // @access  Private (Admin only)
-router.get('/returns', async (req, res) => {
+router.get('/', authMiddleware, adminOnly, async (req, res) => {
   const sequelize = require('../../config/database');
 
   try {
@@ -107,7 +108,7 @@ router.get('/returns', async (req, res) => {
 // @route   GET /api/admin/returns/:id
 // @desc    Get single return request details
 // @access  Private (Admin only)
-router.get('/returns/:id', async (req, res) => {
+router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
   const sequelize = require('../../config/database');
 
   try {
@@ -183,7 +184,7 @@ router.get('/returns/:id', async (req, res) => {
 // @route   POST /api/admin/returns/:id/approve
 // @desc    Approve a return request
 // @access  Private (Admin only)
-router.post('/returns/:id/approve', async (req, res) => {
+router.post('/:id/approve', authMiddleware, adminOnly, async (req, res) => {
   const sequelize = require('../../config/database');
   const transaction = await sequelize.transaction();
 
@@ -420,7 +421,7 @@ router.post('/returns/:id/approve', async (req, res) => {
 // @route   POST /api/admin/returns/:id/reject
 // @desc    Reject a return request
 // @access  Private (Admin only)
-router.post('/returns/:id/reject', async (req, res) => {
+router.post('/:id/reject', authMiddleware, adminOnly, async (req, res) => {
   const sequelize = require('../../config/database');
   const transaction = await sequelize.transaction();
 
