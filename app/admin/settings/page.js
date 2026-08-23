@@ -34,8 +34,11 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/admin/settings', {
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       const data = await response.json();
       
@@ -64,10 +67,13 @@ export default function AdminSettingsPage() {
       setSaving(true);
       setMessage({ type: '', text: '' });
 
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/admin/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(settings)
       });
 
@@ -100,9 +106,12 @@ export default function AdminSettingsPage() {
           setSaving(true);
           setMessage({ type: '', text: '' });
 
+          const token = localStorage.getItem('token');
           const response = await fetch('/api/admin/settings/reset', {
             method: 'POST',
-            credentials: 'include'
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           });
 
           const data = await response.json();
