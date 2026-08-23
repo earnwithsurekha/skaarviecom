@@ -4,6 +4,21 @@ import { useState, useEffect } from 'react';
 import { Search, CheckCircle, XCircle, DollarSign, Trash2, Star } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import { toast } from 'react-hot-toast';
+import axios from 'axios';
+
+// Create axios instance with auth interceptor
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+});
+
+// Add auth token to requests
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
@@ -49,10 +64,8 @@ export default function AdminProductsPage() {
         ...(statusFilter && { status: statusFilter })
       });
 
-      const response = await fetch(`/api/admin/products?${params}`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const response = await apiClient.get(`/api/admin/products?${params}`);
+      const data = response.data;
 
       if (data.status === 'success') {
         setProducts(data.data.products);
@@ -60,6 +73,10 @@ export default function AdminProductsPage() {
       }
     } catch (error) {
       console.error('Fetch products error:', error);
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please login again.');
+        window.location.href = '/login';
+      }
     } finally {
       setLoading(false);
     }
@@ -94,14 +111,8 @@ export default function AdminProductsPage() {
         resellerMargin
       };
       
-      const response = await fetch(`/api/admin/products/${selectedProduct.id}/pricing`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(pricingData)
-      });
-
-      const data = await response.json();
+      const response = await apiClient.put(`/api/admin/products/${selectedProduct.id}/pricing`, pricingData);
+      const data = response.data;
 
       if (data.status === 'success') {
         setShowPricingModal(false);
@@ -133,12 +144,8 @@ export default function AdminProductsPage() {
       onConfirm: async () => {
         setConfirmModal({ ...confirmModal, isOpen: false });
         try {
-          const response = await fetch(`/api/admin/products/${productId}/approve`, {
-            method: 'PATCH',
-            credentials: 'include'
-          });
-
-          const data = await response.json();
+          const response = await apiClient.patch(`/api/admin/products/${productId}/approve`);
+          const data = response.data;
           if (data.status === 'success') {
             fetchProducts();
             toast.success(isReapproval ? 'Product reapproved successfully!' : 'Product approved successfully!');
@@ -168,14 +175,8 @@ export default function AdminProductsPage() {
         setConfirmModal({ ...confirmModal, isOpen: false });
         
         try {
-          const response = await fetch(`/api/admin/products/${productId}/reject`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ reason })
-          });
-
-          const data = await response.json();
+          const response = await apiClient.patch(`/api/admin/products/${productId}/reject`, { reason });
+          const data = response.data;
           if (data.status === 'success') {
             fetchProducts();
             toast.success('Product rejected successfully');
@@ -201,12 +202,8 @@ export default function AdminProductsPage() {
         setConfirmModal({ ...confirmModal, isOpen: false });
         
         try {
-          const response = await fetch(`/api/admin/products/${productId}/delete`, {
-            method: 'DELETE',
-            credentials: 'include'
-          });
-
-          const data = await response.json();
+          const response = await apiClient.delete(`/api/admin/products/${productId}/delete`);
+          const data = response.data;
           if (data.status === 'success') {
             fetchProducts();
             toast.success('Product deleted successfully');
@@ -225,14 +222,8 @@ export default function AdminProductsPage() {
     const newStatus = !currentStatus;
     
     try {
-      const response = await fetch(`/api/admin/products/${productId}/featured`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ isFeatured: newStatus })
-      });
-
-      const data = await response.json();
+      const response = await apiClient.patch(`/api/admin/products/${productId}/featured`, { isFeatured: newStatus });
+      const data = response.data;
       if (data.status === 'success') {
         fetchProducts();
         toast.success(`Product ${newStatus ? 'featured' : 'unfeatured'} successfully`);
