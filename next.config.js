@@ -35,65 +35,68 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
   },
   // Proxy /uploads requests to backend server
   async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     return [
       // Admin dashboard endpoints (direct to backend with auth header)
       {
         source: '/api/admin/dashboard/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/dashboard/:path*`,
+        destination: `${apiUrl}/api/admin/dashboard/:path*`,
       },
       // Admin list endpoints (direct to backend with auth header)
       {
         source: '/api/admin/products',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/products`,
+        destination: `${apiUrl}/api/admin/products`,
       },
       {
         source: '/api/admin/manufacturers/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/manufacturers/:path*`,
+        destination: `${apiUrl}/api/admin/manufacturers/:path*`,
       },
       {
         source: '/api/admin/resellers/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/resellers/:path*`,
+        destination: `${apiUrl}/api/admin/resellers/:path*`,
       },
       {
         source: '/api/admin/orders/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/orders/:path*`,
+        destination: `${apiUrl}/api/admin/orders/:path*`,
       },
       {
         source: '/api/admin/categories/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/categories/:path*`,
+        destination: `${apiUrl}/api/admin/categories/:path*`,
       },
       {
         source: '/api/admin/wallets/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/wallets/:path*`,
+        destination: `${apiUrl}/api/admin/wallets/:path*`,
       },
       {
         source: '/api/admin/withdrawals/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/withdrawals/:path*`,
+        destination: `${apiUrl}/api/admin/withdrawals/:path*`,
       },
       {
         source: '/api/admin/settlements/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/admin/settlements/:path*`,
+        destination: `${apiUrl}/api/admin/settlements/:path*`,
       },
       // Customer API routes (direct to backend with auth header)
       {
         source: '/api/customer/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/customer/:path*`,
+        destination: `${apiUrl}/api/customer/:path*`,
       },
       // Public API routes (direct to backend)
       {
         source: '/api/products/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/products/:path*`,
+        destination: `${apiUrl}/api/products/:path*`,
       },
       {
         source: '/api/categories/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/categories/:path*`,
+        destination: `${apiUrl}/api/categories/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/uploads/:path*`,
+        destination: `${apiUrl}/uploads/:path*`,
       },
     ];
   },
