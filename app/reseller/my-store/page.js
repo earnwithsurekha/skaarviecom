@@ -30,7 +30,10 @@ export default function MyStorePage() {
   const fetchStoreData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/reseller/my-store');
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/reseller/my-store', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
       const result = await response.json();
 
       if (result.status === 'success') {
@@ -64,9 +67,13 @@ export default function MyStorePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/reseller/my-store', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(formData)
       });
 
