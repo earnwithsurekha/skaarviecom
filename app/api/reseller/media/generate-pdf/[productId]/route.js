@@ -1,8 +1,7 @@
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function POST(request, { params }) {
-  const cookieStore = cookies();
-  const token = cookieStore.get('token');
+    const token = { value: getAuthToken(request) };
 
   if (!token) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });

@@ -5,7 +5,10 @@ export const fetchEarningsOverview = createAsyncThunk(
   'earnings/fetchOverview',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/earnings/overview');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch('/api/earnings/overview', {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch earnings overview');
@@ -31,7 +34,10 @@ export const fetchProductEarnings = createAsyncThunk(
         ...(search && { search }),
       });
 
-      const response = await fetch(`/api/earnings/products?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/earnings/products?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch product earnings');
@@ -54,7 +60,10 @@ export const fetchEarningsTimeline = createAsyncThunk(
         ...(endDate && { endDate: endDate.toISOString() }),
       });
 
-      const response = await fetch(`/api/earnings/timeline?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/earnings/timeline?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch earnings timeline');

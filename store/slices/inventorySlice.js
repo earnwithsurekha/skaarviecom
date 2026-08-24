@@ -6,7 +6,10 @@ export const fetchInventory = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams(params);
-      const response = await fetch(`/api/inventory?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/inventory?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -24,7 +27,10 @@ export const fetchProductStock = createAsyncThunk(
   'inventory/fetchProductStock',
   async (productId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/inventory/${productId}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/inventory/${productId}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -43,7 +49,10 @@ export const fetchStockHistory = createAsyncThunk(
   async ({ productId, params = {} }, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams(params);
-      const response = await fetch(`/api/inventory/${productId}/history?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/inventory/${productId}/history?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -61,9 +70,10 @@ export const increaseStock = createAsyncThunk(
   'inventory/increaseStock',
   async ({ productId, quantity, reason, notes }, { rejectWithValue }) => {
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const response = await fetch(`/api/inventory/${productId}/increase`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
         body: JSON.stringify({ quantity, reason, notes }),
       });
       const data = await response.json();
@@ -83,9 +93,10 @@ export const decreaseStock = createAsyncThunk(
   'inventory/decreaseStock',
   async ({ productId, quantity, reason, notes }, { rejectWithValue }) => {
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const response = await fetch(`/api/inventory/${productId}/decrease`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
         body: JSON.stringify({ quantity, reason, notes }),
       });
       const data = await response.json();
@@ -105,9 +116,10 @@ export const updateStock = createAsyncThunk(
   'inventory/updateStock',
   async ({ productId, newStock, reason, notes }, { rejectWithValue }) => {
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const response = await fetch(`/api/inventory/${productId}/update`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
         body: JSON.stringify({ newStock, reason, notes }),
       });
       const data = await response.json();
@@ -127,9 +139,10 @@ export const updateThreshold = createAsyncThunk(
   'inventory/updateThreshold',
   async ({ productId, threshold }, { rejectWithValue }) => {
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const response = await fetch(`/api/inventory/${productId}/threshold`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
         body: JSON.stringify({ threshold }),
       });
       const data = await response.json();

@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
 export async function GET(request) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(

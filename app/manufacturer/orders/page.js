@@ -37,8 +37,10 @@ export default function OrdersPage() {
         ...(filters.endDate && { endDate: filters.endDate })
       });
 
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/orders?${queryParams}`, {
         method: 'GET',
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
         credentials: 'include'
       });
 

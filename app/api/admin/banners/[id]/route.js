@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
 export async function GET(request, context) {
@@ -6,8 +6,7 @@ export async function GET(request, context) {
     const { params } = context;
     const id = params.id;
     
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(
@@ -40,8 +39,7 @@ export async function PUT(request, context) {
     const { params } = context;
     const id = params.id;
     
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(
@@ -77,8 +75,7 @@ export async function DELETE(request, context) {
     const { params } = context;
     const id = params.id;
     
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(

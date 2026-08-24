@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -8,8 +8,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 // @access  Private (Manufacturer)
 export async function GET(request) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(
@@ -52,8 +51,7 @@ export async function GET(request) {
 // @access  Private (Manufacturer)
 export async function POST(request) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(

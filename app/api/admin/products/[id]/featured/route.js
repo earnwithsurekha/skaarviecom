@@ -1,18 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function PATCH(request, context) {
   try {
-    // Debug: Check raw cookies from request
-    const cookieHeader = request.headers.get('cookie');
-    console.log('[Featured] Raw cookie header:', cookieHeader);
-    
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    console.log('[Featured] All cookies:', allCookies.map(c => `${c.name}=${c.value.substring(0, 20)}...`).join(', '));
-    
-    const token = cookieStore.get('token')?.value;
-    console.log('[Featured] Token value:', token ? `${token.substring(0, 20)}...` : 'UNDEFINED');
+    const token = getAuthToken(request);
     
     if (!token) {
       console.error('[Featured] No token in cookies');

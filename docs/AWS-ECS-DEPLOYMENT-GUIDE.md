@@ -215,11 +215,12 @@ AWS_REGION=ap-south-1
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 AWS_S3_BUCKET=skaarvi-uploads
-SMTP_HOST=email-smtp.ap-south-1.amazonaws.com
-SMTP_PORT=587
-SMTP_USER=AKIAUB26EX2DMIRWND5J
-SMTP_PASS=BPAm0q0PikK2jkNgllwbKnIblu6DRVH35pmpjkbJnmTJ
-SMTP_FROM=skaarvitelugudigitalacademy@gmail.com
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=skaarviresell@gmail.com
+EMAIL_PASSWORD=your-gmail-app-password-here
+EMAIL_FROM=Skaarvi Reseller <skaarviresell@gmail.com>
 NODE_ENV=production
 PORT=5000
 ```

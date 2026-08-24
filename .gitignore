@@ -16,6 +16,8 @@ skaarvi-reseller/out/
 # Database
 *.sqlite
 *.db
+db-dump.sql
+*-dump.sql
 
 # Logs
 *.log
