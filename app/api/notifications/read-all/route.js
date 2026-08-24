@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST(request) {
   try {
     const token = getAuthToken(request);
 

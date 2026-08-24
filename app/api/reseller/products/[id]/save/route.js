@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function POST(request, { params }) {
-    const token = { value: getAuthToken(request) };
+    const token = getAuthToken(request);
 
   if (!token) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -15,7 +15,7 @@ export async function POST(request, { params }) {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token.value}`,
+          'Authorization': `Bearer ${token}`,
         },
       }
     );
@@ -29,7 +29,7 @@ export async function POST(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-    const token = { value: getAuthToken(request) };
+    const token = getAuthToken(request);
 
   if (!token) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -43,7 +43,7 @@ export async function DELETE(request, { params }) {
       {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token.value}`,
+          'Authorization': `Bearer ${token}`,
         },
       }
     );
