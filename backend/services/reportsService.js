@@ -26,7 +26,7 @@ async function getSalesReport(manufacturerId, period, startDate, endDate) {
         dateFormat = '%Y-%m-%d';
     }
 
-    const [results] = await sequelize.query(`
+    const results = await sequelize.query(`
       SELECT 
         DATE_FORMAT(o.created_at, :dateFormat) as period,
         DATE(o.created_at) as date,
@@ -113,7 +113,7 @@ async function getProductReport(manufacturerId, type, limit = 10) {
           LEFT JOIN order_items oi ON p.id = oi.product_id
           LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid' AND o.order_status NOT IN ('cancelled', 'returned')
           WHERE p.manufacturer_id = :manufacturerId
-            AND p.approval_status = 'approved'
+            AND p.status = 'approved'
             AND p.is_active = 1
           GROUP BY p.id, p.name, p.sku, p.stock_quantity
           ORDER BY quantitySold ASC
@@ -136,7 +136,7 @@ async function getProductReport(manufacturerId, type, limit = 10) {
           LEFT JOIN order_items oi ON p.id = oi.product_id
           LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid'
           WHERE p.manufacturer_id = :manufacturerId
-            AND p.approval_status = 'approved'
+            AND p.status = 'approved'
           GROUP BY p.id, p.name, p.sku, p.stock_quantity
           ORDER BY savesCount DESC
           LIMIT :limit
@@ -157,7 +157,7 @@ async function getProductReport(manufacturerId, type, limit = 10) {
           LEFT JOIN order_items oi ON p.id = oi.product_id
           LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid'
           WHERE p.manufacturer_id = :manufacturerId
-            AND p.approval_status = 'approved'
+            AND p.status = 'approved'
           GROUP BY p.id, p.name, p.sku
           ORDER BY sharesCount DESC
           LIMIT :limit
@@ -168,7 +168,7 @@ async function getProductReport(manufacturerId, type, limit = 10) {
         throw new Error('Invalid report type');
     }
 
-    const [results] = await sequelize.query(query, {
+    const results = await sequelize.query(query, {
       replacements: { manufacturerId, limit: parseInt(limit) },
       type: sequelize.QueryTypes.SELECT,
     });
@@ -189,7 +189,7 @@ async function getProductReport(manufacturerId, type, limit = 10) {
 async function getResellerDemandReport(manufacturerId, limit = 10) {
   try {
     // Most saved products
-    const [mostSaved] = await sequelize.query(`
+    const mostSaved = await sequelize.query(`
       SELECT 
         p.id as productId,
         p.name as productName,
@@ -205,7 +205,7 @@ async function getResellerDemandReport(manufacturerId, limit = 10) {
       LEFT JOIN order_items oi ON p.id = oi.product_id
       LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid'
       WHERE p.manufacturer_id = :manufacturerId
-        AND p.approval_status = 'approved'
+        AND p.status = 'approved'
       GROUP BY p.id, p.name, p.sku
       HAVING savesCount > 0
       ORDER BY savesCount DESC
@@ -216,7 +216,7 @@ async function getResellerDemandReport(manufacturerId, limit = 10) {
     });
 
     // Most shared products
-    const [mostShared] = await sequelize.query(`
+    const mostShared = await sequelize.query(`
       SELECT 
         p.id as productId,
         p.name as productName,
@@ -228,7 +228,7 @@ async function getResellerDemandReport(manufacturerId, limit = 10) {
       LEFT JOIN order_items oi ON p.id = oi.product_id
       LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid'
       WHERE p.manufacturer_id = :manufacturerId
-        AND p.approval_status = 'approved'
+        AND p.status = 'approved'
       GROUP BY p.id, p.name, p.sku
       HAVING sharesCount > 0
       ORDER BY sharesCount DESC
@@ -239,7 +239,7 @@ async function getResellerDemandReport(manufacturerId, limit = 10) {
     });
 
     // Most clicked products
-    const [mostClicked] = await sequelize.query(`
+    const mostClicked = await sequelize.query(`
       SELECT 
         p.id as productId,
         p.name as productName,
@@ -255,7 +255,7 @@ async function getResellerDemandReport(manufacturerId, limit = 10) {
       LEFT JOIN order_items oi ON p.id = oi.product_id
       LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid'
       WHERE p.manufacturer_id = :manufacturerId
-        AND p.approval_status = 'approved'
+        AND p.status = 'approved'
       GROUP BY p.id, p.name, p.sku
       HAVING clicksCount > 0
       ORDER BY clicksCount DESC
@@ -266,7 +266,7 @@ async function getResellerDemandReport(manufacturerId, limit = 10) {
     });
 
     // Highest conversion products (saves to orders ratio)
-    const [highestConversion] = await sequelize.query(`
+    const highestConversion = await sequelize.query(`
       SELECT 
         p.id as productId,
         p.name as productName,
@@ -283,7 +283,7 @@ async function getResellerDemandReport(manufacturerId, limit = 10) {
       LEFT JOIN order_items oi ON p.id = oi.product_id
       LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid'
       WHERE p.manufacturer_id = :manufacturerId
-        AND p.approval_status = 'approved'
+        AND p.status = 'approved'
       GROUP BY p.id, p.name, p.sku
       HAVING savesCount > 0
       ORDER BY conversionRate DESC
@@ -340,7 +340,7 @@ async function getRevenueReport(manufacturerId, startDate, endDate, groupBy = 'd
     }
 
     // Get revenue breakdown by period
-    const [breakdown] = await sequelize.query(`
+    const breakdown = await sequelize.query(`
       SELECT 
         DATE_FORMAT(o.created_at, :dateFormat) as period,
         DATE(o.created_at) as date,
@@ -362,7 +362,7 @@ async function getRevenueReport(manufacturerId, startDate, endDate, groupBy = 'd
     });
 
     // Get totals
-    const [totals] = await sequelize.query(`
+    const totals = await sequelize.query(`
       SELECT 
         SUM(oi.item_total) as totalGrossRevenue,
         SUM(oi.platform_fee) as totalPlatformFees,
