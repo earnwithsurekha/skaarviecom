@@ -33,7 +33,10 @@ export default function MediaDownloadCenterPage() {
     setLoading(true);
     try {
       // Fetch products with media
-      const productsResponse = await fetch('/api/reseller/products?limit=100');
+      const token = localStorage.getItem('token');
+      const productsResponse = await fetch('/api/reseller/products?limit=100', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
       const productsData = await productsResponse.json();
       
       if (productsData.status === 'success') {
