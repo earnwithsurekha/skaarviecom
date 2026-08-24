@@ -129,7 +129,7 @@ async function getProductWiseEarnings(manufacturerId, filters = {}) {
       productName: 'p.name',
     };
 
-    const [products] = await sequelize.query(`
+    const products = await sequelize.query(`
       SELECT 
         p.id as productId,
         p.name as productName,
@@ -177,8 +177,8 @@ async function getProductWiseEarnings(manufacturerId, filters = {}) {
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: parseInt(countResult[0].total),
-        totalPages: Math.ceil(countResult[0].total / limit),
+        total: parseInt(countResult ? countResult.total : 0),
+        totalPages: Math.ceil((countResult ? countResult.total : 0) / limit),
       },
     };
   } catch (error) {
