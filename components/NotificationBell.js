@@ -18,7 +18,10 @@ export default function NotificationBell() {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch('/api/notifications/unread/count');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch('/api/notifications/unread/count', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       const data = await response.json();
       if (data.status === 'success') {
         setUnreadCount(data.data.unreadCount);
