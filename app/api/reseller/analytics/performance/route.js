@@ -1,9 +1,9 @@
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const token = { value: getAuthToken(request) };
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(
@@ -16,7 +16,7 @@ export async function GET() {
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reseller/analytics/performance`,
       {
         headers: {
-          'Authorization': `Bearer ${token.value}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       }

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request) {
   try {
-    const token = { value: getAuthToken(request) };
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(
@@ -20,7 +20,7 @@ export async function GET(request) {
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reseller/leaderboard?period=${period}`,
       {
         headers: {
-          'Authorization': `Bearer ${token.value}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       }

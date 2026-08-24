@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/getAuthToken';
 
-export async function GET() {
-    const token = { value: getAuthToken(request) };
+export async function GET(request) {
+    const token = getAuthToken(request);
 
   if (!token) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -12,7 +12,7 @@ export async function GET() {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/my-store`,
       {
         headers: {
-          'Authorization': `Bearer ${token.value}`,
+          'Authorization': `Bearer ${token}`,
         },
       }
     );
@@ -26,7 +26,7 @@ export async function GET() {
 }
 
 export async function PUT(request) {
-    const token = { value: getAuthToken(request) };
+    const token = getAuthToken(request);
 
   if (!token) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -40,7 +40,7 @@ export async function PUT(request) {
       {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token.value}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),

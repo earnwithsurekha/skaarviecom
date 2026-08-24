@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const token = { value: getAuthToken(request) };
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(
@@ -19,7 +19,7 @@ export async function POST(request) {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token.value}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       }
