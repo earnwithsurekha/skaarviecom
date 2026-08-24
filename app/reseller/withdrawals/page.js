@@ -45,9 +45,15 @@ export default function WithdrawalsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/');
+        return;
+      }
+      const authHeader = { 'Authorization': `Bearer ${token}` };
       const [balanceRes, profileRes] = await Promise.all([
-        fetch('/api/reseller/wallet/balance'),
-        fetch('/api/reseller/profile')
+        fetch('/api/reseller/wallet/balance', { headers: authHeader }),
+        fetch('/api/reseller/profile', { headers: authHeader })
       ]);
 
       const balanceData = await balanceRes.json();
@@ -70,13 +76,16 @@ export default function WithdrawalsPage() {
 
   const fetchWithdrawals = async () => {
     try {
+      const token = localStorage.getItem('token');
       const params = new URLSearchParams({
         page: pagination.page,
         limit: 20,
         ...(statusFilter !== 'all' && { status: statusFilter })
       });
 
-      const response = await fetch(`/api/reseller/withdrawals?${params}`);
+      const response = await fetch(`/api/reseller/withdrawals?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
 
       if (data.status === 'success') {
