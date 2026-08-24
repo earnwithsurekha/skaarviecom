@@ -82,7 +82,10 @@ export default function DashboardPage() {
 
   const fetchLowStockProducts = async () => {
     try {
-      const response = await fetch('/api/inventory?low_stock_only=true&limit=5');
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/inventory?low_stock_only=true&limit=5', {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       const data = await response.json();
       if (data.status === 'success') {
         setLowStockProducts(data.data.products || []);

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function GET(request) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(
@@ -34,8 +33,7 @@ export async function GET(request) {
 
 export async function PUT(request) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(

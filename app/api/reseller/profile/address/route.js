@@ -1,10 +1,9 @@
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
 export async function PUT(request) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('token');
+    const token = { value: getAuthToken(request) };
 
     if (!token) {
       return NextResponse.json(

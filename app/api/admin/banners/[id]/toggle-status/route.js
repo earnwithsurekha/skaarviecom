@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
 export async function PATCH(request, context) {
@@ -6,8 +6,7 @@ export async function PATCH(request, context) {
     const { params } = context;
     const id = params.id;
     
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = getAuthToken(request);
 
     if (!token) {
       return NextResponse.json(

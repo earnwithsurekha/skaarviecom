@@ -14,7 +14,10 @@ export const fetchSettlements = createAsyncThunk(
         ...(endDate && { endDate: endDate.toISOString() }),
       });
 
-      const response = await fetch(`/api/settlements?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/settlements?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch settlements');
@@ -31,7 +34,10 @@ export const fetchSettlementDetail = createAsyncThunk(
   'settlements/fetchDetail',
   async (settlementId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/settlements/${settlementId}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/settlements/${settlementId}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch settlement detail');
@@ -48,7 +54,10 @@ export const fetchPendingAmount = createAsyncThunk(
   'settlements/fetchPendingAmount',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/settlements/pending-amount');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch('/api/settlements/pending-amount', {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch pending amount');

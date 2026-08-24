@@ -28,7 +28,10 @@ export default function StockHistoryPage({ params }) {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`/api/inventory/${productId}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/inventory/${productId}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       const data = await response.json();
       if (data.status === 'success') {
         setProduct(data.data.product);
@@ -47,7 +50,10 @@ export default function StockHistoryPage({ params }) {
         ...filters,
       });
 
-      const response = await fetch(`/api/inventory/${productId}/history?${params}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/inventory/${productId}/history?${params}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       const data = await response.json();
 
       if (data.status === 'success') {

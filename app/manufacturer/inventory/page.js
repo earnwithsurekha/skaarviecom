@@ -37,8 +37,10 @@ export default function InventoryPage() {
         limit: pagination.limit,
         ...filters,
       });
-
-      const response = await fetch(`/api/inventory?${params}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/inventory?${params}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       const data = await response.json();
 
       if (data.status === 'success') {
@@ -65,9 +67,10 @@ export default function InventoryPage() {
         ? { threshold: parseInt(modalData.quantity) }
         : { quantity: parseInt(modalData.quantity), reason: modalData.reason, notes: modalData.notes };
 
+      const token = localStorage.getItem('token');
       const response = await fetch(endpoint, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
         body: JSON.stringify(body),
       });
 
