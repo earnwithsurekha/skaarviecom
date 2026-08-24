@@ -11,7 +11,10 @@ export const fetchSalesReport = createAsyncThunk(
         ...(endDate && { endDate: endDate.toISOString() }),
       });
 
-      const response = await fetch(`/api/reports/sales?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/reports/sales?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch sales report');
@@ -33,7 +36,10 @@ export const fetchProductReport = createAsyncThunk(
         limit: limit.toString(),
       });
 
-      const response = await fetch(`/api/reports/products?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/reports/products?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch product report');
@@ -54,7 +60,10 @@ export const fetchResellerDemandReport = createAsyncThunk(
         limit: limit.toString(),
       });
 
-      const response = await fetch(`/api/reports/reseller-demand?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/reports/reseller-demand?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch reseller demand report');
@@ -77,7 +86,10 @@ export const fetchRevenueReport = createAsyncThunk(
         ...(endDate && { endDate: endDate.toISOString() }),
       });
 
-      const response = await fetch(`/api/reports/revenue?${queryParams}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`/api/reports/revenue?${queryParams}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to fetch revenue report');

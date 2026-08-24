@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Eye, Package } from 'lucide-react';
-import api from '@/lib/api';
 import ConfirmModal from '@/components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 
@@ -40,9 +39,19 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/api/products', { params: filters });
-      setProducts(response.data.data.products);
-      setPagination(response.data.data.pagination);
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({
+        status: filters.status,
+        search: filters.search,
+        page: filters.page,
+        limit: filters.limit,
+      });
+      const response = await fetch(`/api/products?${params}`, {
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+      });
+      const data = await response.json();
+      setProducts(data.data.products);
+      setPagination(data.data.pagination);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {
@@ -59,9 +68,13 @@ export default function ProductsPage() {
       onConfirm: async () => {
         setConfirmModal({ ...confirmModal, isOpen: false });
         try {
-          await api.delete(`/api/products/${id}`);
+          const token = localStorage.getItem('token');
+          await fetch(`/api/products/${id}`, {
+            method: 'DELETE',
+            headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+          });
           toast.success('Product deleted successfully');
-          fetchProducts(); // Refresh list
+          fetchProducts();
         } catch (error) {
           console.error('Failed to delete product:', error);
           toast.error('Failed to delete product');
