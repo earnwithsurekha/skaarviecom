@@ -139,10 +139,18 @@ export default function CustomerLayout({ children }) {
     }
   }, [isAuthenticated, user, loading, mounted, router, pathname, hasCustomerAccess, checkingAccess, accessCheckError]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+
     dispatch(logout());
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     toast.success('Logged out successfully');
-    router.push('/');
+    window.location.replace('/');
   };
 
   const navigationItems = [

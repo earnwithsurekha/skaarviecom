@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
-import { ShoppingCart, Mail, ArrowRight, Loader2, AlertCircle, ArrowLeft, UserPlus, Lock, Phone, Key } from 'lucide-react';
+import { ShoppingCart, Mail, ArrowRight, Loader2, AlertCircle, ArrowLeft, UserPlus, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { setCredentials } from '@/store/slices/authSlice';
 
@@ -11,16 +11,10 @@ function CustomerLoginForm() {
   const router = useRouter();
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState('password'); // 'password' or 'otp'
   
   // Password login state
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  
-  // OTP login state
-  const [mobile, setMobile] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,11 +22,6 @@ function CustomerLoginForm() {
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
-
-  const validateMobile = (mobile) => {
-    const mobileRegex = /^[0-9]{10}$/;
-    return mobileRegex.test(mobile);
   };
 
   // Password login handler
@@ -124,115 +113,6 @@ function CustomerLoginForm() {
     }
   };
 
-  // OTP send handler
-  const handleSendOTP = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!validateMobile(mobile)) {
-      setError('Please enter a valid 10-digit mobile number');
-      return;
-    }
-
-    setLoading(true);
-    console.log('[Customer OTP Login] Sending OTP to:', mobile);
-    
-    try {
-      const response = await fetch(`/api/auth/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          mobile,
-          userType: 'customer',
-          purpose: 'login'
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        if (data.code === 'USER_NOT_FOUND') {
-          toast.error('Mobile number not registered. Please register first.');
-          setTimeout(() => {
-            router.push('/register/customer');
-          }, 2000);
-          return;
-        }
-        throw new Error(data.message || 'Failed to send OTP');
-      }
-
-      toast.success('OTP sent successfully!');
-      setOtpSent(true);
-    } catch (err) {
-      console.error('[Customer OTP Login] Send OTP error:', err);
-      const errorMessage = err.message || 'Failed to send OTP';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // OTP verify handler
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!otp || otp.length !== 6) {
-      setError('Please enter the 6-digit OTP');
-      return;
-    }
-
-    setLoading(true);
-    console.log('[Customer OTP Login] Verifying OTP');
-    
-    try {
-      const response = await fetch(`/api/auth/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          mobile,
-          otp,
-          userType: 'customer'
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'OTP verification failed');
-      }
-
-      const { user, token, refreshToken } = data.data;
-
-      // Store tokens
-      localStorage.setItem('token', token);
-      localStorage.setItem('refreshToken', refreshToken);
-
-      // Update Redux store
-      dispatch(setCredentials({ user, token, refreshToken }));
-
-      toast.success('Login successful!');
-      
-      // Always redirect to customer portal when logging in from customer login page
-      const redirectUrl = searchParams.get('redirect');
-      if (redirectUrl) {
-        console.log('[Customer OTP Login] Redirecting to:', redirectUrl);
-        router.push(redirectUrl);
-      } else {
-        console.log('[Customer OTP Login] Redirecting to /customer dashboard');
-        router.push('/customer'); // Always go to customer dashboard
-      }
-    } catch (err) {
-      console.error('[Customer OTP Login] Verify error:', err);
-      const errorMessage = err.message || 'Verification failed';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
       {/* Background Pattern */}
@@ -264,39 +144,6 @@ function CustomerLoginForm() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-            <button
-              onClick={() => {
-                setActiveTab('password');
-                setError('');
-              }}
-              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
-                activeTab === 'password'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Lock className="w-4 h-4 inline-block mr-2" />
-              Password
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('otp');
-                setError('');
-                setOtpSent(false);
-              }}
-              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
-                activeTab === 'otp'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Key className="w-4 h-4 inline-block mr-2" />
-              OTP
-            </button>
-          </div>
-
           {/* Error Message */}
           {error && (
             <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -306,8 +153,7 @@ function CustomerLoginForm() {
           )}
 
           {/* Password Login Form */}
-          {activeTab === 'password' && (
-            <form onSubmit={handlePasswordLogin} className="space-y-4">
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
               {/* Email/Mobile Input */}
               <div className="space-y-2">
                 <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
@@ -366,88 +212,7 @@ function CustomerLoginForm() {
                   </>
                 )}
               </button>
-            </form>
-          )}
-
-          {/* OTP Login Form */}
-          {activeTab === 'otp' && (
-            <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP} className="space-y-4">
-              {/* Mobile Input */}
-              <div className="space-y-2">
-                <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">
-                  Mobile Number
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    id="mobile"
-                    type="tel"
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    placeholder="9876543210"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
-                    disabled={loading || otpSent}
-                    required
-                    maxLength="10"
-                  />
-                </div>
-              </div>
-
-              {/* OTP Input (shown after OTP is sent) */}
-              {otpSent && (
-                <div className="space-y-2">
-                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
-                    Enter OTP
-                  </label>
-                  <div className="relative">
-                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      id="otp"
-                      type="text"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      placeholder="Enter 6-digit OTP"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
-                      disabled={loading}
-                      required
-                      maxLength="6"
-                      autoFocus
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOtpSent(false);
-                      setOtp('');
-                      setError('');
-                    }}
-                    className="text-sm text-blue-600 hover:text-blue-700"
-                  >
-                    Change mobile number
-                  </button>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-800 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    {otpSent ? 'Verifying...' : 'Sending OTP...'}
-                  </>
-                ) : (
-                  <>
-                    {otpSent ? 'Verify OTP' : 'Send OTP'}
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-            </form>
-          )}
+          </form>
 
           {/* Reseller CTA */}
           <div className="pt-4 border-t border-gray-200">
