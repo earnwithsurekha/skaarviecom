@@ -9,7 +9,6 @@ const { uploadToS3, uploadLocally, validateImageQuality } = require('../middlewa
 const { User, Manufacturer, OTP } = require('../models/user');
 const { generateToken, generateRefreshToken } = require('../utils/jwt');
 const { sendOTPEmail, sendWelcomeEmail } = require('../utils/email');
-const smsService = require('../utils/sms');
 
 // ========================================
 // OTP BYPASSED - Direct login endpoint
@@ -896,7 +895,7 @@ router.post('/register/customer', async (req, res) => {
 // ========================================
 
 // @route   POST /api/auth/send-otp
-// @desc    Send OTP to email or mobile for login
+// @desc    Send OTP to email for login
 // @access  Public
 router.post('/send-otp', async (req, res) => {
   console.log('=== Send OTP Request Started ===');
@@ -907,24 +906,31 @@ router.post('/send-otp', async (req, res) => {
   try {
     const { email, mobile, userType, purpose = 'login' } = req.body;
 
-    // Validate input - must provide either email or mobile
-    if (!email && !mobile) {
+    if (mobile) {
       return res.status(400).json({
         status: 'error',
-        message: 'Email or mobile is required',
+        message: 'Mobile OTP login is not supported',
+        code: 'MOBILE_OTP_DISABLED',
       });
     }
 
-    const identifier = email || mobile;
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email is required',
+      });
+    }
+
+    const identifier = email;
     console.log('Identifier:', identifier);
     console.log('User Type:', userType);
     console.log('Purpose:', purpose);
 
-    // Find user by email or mobile
+    // Find user by email
     const [user] = await sequelize.query(
-      'SELECT id, email, mobile, role, status FROM users WHERE email = ? OR mobile = ?',
+      'SELECT id, email, mobile, role, status FROM users WHERE email = ?',
       {
-        replacements: [identifier, identifier],
+        replacements: [identifier],
         type: QueryTypes.SELECT
       }
     );
@@ -932,7 +938,7 @@ router.post('/send-otp', async (req, res) => {
     if (!user) {
       return res.status(404).json({
         status: 'error',
-        message: 'Email/mobile not registered. Please register first.',
+        message: 'Email not registered. Please register first.',
         code: 'USER_NOT_FOUND',
       });
     }
@@ -978,63 +984,12 @@ router.post('/send-otp', async (req, res) => {
       attempts: 0,
     });
 
-    // Send OTP via email or SMS
-    if (email) {
-      // Send via email
-      await sendOTPEmail(email, otpCode);
-      console.log('✅ OTP sent to email:', email);
-    } else if (mobile) {
-      // Send via SMS using MSG91
-      console.log('📱 Sending OTP to mobile:', mobile, '- Code:', otpCode);
-      
-      try {
-        const smsResult = await smsService.sendOTP(mobile, otpCode);
-        
-        if (smsResult.success) {
-          console.log('✅ OTP sent via SMS successfully');
-        } else {
-          console.error('❌ SMS sending failed:', smsResult.message);
-          
-          // In development, still return success with OTP for testing
-          if (process.env.NODE_ENV === 'development') {
-            return res.status(200).json({
-              status: 'success',
-              message: 'OTP generated (SMS failed, check console)',
-              data: { otp: otpCode }, // Only in development!
-              smsError: smsResult.message
-            });
-          }
-          
-          return res.status(500).json({
-            status: 'error',
-            message: 'Failed to send OTP via SMS',
-            error: smsResult.message
-          });
-        }
-      } catch (smsError) {
-        console.error('❌ SMS service error:', smsError);
-        
-        // In development, return OTP even if SMS fails
-        if (process.env.NODE_ENV === 'development') {
-          return res.status(200).json({
-            status: 'success',
-            message: 'OTP generated (SMS error, check console)',
-            data: { otp: otpCode },
-            smsError: smsError.message
-          });
-        }
-        
-        return res.status(500).json({
-          status: 'error',
-          message: 'SMS service unavailable',
-          error: smsError.message
-        });
-      }
-    }
+    await sendOTPEmail(email, otpCode);
+    console.log('✅ OTP sent to email:', email);
 
     res.status(200).json({
       status: 'success',
-      message: email ? 'OTP sent to your email' : 'OTP sent to your mobile',
+      message: 'OTP sent to your email',
     });
 
   } catch (error) {
@@ -1067,14 +1022,22 @@ router.post('/verify-otp', async (req, res) => {
       });
     }
 
-    if (!email && !mobile) {
+    if (mobile) {
       return res.status(400).json({
         status: 'error',
-        message: 'Email or mobile is required',
+        message: 'Mobile OTP login is not supported',
+        code: 'MOBILE_OTP_DISABLED',
       });
     }
 
-    const identifier = email || mobile;
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email is required',
+      });
+    }
+
+    const identifier = email;
     console.log('Identifier:', identifier);
     console.log('OTP:', otp);
 
@@ -1116,9 +1079,9 @@ router.post('/verify-otp', async (req, res) => {
 
     // Find user
     const [user] = await sequelize.query(
-      'SELECT id, email, mobile, full_name, role, status FROM users WHERE email = ? OR mobile = ?',
+      'SELECT id, email, mobile, full_name, role, status FROM users WHERE email = ?',
       {
-        replacements: [identifier, identifier],
+        replacements: [identifier],
         type: QueryTypes.SELECT
       }
     );

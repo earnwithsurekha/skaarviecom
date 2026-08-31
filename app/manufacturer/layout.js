@@ -62,7 +62,7 @@ export default function ManufacturerLayout({ children }) {
     // Reset theme to light for public pages
     localStorage.removeItem('manufacturerTheme');
     
-    router.push('/');
+    window.location.replace('/');
   };
 
   const navigation = [

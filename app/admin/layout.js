@@ -55,7 +55,7 @@ export default function AdminLayout({ children }) {
     // Reset theme to light for public pages
     localStorage.removeItem('adminTheme');
     
-    router.push('/');
+    window.location.replace('/');
   };
 
   const handleNavigation = (href) => {

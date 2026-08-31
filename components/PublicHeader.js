@@ -36,13 +36,12 @@ export default function PublicHeader() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [userType, setUserType] = useState('customer'); // customer, reseller, manufacturer
-  const [authMode, setAuthMode] = useState('email-password'); // email-password, email-otp, mobile-otp
+  const [authMode, setAuthMode] = useState('email-password'); // email-password, email-otp
   const [loading, setLoading] = useState(false);
 
   // Auth form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
@@ -71,6 +70,7 @@ export default function PublicHeader() {
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
       description: 'Shop products and track orders',
       supportsOtp: true,
+      registrationPath: '/register/customer',
     },
     reseller: {
       icon: Store,
@@ -80,6 +80,7 @@ export default function PublicHeader() {
       description: 'Sell products and earn commissions',
       supportsOtp: true,
       isResellerFlow: true,
+      registrationPath: '/register/reseller',
     },
     manufacturer: {
       icon: Building2,
@@ -88,6 +89,7 @@ export default function PublicHeader() {
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
       description: 'Manage products and inventory',
       supportsOtp: true,
+      registrationPath: '/manufacturer/register',
     },
   };
 
@@ -166,15 +168,10 @@ export default function PublicHeader() {
     setLoading(true);
 
     try {
-      // Determine if sending email OTP or mobile OTP
-      const requestBody = authMode === 'email-otp'
-        ? { email, userType, purpose: 'login' }
-        : { mobile, userType, purpose: 'login' };
-      
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ email, userType, purpose: 'login' }),
       });
 
       const data = await response.json();
@@ -198,15 +195,10 @@ export default function PublicHeader() {
     setLoading(true);
 
     try {
-      // Determine if verifying email OTP or mobile OTP
-      const requestBody = authMode === 'email-otp'
-        ? { email, otp, userType }
-        : { mobile, otp, userType };
-      
       const response = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ email, otp, userType }),
       });
 
       const data = await response.json();
@@ -284,26 +276,19 @@ export default function PublicHeader() {
     resetModalState();
   };
 
-  const handleLogout = () => {
-    const userRole = user?.role;
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+
     dispatch(logout());
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     toast.success('Logged out successfully');
-    
-    // Redirect to role-specific login page
-    if (userRole === 'manufacturer') {
-      router.push('/login/manufacturer');
-    } else if (userRole === 'customer') {
-      router.push('/login/customer');
-    } else if (userRole === 'reseller') {
-      router.push('/login');
-    } else if (userRole === 'admin') {
-      router.push('/login/admin');
-    } else {
-      router.push('/');
-    }
     setShowDropdown(false);
+    window.location.replace('/');
   };
 
   const getDashboardLink = () => {
@@ -653,22 +638,6 @@ export default function PublicHeader() {
                     <span className="text-[10px]">Email</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode('mobile-otp');
-                      setOtpSent(false);
-                    }}
-                    className={`flex-1 py-2.5 px-2 rounded-md font-medium text-xs transition-all flex flex-col items-center gap-0.5 ${
-                      authMode === 'mobile-otp'
-                        ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                    }`}
-                    title="Get OTP on your mobile"
-                  >
-                    <User className="w-4 h-4" />
-                    <span className="text-[10px]">Mobile</span>
-                  </button>
                 </div>
               </div>
 
@@ -784,82 +753,12 @@ export default function PublicHeader() {
                 </form>
               )}
 
-              {/* Mobile OTP Login Form */}
-              {authMode === 'mobile-otp' && (
-                <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP} className="space-y-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Mobile Number
-                    </label>
-                    <input
-                      type="tel"
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      placeholder="Enter 10-digit mobile number"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
-                      maxLength="10"
-                      disabled={otpSent}
-                      required
-                    />
-                  </div>
-                  {otpSent && (
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Enter OTP
-                      </label>
-                      <input
-                        type="text"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="Enter 6-digit OTP"
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
-                        maxLength="6"
-                        autoFocus
-                        required
-                      />
-                    </div>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                        {otpSent ? 'Verifying...' : 'Sending OTP...'}
-                      </>
-                    ) : (
-                      <>
-                        <User className="h-4 w-4 sm:h-5 sm:w-5" />
-                        {otpSent ? 'Verify OTP' : 'Send OTP to Mobile'}
-                      </>
-                    )}
-                  </button>
-                  {otpSent && (
-                    <button
-                      type="button"
-                      onClick={() => setOtpSent(false)}
-                      className="w-full text-xs sm:text-sm text-purple-600 dark:text-purple-400 hover:underline"
-                    >
-                      Change mobile number
-                    </button>
-                  )}
-                </form>
-              )}
-
               {/* Sign Up Link */}
               <div className="mt-4 sm:mt-6 text-center">
                 <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   Don't have an account?{' '}
                   <Link
-                    href={
-                      userType === 'customer' || userType === 'reseller'
-                        ? '/register/customer'
-                        : userType === 'manufacturer'
-                        ? '/manufacturer/register'
-                        : '#'
-                    }
+                    href={userTypeConfig[userType]?.registrationPath || '#'}
                     onClick={() => setShowLoginModal(false)}
                     className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
                   >

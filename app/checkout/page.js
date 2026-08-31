@@ -31,16 +31,24 @@ export default function CheckoutPage() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('password'); // 'password' or 'otp'
+  const [authMode, setAuthMode] = useState('email-password');
   const [loading, setLoading] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
   
   // Auth form states
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+
+  let emailOtpSubmitLabel = 'Send OTP to Email';
+  if (loading && otpSent) {
+    emailOtpSubmitLabel = 'Verifying...';
+  } else if (loading) {
+    emailOtpSubmitLabel = 'Sending OTP...';
+  } else if (otpSent) {
+    emailOtpSubmitLabel = 'Verify OTP';
+  }
   
   // Shipping form state
   const [shippingInfo, setShippingInfo] = useState({
@@ -99,7 +107,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier,
+          identifier: email,
           password,
           userType: 'customer',
         }),
@@ -148,7 +156,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleSendOTP = async (e) => {
+  const handleSendEmailOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -157,7 +165,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mobile,
+          email,
           userType: 'customer',
           purpose: 'login',
         }),
@@ -166,20 +174,21 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('OTP sent successfully!');
+        toast.success('OTP sent to your email!');
+        setOtp('');
         setOtpSent(true);
       } else {
         toast.error(data.message || 'Failed to send OTP');
       }
     } catch (error) {
-      console.error('Send OTP error:', error);
+      console.error('Send email OTP error:', error);
       toast.error('Failed to send OTP');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOTP = async (e) => {
+  const handleVerifyEmailOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -188,7 +197,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mobile,
+          email,
           otp,
           userType: 'customer',
         }),
@@ -198,27 +207,24 @@ export default function CheckoutPage() {
 
       if (response.ok) {
         const { user, token, refreshToken } = data.data;
-        
-        console.log('[Checkout OTP Login] User data received:', { 
-          name: user.name, 
+
+        console.log('[Checkout Email OTP Login] User data received:', {
+          name: user.name,
           fullName: user.fullName,
           email: user.email,
           mobile: user.mobile
         });
-        
+
         localStorage.setItem('token', token);
         localStorage.setItem('refreshToken', refreshToken);
-        
+
         const { setCredentials } = await import('@/store/slices/authSlice');
         dispatch(setCredentials({ user, token, refreshToken }));
-        
+
         toast.success('Login successful!');
         setShowAuthModal(false);
-        
-        // Pre-fill shipping info with all available name fields
+
         const userName = user.name || user.fullName || user.full_name || user.email?.split('@')[0] || '';
-        console.log('[Checkout OTP Login] Using name:', userName);
-        
         setShippingInfo(prev => ({
           ...prev,
           fullName: userName || prev.fullName,
@@ -229,7 +235,7 @@ export default function CheckoutPage() {
         toast.error(data.message || 'Verification failed');
       }
     } catch (error) {
-      console.error('Verify OTP error:', error);
+      console.error('Verify email OTP error:', error);
       toast.error('Verification failed');
     } finally {
       setLoading(false);
@@ -649,43 +655,50 @@ export default function CheckoutPage() {
               Login to complete your purchase
             </p>
 
-            {/* Auth Tabs */}
-            <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            {/* Auth Method Tabs */}
+            <div className="grid grid-cols-2 gap-1 p-1 mb-4 sm:mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg">
               <button
-                onClick={() => setAuthMode('password')}
-                className={`flex-1 py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                  authMode === 'password'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400'
+                type="button"
+                onClick={() => {
+                  setAuthMode('email-password');
+                  setOtpSent(false);
+                  setOtp('');
+                }}
+                className={`flex items-center justify-center gap-2 min-h-11 px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                  authMode === 'email-password'
+                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                <Lock className="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-1 sm:mr-2" />
-                Password
+                <Lock className="h-4 w-4 flex-shrink-0" />
+                <span>Email &amp; Password</span>
               </button>
               <button
+                type="button"
                 onClick={() => {
-                  setAuthMode('otp');
+                  setAuthMode('email-otp');
                   setOtpSent(false);
+                  setOtp('');
                 }}
-                className={`flex-1 py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                  authMode === 'otp'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400'
+                className={`flex items-center justify-center gap-2 min-h-11 px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                  authMode === 'email-otp'
+                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                <Key className="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-1 sm:mr-2" />
-                OTP
+                <Key className="h-4 w-4 flex-shrink-0" />
+                <span>Email OTP</span>
               </button>
             </div>
 
-            {/* Password Login Form */}
-            {authMode === 'password' && (
+            {/* Email and Password Login Form */}
+            {authMode === 'email-password' && (
               <form onSubmit={handlePasswordLogin} className="space-y-3 sm:space-y-4">
                 <input
-                  type="text"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="Email or Mobile"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email Address"
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
                   required
                 />
@@ -707,22 +720,25 @@ export default function CheckoutPage() {
               </form>
             )}
 
-            {/* OTP Login Form */}
-            {authMode === 'otp' && (
-              <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP} className="space-y-3 sm:space-y-4">
+            {/* Email OTP Login Form */}
+            {authMode === 'email-otp' && (
+              <form
+                onSubmit={otpSent ? handleVerifyEmailOTP : handleSendEmailOTP}
+                className="space-y-3 sm:space-y-4"
+              >
                 <input
-                  type="tel"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  placeholder="Mobile Number"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email Address"
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
-                  maxLength="10"
                   disabled={otpSent}
                   required
                 />
                 {otpSent && (
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="Enter 6-digit OTP"
@@ -735,10 +751,22 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-colors disabled:opacity-50"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Processing...' : otpSent ? 'Verify OTP' : 'Send OTP'}
+                  {emailOtpSubmitLabel}
                 </button>
+                {otpSent && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOtpSent(false);
+                      setOtp('');
+                    }}
+                    className="w-full text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Change email address
+                  </button>
+                )}
               </form>
             )}
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { logout as logoutAction } from '@/store/slices/authSlice';
 import toast from 'react-hot-toast';
@@ -14,7 +14,6 @@ const WARNING_TIME = 30 * 1000; // 30 seconds before timeout
 const CHECK_INTERVAL = 1000; // Check every second
 
 export const SessionProvider = ({ children }) => {
-  const router = useRouter();
   const pathname = usePathname();
   const dispatch = useDispatch();
   const [showWarning, setShowWarning] = useState(false);
@@ -65,7 +64,13 @@ export const SessionProvider = ({ children }) => {
   }, [isAuthenticated, isPublicPage]);
 
   // Handle logout
-  const handleLogout = useCallback((message) => {
+  const handleLogout = useCallback(async (message) => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+
     // Clear Redux state
     dispatch(logoutAction());
     
@@ -85,8 +90,8 @@ export const SessionProvider = ({ children }) => {
     
     // Show message and redirect to home page
     toast.error(message || 'Session expired. Please login again.');
-    router.push('/');
-  }, [router, dispatch]);
+    window.location.replace('/');
+  }, [dispatch]);
 
   // Continue session (reset timers)
   const continueSession = useCallback(() => {

@@ -99,7 +99,7 @@ export default function ResellerLayout({ children }) {
     // Reset theme to light for public pages
     localStorage.removeItem('resellerTheme');
     
-    router.push('/');
+    window.location.replace('/');
   };
 
   const navigation = [
