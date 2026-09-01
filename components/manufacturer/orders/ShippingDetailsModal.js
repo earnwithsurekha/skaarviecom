@@ -35,9 +35,13 @@ export default function ShippingDetailsModal({ orderId, onClose, onSuccess }) {
 
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/orders/${orderId}/ship`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
         credentials: 'include',
         body: JSON.stringify(formData)
       });

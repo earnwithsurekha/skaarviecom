@@ -15,13 +15,14 @@ export async function GET(request) {
     const startDate = searchParams.get('startDate') || '';
     const endDate = searchParams.get('endDate') || '';
 
-    // Get token from cookies
-    const token = request.cookies.get('token')?.value;
+    const cookieToken = request.cookies.get('token')?.value;
+    const authorization = request.headers.get('authorization') ||
+      (cookieToken ? `Bearer ${cookieToken}` : null);
     
-    if (!token) {
+    if (!authorization) {
       return NextResponse.json(
         { status: 'error', message: 'Unauthorized' },
-        { status: 401 }
+        { status: 401, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -38,14 +39,18 @@ export async function GET(request) {
     const response = await fetch(`${BACKEND_URL}/api/orders?${queryParams}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': authorization,
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
     });
 
     const data = await response.json();
 
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, {
+      status: response.status,
+      headers: { 'Cache-Control': 'no-store' }
+    });
   } catch (error) {
     console.error('Orders API error:', error);
     return NextResponse.json(
