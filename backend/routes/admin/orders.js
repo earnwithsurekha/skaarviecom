@@ -3,6 +3,14 @@ const router = express.Router();
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 const { sequelize } = require('../../models');
 const { QueryTypes } = require('sequelize');
+const { sendOrderLifecycleEmail } = require('../../services/orderEmailService');
+
+const ORDER_STATUS_EMAIL_EVENTS = {
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+};
 
 // @route   GET /api/admin/orders
 // @desc    Get all orders with admin capabilities
@@ -269,6 +277,20 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
       type: QueryTypes.INSERT
     });
 
+    const emailEvent = ORDER_STATUS_EMAIL_EVENTS[status];
+    if (emailEvent) {
+      await sendOrderLifecycleEmail({
+        sequelize,
+        orderId: id,
+        event: emailEvent,
+        details: {
+          reason: remarks,
+          trackingNumber: trackingInfo?.trackingNumber,
+          courierPartner: trackingInfo?.courier,
+        },
+      });
+    }
+
     res.json({
       status: 'success',
       message: 'Order status updated successfully',
@@ -291,7 +313,7 @@ router.put('/:id/cancel', authMiddleware, adminOnly, async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
 
-    await sequelize.query(`
+    const [affectedRows] = await sequelize.query(`
       UPDATE orders 
       SET order_status = 'cancelled',
           cancelled_reason = :reason,
@@ -303,6 +325,13 @@ router.put('/:id/cancel', authMiddleware, adminOnly, async (req, res) => {
       type: QueryTypes.UPDATE
     });
 
+    if (affectedRows === 0) {
+      return res.status(409).json({
+        status: 'error',
+        message: 'Order was not found or cannot be cancelled in its current status',
+      });
+    }
+
     // Log status change
     await sequelize.query(`
       INSERT INTO order_status_history (order_id, status, remarks, changed_by, changed_at)
@@ -310,6 +339,13 @@ router.put('/:id/cancel', authMiddleware, adminOnly, async (req, res) => {
     `, {
       replacements: { id, reason, adminId: req.user.id },
       type: QueryTypes.INSERT
+    });
+
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId: id,
+      event: 'cancelled',
+      details: { reason },
     });
 
     res.json({

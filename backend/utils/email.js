@@ -1,5 +1,19 @@
 const nodemailer = require('nodemailer');
 
+const DEFAULT_FROM_ADDRESS = 'Skaarvi Reseller <noreply@skaarvi.com>';
+
+const getFromAddress = () => process.env.EMAIL_FROM || DEFAULT_FROM_ADDRESS;
+
+const getSenderEmail = () => {
+  const fromAddress = getFromAddress();
+  const angleBracketMatch = fromAddress.match(/<([^<>]+)>/);
+  const email = (angleBracketMatch?.[1] || fromAddress).trim();
+
+  return email.includes('@')
+    ? email
+    : (process.env.EMAIL_USER || 'noreply@skaarvi.com');
+};
+
 // Create transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
@@ -10,7 +24,28 @@ const createTransporter = () => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
+    connectionTimeout: Number.parseInt(process.env.EMAIL_CONNECTION_TIMEOUT_MS || '10000', 10),
+    greetingTimeout: Number.parseInt(process.env.EMAIL_GREETING_TIMEOUT_MS || '10000', 10),
+    socketTimeout: Number.parseInt(process.env.EMAIL_SOCKET_TIMEOUT_MS || '20000', 10),
   });
+};
+
+const sendEmail = async ({ to, subject, html, text }) => {
+  if (!to) {
+    throw new Error('Recipient email is required');
+  }
+
+  const transporter = createTransporter();
+  const info = await transporter.sendMail({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+    text,
+  });
+
+  console.log('[Email] Message sent:', info.messageId);
+  return { success: true, messageId: info.messageId };
 };
 
 // Send OTP email
@@ -18,7 +53,7 @@ const sendOTPEmail = async (email, otp) => {
   const transporter = createTransporter();
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'Skaarvi Reseller <noreply@skaarvi.com>',
+    from: getFromAddress(),
     to: email,
     subject: 'Your OTP for Skaarvi Reseller Login',
     html: `
@@ -119,7 +154,7 @@ const sendWelcomeEmail = async (email, name) => {
   const transporter = createTransporter();
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'Skaarvi Reseller <noreply@skaarvi.com>',
+    from: getFromAddress(),
     to: email,
     subject: 'Welcome to Skaarvi Reseller Marketplace!',
     html: `
@@ -187,6 +222,9 @@ const sendWelcomeEmail = async (email, name) => {
 };
 
 module.exports = {
+  getFromAddress,
+  getSenderEmail,
+  sendEmail,
   sendOTPEmail,
   sendWelcomeEmail,
 };

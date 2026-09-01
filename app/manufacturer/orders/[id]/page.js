@@ -42,8 +42,11 @@ export default function OrderDetailPage() {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/orders/${params.id}`, {
         method: 'GET',
+        headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
+        cache: 'no-store',
         credentials: 'include'
       });
 
@@ -72,8 +75,10 @@ export default function OrderDetailPage() {
         setConfirmModal({ ...confirmModal, isOpen: false });
         try {
           setActionLoading(true);
+          const token = localStorage.getItem('token');
           const response = await fetch(`/api/orders/${params.id}/accept`, {
             method: 'POST',
+            headers: { ...(token && { 'Authorization': `Bearer ${token}` }) },
             credentials: 'include'
           });
 
@@ -98,9 +103,13 @@ export default function OrderDetailPage() {
   const handleUpdateToProcessing = async () => {
     try {
       setActionLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/orders/${params.id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
         credentials: 'include',
         body: JSON.stringify({
           status: ORDER_STATUS.PROCESSING,
@@ -134,9 +143,13 @@ export default function OrderDetailPage() {
         setConfirmModal({ ...confirmModal, isOpen: false });
         try {
           setActionLoading(true);
+          const token = localStorage.getItem('token');
           const response = await fetch(`/api/orders/${params.id}/deliver`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token && { 'Authorization': `Bearer ${token}` })
+            },
             credentials: 'include',
             body: JSON.stringify({
               notes: 'Order delivered successfully'

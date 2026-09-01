@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { QueryTypes } = require('sequelize');
 const { calculateCommission, creditPendingCommission } = require('../../services/commissionService');
+const { sendOrderLifecycleEmail } = require('../../services/orderEmailService');
 
 // @route   POST /api/customer/orders
 // @desc    Create a new order (guest or authenticated)
@@ -326,6 +327,12 @@ router.post('/orders', async (req, res) => {
     await transaction.commit();
 
     console.log('[Customer Order] Order created successfully:', orderNumber);
+
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId,
+      event: 'placed',
+    });
 
     res.status(201).json({
       status: 'success',
@@ -753,6 +760,13 @@ router.post('/orders/:id/cancel', async (req, res) => {
 
     console.log('[Customer Order] Order cancelled successfully:', order.order_number);
 
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId,
+      event: 'cancelled',
+      details: { reason: cancelledReason },
+    });
+
     res.status(200).json({
       status: 'success',
       message: 'Order cancelled successfully',
@@ -951,6 +965,13 @@ router.post('/orders/:id/return', async (req, res) => {
     await transaction.commit();
 
     console.log('[Customer Order] Return request submitted successfully:', order.order_number);
+
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId,
+      event: 'return_requested',
+      details: { reason: `${reason}: ${description}` },
+    });
 
     res.status(200).json({
       status: 'success',

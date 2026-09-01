@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { QueryTypes } = require('sequelize');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
+const { sendOrderLifecycleEmail } = require('../../services/orderEmailService');
 
 // @route   GET /api/admin/returns
 // @desc    Get all return requests (with optional filtering)
@@ -399,6 +400,13 @@ router.post('/:id/approve', authMiddleware, adminOnly, async (req, res) => {
 
     console.log('[Admin Returns] Return approved successfully:', order.order_number);
 
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId: order.id,
+      event: 'return_approved',
+      details: { notes: adminNotes },
+    });
+
     res.status(200).json({
       status: 'success',
       message: 'Return request approved successfully',
@@ -536,6 +544,13 @@ router.post('/:id/reject', authMiddleware, adminOnly, async (req, res) => {
     await transaction.commit();
 
     console.log('[Admin Returns] Return rejected:', order.order_number);
+
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId: order.id,
+      event: 'return_rejected',
+      details: { notes: adminNotes },
+    });
 
     res.status(200).json({
       status: 'success',

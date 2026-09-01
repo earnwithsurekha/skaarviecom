@@ -4,6 +4,16 @@ const { authMiddleware, manufacturerOnly } = require('../middleware/auth');
 const { Order, OrderItem, OrderStatusHistory } = require('../models/order');
 const { ORDER_STATUS } = require('../config/constants');
 const { Op } = require('sequelize');
+const sequelize = require('../config/database');
+const { sendOrderLifecycleEmail } = require('../services/orderEmailService');
+
+const ORDER_STATUS_EMAIL_EVENTS = {
+  accepted: 'processing',
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+};
 
 // @route   GET /api/orders
 // @desc    Get all orders for manufacturer
@@ -188,6 +198,16 @@ router.patch('/:id/status', authMiddleware, manufacturerOnly, async (req, res) =
       notes: notes || null
     });
 
+    const emailEvent = ORDER_STATUS_EMAIL_EVENTS[status];
+    if (emailEvent) {
+      await sendOrderLifecycleEmail({
+        sequelize,
+        orderId: order.id,
+        event: emailEvent,
+        details: { reason: notes },
+      });
+    }
+
     res.status(200).json({
       status: 'success',
       message: 'Order status updated successfully',
@@ -242,6 +262,12 @@ router.post('/:id/accept', authMiddleware, manufacturerOnly, async (req, res) =>
       status: ORDER_STATUS.PROCESSING,
       changedBy: userId,
       notes: 'Order accepted by manufacturer'
+    });
+
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId: order.id,
+      event: 'processing',
     });
 
     res.status(200).json({
@@ -313,6 +339,13 @@ router.post('/:id/ship', authMiddleware, manufacturerOnly, async (req, res) => {
       notes: notes || `Shipped via ${courierPartner}, Tracking: ${trackingNumber}`
     });
 
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId: order.id,
+      event: 'shipped',
+      details: { trackingNumber, courierPartner },
+    });
+
     res.status(200).json({
       status: 'success',
       message: 'Order marked as shipped successfully',
@@ -371,6 +404,12 @@ router.post('/:id/deliver', authMiddleware, manufacturerOnly, async (req, res) =
       status: ORDER_STATUS.DELIVERED,
       changedBy: userId,
       notes: notes || 'Order delivered successfully'
+    });
+
+    await sendOrderLifecycleEmail({
+      sequelize,
+      orderId: order.id,
+      event: 'delivered',
     });
 
     res.status(200).json({
