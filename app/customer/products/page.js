@@ -118,6 +118,27 @@ export default function CustomerProductsPage() {
     return matchesPrice;
   });
 
+  const sortedProducts = [...filteredProducts].sort((firstProduct, secondProduct) => {
+    if (sortBy === 'price_low') {
+      return firstProduct.sellingPrice - secondProduct.sellingPrice;
+    }
+
+    if (sortBy === 'price_high') {
+      return secondProduct.sellingPrice - firstProduct.sellingPrice;
+    }
+
+    if (sortBy === 'popular') {
+      const salesDifference = Number(secondProduct.sales_count || 0)
+        - Number(firstProduct.sales_count || 0);
+
+      return salesDifference || Number(secondProduct.views_count || 0)
+        - Number(firstProduct.views_count || 0);
+    }
+
+    return (Date.parse(secondProduct.created_at) || 0)
+      - (Date.parse(firstProduct.created_at) || 0);
+  });
+
   return (
     <div className="h-[calc(100vh-5rem)] flex flex-col lg:flex-row">
       {/* Left Sidebar - Categories and Filters (Desktop) */}
@@ -239,7 +260,7 @@ export default function CustomerProductsPage() {
         )}
 
         {/* Empty State */}
-        {!loading && filteredProducts.length === 0 && (
+        {!loading && sortedProducts.length === 0 && (
           <div className="text-center py-20">
             <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -252,9 +273,9 @@ export default function CustomerProductsPage() {
         )}
 
         {/* Products Grid */}
-        {!loading && filteredProducts.length > 0 && (
+        {!loading && sortedProducts.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
+            {sortedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

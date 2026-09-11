@@ -63,7 +63,7 @@ export default function PendingApprovalPage() {
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => router.push('/register')}
+                onClick={() => router.push('/manufacturer/register')}
                 className="btn btn-outline flex-1"
               >
                 Back to Register

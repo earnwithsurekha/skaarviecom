@@ -369,7 +369,12 @@ export default function RegisterPage() {
   };
 
   const handleBack = () => {
-    setStep(step - 1);
+    if (step === 1) {
+      router.push('/');
+      return;
+    }
+
+    setStep((currentStep) => currentStep - 1);
   };
 
   const handleSubmit = async (e) => {

@@ -157,6 +157,9 @@ router.get('/products', async (req, res) => {
         p.reseller_margin,
         p.stock_quantity,
         p.category_id,
+        p.created_at,
+        p.sales_count,
+        p.views_count,
         c.name as category_name,
         (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) as primary_image,
         CASE 

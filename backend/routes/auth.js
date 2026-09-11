@@ -222,18 +222,36 @@ router.post('/register',
         });
       }
 
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedMobile = mobile?.trim();
+
+      const existingUserByEmail = await User.findOne({
+        where: { email: normalizedEmail }
+      });
+      const existingUserByMobile = normalizedMobile
+        ? await User.findOne({ where: { mobile: normalizedMobile } })
+        : null;
+
+      if (existingUserByMobile && existingUserByMobile.id !== existingUserByEmail?.id) {
+        return res.status(409).json({
+          status: 'error',
+          code: 'MOBILE_ALREADY_REGISTERED',
+          message: 'This mobile number is already registered. Please use a different number or sign in.',
+        });
+      }
+
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Find or create user based on email
-      let user = await User.findOne({ where: { email } });
+      let user = existingUserByEmail;
       
       if (!user) {
-        console.log('Creating new user for email:', email);
+        console.log('Creating new user for email:', normalizedEmail);
         // Create new user without OTP verification (bypassed)
         user = await User.create({
-          email,
-          mobile,
+          email: normalizedEmail,
+          mobile: normalizedMobile,
           password: hashedPassword,
           role: 'manufacturer',
           isVerified: true, // Auto-verified since OTP is bypassed
@@ -337,12 +355,37 @@ router.post('/register',
       });
     } catch (error) {
       console.error('=== Registration Error ===');
+      console.error('Error type:', error.name);
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
+
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const duplicateFields = new Set([
+          ...Object.keys(error.fields || {}),
+          ...(error.errors || []).map((validationError) => validationError.path),
+        ]);
+        const isMobileDuplicate = duplicateFields.has('mobile');
+
+        return res.status(409).json({
+          status: 'error',
+          code: isMobileDuplicate ? 'MOBILE_ALREADY_REGISTERED' : 'EMAIL_ALREADY_REGISTERED',
+          message: isMobileDuplicate
+            ? 'This mobile number is already registered. Please use a different number or sign in.'
+            : 'This email address is already registered. Please sign in or use a different email.',
+        });
+      }
+
+      if (error.name === 'SequelizeValidationError') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'INVALID_REGISTRATION_DATA',
+          message: error.errors?.[0]?.message || 'Please check your registration details and try again.',
+        });
+      }
+
       res.status(500).json({
         status: 'error',
-        message: 'Registration failed',
-        error: error.message
+        message: 'We could not complete your registration. Please try again.',
       });
     }
   }

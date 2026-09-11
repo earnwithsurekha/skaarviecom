@@ -1,13 +1,28 @@
+const backendUrl = new URL(
+  process.env.NEXT_PUBLIC_BACKEND_URL
+  || process.env.NEXT_PUBLIC_API_URL
+  || 'http://localhost:5000'
+);
+const backendPath = backendUrl.pathname.split('/').filter(Boolean);
+
+if (backendPath.at(-1) !== 'api') {
+  backendPath.push('api');
+}
+
+backendUrl.pathname = [...backendPath, 'auth', 'register', 'reseller'].join('/');
+backendUrl.search = '';
+backendUrl.hash = '';
+
+const RESELLER_REGISTRATION_URL = backendUrl.toString();
+
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-    
-    console.log('[Reseller Registration API] Forwarding to backend:', `${BACKEND_URL}/api/auth/register/reseller`);
+
+    console.log('[Reseller Registration API] Forwarding to backend:', RESELLER_REGISTRATION_URL);
     
     const response = await fetch(
-      `${BACKEND_URL}/api/auth/register/reseller`,
+      RESELLER_REGISTRATION_URL,
       {
         method: 'POST',
         body: formData,
