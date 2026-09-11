@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { buildBackendApiUrl } from '@/lib/serverBackendUrl';
+
+const MANUFACTURER_REGISTRATION_URL = buildBackendApiUrl('auth', 'register');
 
 // @route   POST /api/auth/register
 // @desc    Proxy to backend register endpoint with file upload support
@@ -9,9 +12,7 @@ export async function POST(request) {
     const token = request.headers.get('authorization');
 
     // Forward request to backend (FormData is automatically handled correctly)
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-    
-    const response = await fetch(`${backendUrl}/api/auth/register`, {
+    const response = await fetch(MANUFACTURER_REGISTRATION_URL, {
       method: 'POST',
       headers: {
         // Don't set Content-Type for FormData - browser sets it automatically with boundary

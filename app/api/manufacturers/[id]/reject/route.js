@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { buildBackendApiUrl } from '@/lib/serverBackendUrl';
 
 export async function POST(request, { params }) {
   try {
@@ -15,7 +16,7 @@ export async function POST(request, { params }) {
 
     // Forward the reject request to the backend
     const backendResponse = await fetch(
-      `http://localhost:5000/api/manufacturers/${id}/reject`,
+      buildBackendApiUrl('manufacturers', id, 'reject'),
       {
         method: 'POST',
         headers: {
