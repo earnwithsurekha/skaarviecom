@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { buildBackendApiUrl } from '@/lib/serverBackendUrl';
 
 export async function GET(request) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request) {
     }
 
     // Forward the request to the backend
-    const backendResponse = await fetch('http://localhost:5000/api/manufacturers/pending', {
+    const backendResponse = await fetch(buildBackendApiUrl('manufacturers', 'pending'), {
       headers: {
         'Authorization': authHeader,
       },
@@ -46,8 +47,8 @@ export async function POST(request) {
 
     // Determine the backend endpoint based on action
     const endpoint = action === 'approve' 
-      ? `http://localhost:5000/api/manufacturers/${manufacturerId}/approve`
-      : `http://localhost:5000/api/manufacturers/${manufacturerId}/reject`;
+      ? buildBackendApiUrl('manufacturers', manufacturerId, 'approve')
+      : buildBackendApiUrl('manufacturers', manufacturerId, 'reject');
 
     const backendResponse = await fetch(endpoint, {
       method: 'POST',
