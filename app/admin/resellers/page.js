@@ -50,7 +50,7 @@ export default function ResellersManagementPage() {
     fetchResellers();
   }, [filters.status, filters.type, filters.sortBy, pagination.page]);
 
-  const fetchResellers = async () => {
+  const fetchResellers = async (appliedFilters = filters, requestedPage = pagination.page) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
@@ -62,21 +62,21 @@ export default function ResellersManagementPage() {
       }
 
       const params = new URLSearchParams({
-        status: filters.status,
-        type: filters.type,
-        sortBy: filters.sortBy,
-        page: pagination.page,
+        status: appliedFilters.status,
+        type: appliedFilters.type,
+        sortBy: appliedFilters.sortBy,
+        page: requestedPage,
         limit: 20,
-        search: filters.search,
+        search: appliedFilters.search,
       });
 
       const response = await fetch(`/api/admin/resellers?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
-      if (!response.ok) throw new Error('Failed to fetch resellers');
-
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to fetch resellers');
+
       setResellers(data.data.resellers || []);
       setPagination(data.data.pagination || { page: 1, totalPages: 1, total: 0 });
       
@@ -93,7 +93,7 @@ export default function ResellersManagementPage() {
       });
     } catch (error) {
       console.error('Resellers fetch error:', error);
-      toast.error('Failed to load resellers');
+      toast.error(error.message || 'Failed to load resellers');
     } finally {
       setLoading(false);
     }
@@ -230,8 +230,13 @@ export default function ResellersManagementPage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    const searchValue = new FormData(e.currentTarget).get('search');
+    const search = typeof searchValue === 'string' ? searchValue : '';
+    const appliedFilters = { ...filters, search };
+
+    setFilters(appliedFilters);
     setPagination({ ...pagination, page: 1 });
-    fetchResellers();
+    fetchResellers(appliedFilters, 1);
   };
 
   const clearFilters = () => {
@@ -396,6 +401,7 @@ export default function ResellersManagementPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
+              name="search"
               placeholder="Search by name, email, phone, code..."
               value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}

@@ -446,7 +446,7 @@ export default function RegisterPage() {
       
       // Redirect to pending approval page
       setTimeout(() => {
-        router.push('/pending-approval');
+        router.push('/pending-approval?type=manufacturer');
       }, 1500);
     } catch (error) {
       console.error('=== Registration Error ===');
