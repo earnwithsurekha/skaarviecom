@@ -9,36 +9,75 @@ const { QueryTypes } = require('sequelize');
 // @access  Private (Admin)
 router.get('/', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const { status = 'all', page = 1, limit = 20, search = '' } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const {
+      status = 'all',
+      type = 'all',
+      sortBy = 'registrationDate',
+      page = 1,
+      limit = 20,
+      search = ''
+    } = req.query;
+    const parsedPage = Number.parseInt(page, 10) || 1;
+    const parsedLimit = Number.parseInt(limit, 10) || 20;
+    const offset = (parsedPage - 1) * parsedLimit;
 
     let statusFilter = '';
+    let typeFilter = '';
     let searchFilter = '';
-    const replacements = { limit: parseInt(limit), offset };
+    const replacements = { limit: parsedLimit, offset };
 
-    if (status !== 'all') {
-      statusFilter = 'AND u.accountStatus = :status';
-      replacements.status = status;
+    const statusFilters = {
+      active: "AND u.is_active = 1 AND u.status = 'approved'",
+      suspended: 'AND u.is_active = 0',
+      inactive: "AND u.is_active = 1 AND (u.status IS NULL OR u.status <> 'approved')",
+    };
+    statusFilter = statusFilters[status] || '';
+
+    if (type !== 'all') {
+      typeFilter = 'AND r.reseller_type = :type';
+      replacements.type = type;
     }
 
     if (search) {
-      searchFilter = 'AND (r.full_name LIKE :search OR u.email LIKE :search OR u.mobile LIKE :search)';
+      searchFilter = `AND (
+        r.full_name LIKE :search
+        OR r.reseller_code LIKE :search
+        OR u.email LIKE :search
+        OR u.mobile LIKE :search
+      )`;
       replacements.search = `%${search}%`;
     }
+
+    const sortOptions = {
+      registrationDate: 'r.created_at DESC',
+      name: 'r.full_name ASC',
+      earnings: 'r.total_earnings DESC',
+    };
+    const orderBy = sortOptions[sortBy] || sortOptions.registrationDate;
 
     const resellers = await sequelize.query(`
       SELECT 
         r.id,
         r.user_id as userId,
-        r.full_name,
+        r.full_name as fullName,
+        r.reseller_code as resellerCode,
         u.email,
         u.mobile as phoneNumber,
-        r.reseller_type,
+        r.reseller_type as resellerType,
         r.total_earnings as totalEarnings,
         r.pending_earnings as pendingEarnings,
         r.withdrawn_amount as withdrawnAmount,
         r.total_sales as totalOrders,
-        u.is_active as accountStatus,
+        CASE
+          WHEN u.is_active = 0 THEN 'suspended'
+          WHEN u.status = 'approved' THEN 'active'
+          ELSE 'inactive'
+        END as status,
+        CASE
+          WHEN u.is_active = 0 THEN 'suspended'
+          WHEN u.status = 'approved' THEN 'active'
+          ELSE 'inactive'
+        END as accountStatus,
         u.status as approvalStatus,
         r.created_at as createdAt,
         (SELECT COUNT(*) FROM resellers r2 WHERE r2.sponsor_id = r.id) as referralCount
@@ -46,8 +85,9 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
       JOIN users u ON r.user_id = u.id
       WHERE 1=1 
         ${statusFilter} 
+        ${typeFilter}
         ${searchFilter}
-      ORDER BY r.created_at DESC
+      ORDER BY ${orderBy}
       LIMIT :limit OFFSET :offset
     `, {
       replacements,
@@ -60,6 +100,7 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
       JOIN users u ON r.user_id = u.id
       WHERE 1=1 
         ${statusFilter} 
+        ${typeFilter}
         ${searchFilter}
     `, {
       replacements,
@@ -71,10 +112,10 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
       data: {
         resellers,
         pagination: {
-          total: parseInt(totalResult[0]?.total || 0),
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil((totalResult[0]?.total || 0) / limit),
+          total: Number.parseInt(totalResult[0]?.total || 0, 10),
+          page: parsedPage,
+          limit: parsedLimit,
+          totalPages: Math.ceil((totalResult[0]?.total || 0) / parsedLimit),
         },
       },
     });

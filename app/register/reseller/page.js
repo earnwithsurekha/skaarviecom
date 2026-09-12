@@ -168,7 +168,7 @@ export default function ResellerRegistrationPage() {
       if (data.status === 'success') {
         toast.success('Registration successful! Please wait for admin approval.');
         setTimeout(() => {
-          router.push('/pending-approval');
+          router.push('/pending-approval?type=reseller');
         }, 2000);
       } else {
         toast.error(data.message || 'Registration failed');

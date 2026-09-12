@@ -1,10 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Clock, CheckCircle } from 'lucide-react';
 
 export default function PendingApprovalPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isReseller = searchParams.get('type') === 'reseller';
+  const registrationType = isReseller ? 'reseller' : 'manufacturer';
+  const registrationPath = isReseller ? '/register/reseller' : '/manufacturer/register';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-warning-50 via-white to-warning-50 flex items-center justify-center px-4">
@@ -19,14 +23,14 @@ export default function PendingApprovalPage() {
           </h1>
           
           <p className="text-gray-600 mb-6">
-            Thank you for registering as a manufacturer on Skaarvi Marketplace. 
+            Thank you for registering as a {registrationType} on Skaarvi Marketplace. 
             Your application is currently being reviewed by our team.
           </p>
 
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-6">
             <p className="text-sm text-warning-800">
               <strong>What's next?</strong><br />
-              Our team will verify your documents and business details. 
+              Our team will verify your {isReseller ? 'profile and payment details' : 'documents and business details'}. 
               You'll receive an email notification once your account is approved.
             </p>
           </div>
@@ -35,8 +39,12 @@ export default function PendingApprovalPage() {
             <div className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-success-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-gray-900">Documents Submitted</p>
-                <p className="text-xs text-gray-600">GST, PAN, and Address Proof</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {isReseller ? 'Application Submitted' : 'Documents Submitted'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {isReseller ? 'Profile and payment details received' : 'GST, PAN, and Address Proof'}
+                </p>
               </div>
             </div>
             
@@ -63,7 +71,7 @@ export default function PendingApprovalPage() {
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => router.push('/manufacturer/register')}
+                onClick={() => router.push(registrationPath)}
                 className="btn btn-outline flex-1"
               >
                 Back to Register
