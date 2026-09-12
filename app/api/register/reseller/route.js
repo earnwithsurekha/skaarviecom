@@ -1,19 +1,6 @@
-const backendUrl = new URL(
-  process.env.NEXT_PUBLIC_BACKEND_URL
-  || process.env.NEXT_PUBLIC_API_URL
-  || 'http://localhost:5000'
-);
-const backendPath = backendUrl.pathname.split('/').filter(Boolean);
+import { buildBackendApiUrl } from '@/lib/serverBackendUrl';
 
-if (backendPath.at(-1) !== 'api') {
-  backendPath.push('api');
-}
-
-backendUrl.pathname = [...backendPath, 'auth', 'register', 'reseller'].join('/');
-backendUrl.search = '';
-backendUrl.hash = '';
-
-const RESELLER_REGISTRATION_URL = backendUrl.toString();
+const RESELLER_REGISTRATION_URL = buildBackendApiUrl('auth', 'register', 'reseller');
 
 export async function POST(request) {
   try {

@@ -149,7 +149,12 @@ export default function ResellerRegistrationPage() {
         submitData.append('profile_photo', formData.profile_photo);
       }
 
-      const response = await fetch('/api/register/reseller', {
+      const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      const registrationUrl = isLocalhost
+        ? '/api/register/reseller'
+        : '/api/auth/register/reseller';
+
+      const response = await fetch(registrationUrl, {
         method: 'POST',
         body: submitData
       });
