@@ -3,18 +3,67 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
-import { Building2, ArrowRight, Loader2, Upload, Eye, EyeOff } from 'lucide-react';
+import { Building2, ArrowRight, Loader2, Upload, Eye, EyeOff, Briefcase, Landmark, FileCheck2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authAPI } from '@/lib/api';
+import RegistrationWorkspace from '@/components/RegistrationWorkspace';
+
+const MANUFACTURER_STEPS = [
+  {
+    id: 1,
+    label: 'Business profile',
+    description: 'Company and contact details',
+    icon: Building2,
+  },
+  {
+    id: 2,
+    label: 'Business type',
+    description: 'Company structure',
+    icon: Briefcase,
+  },
+  {
+    id: 3,
+    label: 'Settlement',
+    description: 'Bank and payout details',
+    icon: Landmark,
+  },
+  {
+    id: 4,
+    label: 'Documents',
+    description: 'Files for verification',
+    icon: FileCheck2,
+  },
+];
+
+const MANUFACTURER_REQUIRED_FIELDS = [
+  'companyName',
+  'brandName',
+  'contactPersonName',
+  'mobile',
+  'email',
+  'password',
+  'confirmPassword',
+  'address',
+  'city',
+  'state',
+  'pincode',
+  'businessType',
+  'accountHolderName',
+  'accountNumber',
+  'ifscCode',
+  'bankName',
+  'panCard',
+  'cancelledCheque',
+  'companyLogo',
+];
 
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useSelector((state) => state.auth.user);
   const [step, setStep] = useState(1); // 1: Basic Info, 2: Business Details, 3: Bank Details, 4: Documents (OTP bypassed)
+  const [furthestStep, setFurthestStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -48,6 +97,9 @@ export default function RegisterPage() {
     cancelledCheque: null,
     companyLogo: null,
   });
+  const activeStep = MANUFACTURER_STEPS[step - 1];
+  const completedFieldCount = MANUFACTURER_REQUIRED_FIELDS.filter(field => Boolean(formData[field])).length;
+  const completionPercentage = Math.round((completedFieldCount / MANUFACTURER_REQUIRED_FIELDS.length) * 100);
 
   // Validation functions
   const validateMobile = (mobile) => {
@@ -58,15 +110,18 @@ export default function RegisterPage() {
   };
 
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return 'Email is required';
-    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    const atIndex = email.indexOf('@');
+    const lastDotIndex = email.lastIndexOf('.');
+    if (atIndex <= 0 || lastDotIndex <= atIndex + 1 || lastDotIndex === email.length - 1) {
+      return 'Please enter a valid email address';
+    }
     return '';
   };
 
   const validatePAN = (pan) => {
     if (!pan) return ''; // Optional field
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    const panRegex = /^[A-Z]{5}\d{4}[A-Z]$/;
     if (!panRegex.test(pan.toUpperCase())) {
       return 'Invalid PAN format. Should be like: ABCDE1234F';
     }
@@ -75,7 +130,7 @@ export default function RegisterPage() {
 
   const validateGST = (gst) => {
     if (!gst) return ''; // Optional field
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    const gstRegex = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[\dA-Z]$/;
     if (!gstRegex.test(gst.toUpperCase())) {
       return 'Invalid GST format. Should be like: 22AAAAA0000A1Z5';
     }
@@ -83,7 +138,7 @@ export default function RegisterPage() {
   };
 
   const validatePincode = (pincode) => {
-    const pincodeRegex = /^[1-9][0-9]{5}$/;
+    const pincodeRegex = /^[1-9]\d{5}$/;
     if (!pincode) return 'Pincode is required';
     if (!pincodeRegex.test(pincode)) return 'Pincode must be 6 digits';
     return '';
@@ -99,7 +154,7 @@ export default function RegisterPage() {
   };
 
   const validateAccountNumber = (accountNumber) => {
-    const accountRegex = /^[0-9]{9,18}$/;
+    const accountRegex = /^\d{9,18}$/;
     if (!accountNumber) return 'Account number is required';
     if (!accountRegex.test(accountNumber)) {
       return 'Account number must be 9-18 digits';
@@ -225,49 +280,6 @@ export default function RegisterPage() {
     setFormData(prev => ({ ...prev, [fieldName]: file }));
   };
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    if (!formData.email) {
-      toast.error('Please enter your email');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await authAPI.sendRegistrationOtp(formData.email);
-      setOtpSent(true);
-      toast.success('OTP sent to your email');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send OTP');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otp || otp.length !== 6) {
-      toast.error('Please enter valid 6-digit OTP');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await authAPI.verifyOtp(formData.email, otp);
-      
-      // Store tokens
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      
-      toast.success('Email verified! Now complete your registration');
-      setStep(1); // Move to basic info step
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid OTP');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleNext = () => {
     // Validate current step before proceeding
     let hasErrors = false;
@@ -278,7 +290,7 @@ export default function RegisterPage() {
       const requiredFields = ['companyName', 'brandName', 'contactPersonName', 'mobile', 'email', 'password', 'confirmPassword', 'address', 'city', 'state', 'pincode'];
       
       requiredFields.forEach(field => {
-        if (!formData[field] || !formData[field].toString().trim()) {
+        if (!formData[field]?.toString().trim()) {
           newErrors[field] = 'This field is required';
           hasErrors = true;
         }
@@ -330,7 +342,7 @@ export default function RegisterPage() {
       const requiredFields = ['accountHolderName', 'accountNumber', 'ifscCode', 'bankName'];
       
       requiredFields.forEach(field => {
-        if (!formData[field] || !formData[field].toString().trim()) {
+        if (!formData[field]?.toString().trim()) {
           newErrors[field] = 'This field is required';
           hasErrors = true;
         }
@@ -365,7 +377,9 @@ export default function RegisterPage() {
       return;
     }
 
-    setStep(step + 1);
+    const nextStep = Math.min(step + 1, MANUFACTURER_STEPS.length);
+    setStep(nextStep);
+    setFurthestStep(current => Math.max(current, nextStep));
   };
 
   const handleBack = () => {
@@ -375,6 +389,12 @@ export default function RegisterPage() {
     }
 
     setStep((currentStep) => currentStep - 1);
+  };
+
+  const handleStepSelect = (nextStep) => {
+    if (nextStep <= furthestStep && !loading) {
+      setStep(nextStep);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -463,50 +483,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4">
-            <Building2 className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Manufacturer Registration
-          </h1>
-          <p className="text-gray-600">
-            Join Skaarvi marketplace and grow your business
-          </p>
-        </div>
-
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {[1, 2, 3, 4].map((s) => (
-              <div key={s} className="flex items-center flex-1">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${
-                  step >= s ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {s}
-                </div>
-                {s < 4 && (
-                  <div className={`flex-1 h-1 mx-2 ${
-                    step > s ? 'bg-primary-600' : 'bg-gray-200'
-                  }`} />
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-2 text-xs text-gray-600">
-            <span>Basic Info</span>
-            <span>Business</span>
-            <span>Bank Details</span>
-            <span>Documents</span>
-          </div>
-        </div>
-
-        {/* Registration Form */}
-        <div className="card">
-          <form onSubmit={step === 4 ? handleSubmit : (e) => { e.preventDefault(); handleNext(); }}>
+    <RegistrationWorkspace
+      icon={Building2}
+      networkLabel="Manufacturer Network"
+      badgeLabel="Manufacturer application"
+      title="Bring your products to more buyers."
+      description="Set up your business profile, settlement account, and verification documents for marketplace review."
+      steps={MANUFACTURER_STEPS}
+      currentStep={step}
+      availableStep={furthestStep}
+      onStepSelect={handleStepSelect}
+      completion={completionPercentage}
+      sectionEyebrow={`Step ${step} of ${MANUFACTURER_STEPS.length}`}
+      sectionTitle={activeStep.label}
+      sectionDescription={activeStep.description}
+      footer="Submitted applications remain pending until an administrator completes the review."
+    >
+      <form onSubmit={step === 4 ? handleSubmit : (e) => { e.preventDefault(); handleNext(); }}>
+        <div key={step} className="registration-step-content">
             {/* Step 1: Basic Information */}
             {step === 1 && (
               <div className="space-y-4">
@@ -623,6 +617,8 @@ export default function RegisterPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        title={showPassword ? 'Hide password' : 'Show password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -651,6 +647,8 @@ export default function RegisterPage() {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'}
+                        title={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
                         {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -943,9 +941,9 @@ export default function RegisterPage() {
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="label">
+                    <p className="label">
                       GST Certificate <span className="text-gray-500 text-sm">(Optional)</span>
-                    </label>
+                    </p>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-500 transition-colors cursor-pointer">
                       <input
                         type="file"
@@ -968,9 +966,9 @@ export default function RegisterPage() {
                   </div>
 
                   <div>
-                    <label className="label">
+                    <p className="label">
                       PAN Card *
-                    </label>
+                    </p>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-primary-500 transition-colors cursor-pointer ${
                       formData.panCard ? 'border-green-400 bg-green-50' : 'border-gray-300'
                     }`}>
@@ -995,9 +993,9 @@ export default function RegisterPage() {
                   </div>
 
                   <div>
-                    <label className="label">
+                    <p className="label">
                       Cancelled Cheque / Bank Proof *
-                    </label>
+                    </p>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-primary-500 transition-colors cursor-pointer ${
                       formData.cancelledCheque ? 'border-green-400 bg-green-50' : 'border-gray-300'
                     }`}>
@@ -1022,9 +1020,9 @@ export default function RegisterPage() {
                   </div>
 
                   <div>
-                    <label className="label">
+                    <p className="label">
                       Company Logo *
-                    </label>
+                    </p>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-primary-500 transition-colors cursor-pointer ${
                       formData.companyLogo ? 'border-green-400 bg-green-50' : 'border-gray-300'
                     }`}>
@@ -1056,48 +1054,38 @@ export default function RegisterPage() {
                 </div>
               </div>
             )}
+        </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex gap-3 mt-6">
+            <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row dark:border-slate-700">
               {step > 0 && (
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="btn btn-secondary flex-1"
+                  className="inline-flex min-h-12 flex-1 items-center justify-center border border-slate-300 px-6 font-semibold text-slate-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-600 dark:text-slate-200 dark:hover:border-indigo-400 dark:hover:bg-slate-800"
                   disabled={loading}
                 >
-                  Back
+                  Previous
                 </button>
               )}
               <button
                 type="submit"
                 disabled={loading}
-                className="btn btn-primary flex-1 flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 border border-blue-600 bg-gradient-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white hover:-translate-y-0.5 hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-indigo-400"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    {step === 0 ? (otpSent ? 'Verifying...' : 'Sending OTP...') : 
-                     step === 4 ? 'Submitting...' : 'Processing...'}
+                    {step === 4 ? 'Submitting...' : 'Processing...'}
                   </>
                 ) : (
                   <>
-                    {step === 0 ? (otpSent ? 'Verify OTP' : 'Send OTP') :
-                     step === 4 ? 'Submit Registration' : 'Next'}
+                    {step === 4 ? 'Submit Registration' : 'Next'}
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
               </button>
             </div>
-          </form>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-6 text-center text-sm text-gray-600">
-          Already registered?{' '}
-          <span className="text-gray-700">Please wait for admin approval or contact support.</span>
-        </div>
-      </div>
-    </div>
+      </form>
+    </RegistrationWorkspace>
   );
 }

@@ -21,12 +21,13 @@ import {
   Package,
   LogOut,
   Heart,
-  Settings
+  Settings,
+  Search
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { logout } from '@/store/slices/authSlice';
 
-export default function PublicHeader() {
+export default function PublicHeader({ showSearch = false, searchValue = '', onSearchChange }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -317,6 +318,35 @@ export default function PublicHeader() {
               </div>
             </Link>
 
+            {showSearch && (
+              <div className="mx-5 hidden min-w-0 max-w-2xl flex-1 md:block lg:mx-8">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="search"
+                    value={searchValue}
+                    onChange={(event) => onSearchChange?.(event.target.value)}
+                    placeholder="Search products, categories and more"
+                    aria-label="Search products"
+                    autoComplete="off"
+                    enterKeyHint="search"
+                    className="h-11 w-full border border-white/40 bg-white pl-12 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus:border-white focus:outline-none"
+                  />
+                  {searchValue && (
+                    <button
+                      type="button"
+                      onClick={() => onSearchChange?.('')}
+                      aria-label="Clear product search"
+                      title="Clear search"
+                      className="absolute right-0 top-0 grid h-full w-11 place-items-center border-l border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               {/* Cart */}
@@ -542,6 +572,34 @@ export default function PublicHeader() {
               </div>
             </div>
           </div>
+          {showSearch && (
+            <div className="pb-3 md:hidden">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="search"
+                  value={searchValue}
+                  onChange={(event) => onSearchChange?.(event.target.value)}
+                  placeholder="Search products"
+                  aria-label="Search products"
+                  autoComplete="off"
+                  enterKeyHint="search"
+                  className="h-11 w-full border border-white/40 bg-white pl-12 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus:border-white focus:outline-none"
+                />
+                {searchValue && (
+                  <button
+                    type="button"
+                    onClick={() => onSearchChange?.('')}
+                    aria-label="Clear product search"
+                    title="Clear search"
+                    className="absolute right-0 top-0 grid h-full w-11 place-items-center border-l border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -719,7 +777,6 @@ export default function PublicHeader() {
                         placeholder="Enter 6-digit OTP"
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                         maxLength="6"
-                        autoFocus
                         required
                       />
                     </div>

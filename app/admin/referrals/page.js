@@ -19,6 +19,7 @@ export default function ReferralManagementPage() {
     totalReferralEarnings: 0,
   });
   const [filters, setFilters] = useState({ search: '' });
+  const [searchInput, setSearchInput] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [showTreeModal, setShowTreeModal] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState(null);
@@ -27,8 +28,28 @@ export default function ReferralManagementPage() {
 
   useEffect(() => {
     fetchReferrals();
-    fetchTopSponsors();
   }, [pagination.page, filters.search]);
+
+  useEffect(() => {
+    fetchTopSponsors();
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((currentFilters) => (
+        currentFilters.search === searchInput
+          ? currentFilters
+          : { ...currentFilters, search: searchInput }
+      ));
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const fetchReferrals = async () => {
     try {
@@ -121,13 +142,8 @@ export default function ReferralManagementPage() {
     setExpandedNodes(newExpanded);
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPagination({ ...pagination, page: 1 });
-    fetchReferrals();
-  };
-
   const clearFilters = () => {
+    setSearchInput('');
     setFilters({ search: '' });
     setPagination({ ...pagination, page: 1 });
   };
@@ -226,25 +242,18 @@ export default function ReferralManagementPage() {
 
       {/* Search */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <form onSubmit={handleSearch} className="flex gap-4">
+        <div className="flex gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search by sponsor or referral name..."
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
             />
           </div>
-          <button
-            type="submit"
-            className="px-6 py-2 rounded-lg text-white transition-all hover:opacity-90 active:scale-95"
-            style={{ backgroundColor: 'rgb(var(--color-primary))' }}
-          >
-            Search
-          </button>
-          {filters.search && (
+          {searchInput && (
             <button
               type="button"
               onClick={clearFilters}
@@ -253,7 +262,7 @@ export default function ReferralManagementPage() {
               Clear
             </button>
           )}
-        </form>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

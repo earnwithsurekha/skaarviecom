@@ -33,6 +33,7 @@ export default function ProductsPage() {
     minProfit: '',
     sortBy: 'created_at'
   });
+  const [searchInput, setSearchInput] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
   useEffect(() => {
@@ -42,6 +43,23 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchProducts();
   }, [pagination.page, filters.sortBy, filters.category, filters.search, activeTab]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((currentFilters) => (
+        currentFilters.search === searchInput
+          ? currentFilters
+          : { ...currentFilters, search: searchInput }
+      ));
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const fetchCategories = async () => {
     try {
@@ -250,9 +268,8 @@ export default function ProductsPage() {
               <input
                 type="text"
                 placeholder="Search products..."
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
               />
             </div>
@@ -331,6 +348,7 @@ export default function ProductsPage() {
           </button>
           <button
             onClick={() => {
+              setSearchInput('');
               setFilters({
                 search: '',
                 category: '',

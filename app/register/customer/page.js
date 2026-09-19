@@ -3,9 +3,30 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
-import { ShoppingCart, User, Mail, Phone, Lock, MapPin, ArrowRight, Loader2, AlertCircle, ArrowLeft, Tag } from 'lucide-react';
+import { ShoppingCart, User, Mail, Phone, Lock, MapPin, ArrowRight, Loader2, AlertCircle, Tag, Eye, EyeOff, ShieldCheck, PackageCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { setCredentials } from '@/store/slices/authSlice';
+import RegistrationWorkspace from '@/components/RegistrationWorkspace';
+
+const CUSTOMER_REQUIRED_FIELDS = ['name', 'email', 'phone', 'password', 'confirmPassword'];
+
+const CUSTOMER_HIGHLIGHTS = [
+  {
+    label: 'One shopping account',
+    description: 'Orders, returns, and saved products together',
+    icon: ShoppingCart,
+  },
+  {
+    label: 'Protected checkout',
+    description: 'Secure account and payment access',
+    icon: ShieldCheck,
+  },
+  {
+    label: 'Referral ready',
+    description: 'Connect an invited reseller code',
+    icon: PackageCheck,
+  },
+];
 
 export default function CustomerRegistrationPage() {
   const router = useRouter();
@@ -29,6 +50,8 @@ export default function CustomerRegistrationPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const completedFieldCount = CUSTOMER_REQUIRED_FIELDS.filter(field => Boolean(formData[field])).length;
+  const completionPercentage = Math.round((completedFieldCount / CUSTOMER_REQUIRED_FIELDS.length) * 100);
 
   // Pre-fill referral code from URL
   useEffect(() => {
@@ -50,13 +73,15 @@ export default function CustomerRegistrationPage() {
       return false;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
+    const email = formData.email.trim();
+    const atIndex = email.indexOf('@');
+    const lastDotIndex = email.lastIndexOf('.');
+    if (atIndex <= 0 || lastDotIndex <= atIndex + 1 || lastDotIndex === email.length - 1) {
       setError('Please enter a valid email address');
       return false;
     }
 
-    const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(formData.phone)) {
       setError('Phone number must be 10 digits');
       return false;
@@ -100,7 +125,7 @@ export default function CustomerRegistrationPage() {
       console.log('[Customer Registration] Response:', response.status);
 
       if (!response.ok) {
-        if (data.message && data.message.includes('already registered')) {
+        if (data.message?.includes('already registered')) {
           toast.error('This email or phone is already registered');
           setError(data.message);
           setTimeout(() => {
@@ -139,43 +164,39 @@ export default function CustomerRegistrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4xIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
-
-      <div className="relative w-full max-w-2xl">
-        {/* Back Button */}
-        <button
-          onClick={() => router.push('/')}
-          className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </button>
-
-        {/* Registration Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex p-4 bg-gradient-to-br from-blue-600 to-indigo-800 rounded-2xl">
-              <ShoppingCart className="w-10 h-10 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-              <p className="text-gray-600 mt-2">Join us and start shopping today!</p>
-            </div>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <RegistrationWorkspace
+      icon={ShoppingCart}
+      networkLabel="Customer Marketplace"
+      badgeLabel="Customer account"
+      title="Shop with one account."
+      description="Create your customer profile to save products, place orders, and manage every purchase in one place."
+      highlights={CUSTOMER_HIGHLIGHTS}
+      completion={completionPercentage}
+      sectionEyebrow="Customer registration"
+      sectionTitle="Create your account"
+      sectionDescription="Your shopping profile and delivery details"
+      footer={(
+        <p>
+          Already have an account?{' '}
+          <button
+            type="button"
+            onClick={() => router.push('/login/customer')}
+            className="font-semibold text-blue-600 hover:text-purple-700 dark:text-blue-400"
+          >
+            Sign in
+          </button>
+        </p>
+      )}
+    >
+      <div className="space-y-6">
+        {error && (
+            <div className="flex items-start gap-3 border border-red-200 bg-red-50 p-4">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
 
-          {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name */}
             <div className="space-y-2">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -262,11 +283,20 @@ export default function CustomerRegistrationPage() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Min. 6 characters"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
                     disabled={loading}
                     required
                     minLength="6"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(current => !current)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-0 top-0 grid h-full w-12 place-items-center border-l border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -284,11 +314,20 @@ export default function CustomerRegistrationPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Re-enter password"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
                     disabled={loading}
                     required
                     minLength="6"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(current => !current)}
+                    aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'}
+                    title={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'}
+                    className="absolute right-0 top-0 grid h-full w-12 place-items-center border-l border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
             </div>
@@ -395,7 +434,7 @@ export default function CustomerRegistrationPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-800 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6"
+              className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 border border-blue-600 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white hover:-translate-y-0.5 hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -411,36 +450,21 @@ export default function CustomerRegistrationPage() {
             </button>
           </form>
 
-          {/* Reseller CTA */}
-          <div className="pt-4 border-t border-gray-200">
-            <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-lg border border-pink-200">
+          <div className="border-t border-slate-200 pt-5">
+            <div className="border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-950/40">
               <p className="text-sm text-gray-700 font-medium mb-2 text-center">
                 Want to earn by reselling products instead?
               </p>
               <button
                 onClick={() => router.push('/register/reseller')}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-pink-600 to-rose-600 text-white py-2 px-4 rounded-lg font-semibold hover:from-pink-700 hover:to-rose-700 transition-all"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 border border-indigo-600 bg-white px-4 py-2 font-semibold text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-slate-900 dark:text-indigo-300"
               >
                 Register as Reseller
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
-
-          {/* Login Link */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <button
-                onClick={() => router.push('/login/customer')}
-                className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
-              >
-                Sign In
-              </button>
-            </p>
-          </div>
-        </div>
       </div>
-    </div>
+    </RegistrationWorkspace>
   );
 }

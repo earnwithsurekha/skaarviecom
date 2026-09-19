@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Filter } from 'lucide-react';
-import ManufacturerCard from '@/components/admin/ManufacturerCard';
+import ManufacturerRow from '@/components/admin/ManufacturerCard';
 import toast from 'react-hot-toast';
 import { ListSkeleton } from '@/components/SkeletonLoader';
 
@@ -175,14 +175,45 @@ export default function ManufacturersPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredManufacturers.map((manufacturer) => (
-              <ManufacturerCard
-                key={manufacturer.id}
-                manufacturer={manufacturer}
-                onClick={() => router.push(`/admin/manufacturers/${manufacturer.id}`)}
-              />
-            ))}
+          <div className="overflow-hidden rounded-lg border" style={{ borderColor: 'rgb(var(--color-border))' }}>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1050px]">
+                <thead style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+                  <tr>
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Manufacturer
+                    </th>
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Contact
+                    </th>
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Registered
+                    </th>
+                    <th className="px-5 py-3 text-center text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Products
+                    </th>
+                    <th className="px-5 py-3 text-right text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Total Sales
+                    </th>
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Status
+                    </th>
+                    <th className="px-5 py-3 text-center text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody style={{ backgroundColor: 'rgb(var(--color-background))' }}>
+                  {filteredManufacturers.map((manufacturer) => (
+                    <ManufacturerRow
+                      key={manufacturer.id}
+                      manufacturer={manufacturer}
+                      onClick={() => router.push(`/admin/manufacturers/${manufacturer.id}`)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

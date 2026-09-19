@@ -1,9 +1,12 @@
-import { Inter } from 'next/font/google'
+import { Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import PageLoader from '@/components/PageLoader'
 
-const inter = Inter({ subsets: ['latin'] })
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+})
 
 export const metadata = {
   title: 'SKAARVI - B2B Reseller Marketplace',
@@ -19,7 +22,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${spaceGrotesk.variable} font-sans`}>
         <Providers>
           <PageLoader />
           {children}

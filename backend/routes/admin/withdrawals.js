@@ -9,13 +9,29 @@ const { QueryTypes } = require('sequelize');
 // @access  Private (Admin)
 router.get('/', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const { status = 'all', page = 1, limit = 20 } = req.query;
+    const { status = 'all', search = '', page = 1, limit = 20 } = req.query;
     const offset = (Number.parseInt(page) - 1) * Number.parseInt(limit);
+    const normalizedSearch = String(search).trim();
 
     let statusFilter = '';
     if (status !== 'all') {
       statusFilter = 'AND w.status = :status';
     }
+
+    let searchFilter = '';
+    if (normalizedSearch) {
+      searchFilter = `AND (
+        r.full_name LIKE :search OR
+        r.reseller_code LIKE :search OR
+        u.email LIKE :search OR
+        u.mobile LIKE :search
+      )`;
+    }
+
+    const replacements = {
+      status,
+      search: `%${normalizedSearch}%`,
+    };
 
     const withdrawals = await sequelize.query(`
       SELECT 
@@ -27,20 +43,22 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
       FROM withdrawals w
       JOIN users u ON w.userId = u.id
       LEFT JOIN resellers r ON u.id = r.user_id
-      WHERE 1=1 ${statusFilter}
+      WHERE 1=1 ${statusFilter} ${searchFilter}
       ORDER BY w.createdAt DESC
       LIMIT :limit OFFSET :offset
     `, {
-      replacements: { status, limit: Number.parseInt(limit), offset },
+      replacements: { ...replacements, limit: Number.parseInt(limit), offset },
       type: QueryTypes.SELECT
     });
 
     const totalResult = await sequelize.query(`
       SELECT COUNT(*) as total
       FROM withdrawals w
-      WHERE 1=1 ${statusFilter}
+      JOIN users u ON w.userId = u.id
+      LEFT JOIN resellers r ON u.id = r.user_id
+      WHERE 1=1 ${statusFilter} ${searchFilter}
     `, {
-      replacements: { status },
+      replacements,
       type: QueryTypes.SELECT
     });
 
