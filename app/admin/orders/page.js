@@ -28,6 +28,7 @@ export default function OrdersManagementPage() {
     startDate: '',
     endDate: '',
   });
+  const [searchInput, setSearchInput] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -38,7 +39,24 @@ export default function OrdersManagementPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [filters.status, filters.paymentStatus, pagination.page]);
+  }, [filters.status, filters.paymentStatus, filters.search, pagination.page]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((currentFilters) => (
+        currentFilters.search === searchInput
+          ? currentFilters
+          : { ...currentFilters, search: searchInput }
+      ));
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const fetchOrders = async () => {
     try {
@@ -186,13 +204,8 @@ export default function OrdersManagementPage() {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPagination({ ...pagination, page: 1 });
-    fetchOrders();
-  };
-
   const clearFilters = () => {
+    setSearchInput('');
     setFilters({
       status: 'all',
       paymentStatus: 'all',
@@ -356,14 +369,14 @@ export default function OrdersManagementPage() {
 
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search by order #, customer, manufacturer..."
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
             />
           </div>
@@ -396,21 +409,14 @@ export default function OrdersManagementPage() {
 
           <div className="flex gap-2">
             <button
-              type="submit"
-              className="flex-1 px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 active:scale-95"
-              style={{ backgroundColor: 'rgb(var(--color-primary))' }}
-            >
-              Search
-            </button>
-            <button
               type="button"
               onClick={clearFilters}
-              className="px-4 py-2 rounded-lg transition-all hover:opacity-90 active:scale-95 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+              className="w-full px-4 py-2 rounded-lg transition-all hover:opacity-90 active:scale-95 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
             >
               Clear
             </button>
           </div>
-        </form>
+        </div>
       </div>
 
       {/* Orders Table */}

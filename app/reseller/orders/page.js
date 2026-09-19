@@ -37,10 +37,28 @@ export default function OrdersPage() {
     search: '',
     status: ''
   });
+  const [searchInput, setSearchInput] = useState('');
 
   useEffect(() => {
     fetchOrders();
-  }, [pagination.page, filters.status]);
+  }, [pagination.page, filters.status, filters.search]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((currentFilters) => (
+        currentFilters.search === searchInput
+          ? currentFilters
+          : { ...currentFilters, search: searchInput }
+      ));
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const fetchOrders = async () => {
     try {
@@ -87,11 +105,6 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSearch = () => {
-    setPagination({ ...pagination, page: 1 });
-    fetchOrders();
   };
 
   const getStatusConfig = (status) => {
@@ -223,9 +236,8 @@ export default function OrdersPage() {
               <input
                 type="text"
                 placeholder="Search by order ID, customer name..."
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
               />
             </div>
@@ -251,14 +263,8 @@ export default function OrdersPage() {
         
         <div className="flex gap-2">
           <button
-            onClick={handleSearch}
-            className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: 'rgb(var(--color-primary))' }}
-          >
-            Search
-          </button>
-          <button
             onClick={() => {
+              setSearchInput('');
               setFilters({ search: '', status: '' });
               setPagination({ ...pagination, page: 1 });
             }}

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Package, Loader2, Search, Filter } from 'lucide-react';
+import { useDeferredValue, useEffect, useState } from 'react';
+import { Package, Loader2, Filter } from 'lucide-react';
 import PublicHeader from '@/components/PublicHeader';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/product/ProductCard';
+import HomepageBannerCarousel from '@/components/HomepageBannerCarousel';
 
 // Helper function to handle both S3 and local URLs
 const getImageUrl = (imagePath) => {
@@ -23,44 +24,79 @@ const getImageUrl = (imagePath) => {
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   useEffect(() => {
-    fetchProducts();
     fetchCategories();
+    fetchBanners();
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/public/products?limit=50');
-      
-      if (response.ok) {
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ limit: '50' });
+    const normalizedQuery = deferredSearchQuery.trim();
+
+    if (normalizedQuery) params.set('search', normalizedQuery);
+    if (selectedCategory !== 'all') params.set('category', selectedCategory);
+
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/public/products?${params}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          setProducts([]);
+          return;
+        }
+
         const result = await response.json();
-        if (result.status === 'success') {
-          // Transform API data to match ProductCard expectations
-          const transformedProducts = (result.data.products || []).map(product => ({
-            ...product,
-            imageUrl: getImageUrl(product.primary_image),
-            sellingPrice: parseFloat(product.selling_price) || 0,
-            price: parseFloat(product.selling_price) || 0,
-            stock: product.stock_quantity || 0,
-            resellerProfit: product.reseller_profit || 0
-          }));
-          setProducts(transformedProducts);
-        } else {
+        if (result.status !== 'success') {
+          setProducts([]);
+          return;
+        }
+
+        const transformedProducts = (result.data.products || []).map(product => ({
+          ...product,
+          imageUrl: getImageUrl(product.primary_image),
+          sellingPrice: Number.parseFloat(product.selling_price) || 0,
+          price: Number.parseFloat(product.selling_price) || 0,
+          stock: product.stock_quantity || 0,
+          resellerProfit: product.reseller_profit || 0
+        }));
+        setProducts(transformedProducts);
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Fetch products error:', error);
           setProducts([]);
         }
-      } else {
-        setProducts([]);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
+    };
+
+    fetchProducts();
+    return () => controller.abort();
+  }, [deferredSearchQuery, selectedCategory]);
+
+  const fetchBanners = async () => {
+    try {
+      const response = await fetch('/api/public/banners', { cache: 'no-store' });
+      if (!response.ok) {
+        setBanners([]);
+        return;
+      }
+
+      const result = await response.json();
+      setBanners(result.status === 'success' ? result.data.banners || [] : []);
     } catch (error) {
-      console.error('Fetch products error:', error);
-      setProducts([]);
-    } finally {
-      setLoading(false);
+      console.error('Fetch banners error:', error);
+      setBanners([]);
     }
   };
 
@@ -83,9 +119,18 @@ export default function Home() {
     }
   };
 
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const isSearching = normalizedSearchQuery.length > 0;
+  const selectedCategoryName = categories.find(category => category.id === selectedCategory)?.name;
+  let productSectionTitle = selectedCategory === 'all'
+    ? 'Featured Products'
+    : selectedCategoryName || 'Products';
+  if (isSearching) productSectionTitle = `Search results for "${searchQuery.trim()}"`;
+
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = !normalizedSearchQuery ||
+      product.name.toLowerCase().includes(normalizedSearchQuery) ||
+      product.description?.toLowerCase().includes(normalizedSearchQuery);
     const matchesCategory = selectedCategory === 'all' || product.category_id === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -93,7 +138,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-x-hidden">
       {/* Universal Header with Login Modal */}
-      <PublicHeader />
+      <PublicHeader
+        showSearch
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
       {/* Main Content with Sidebar */}
       <div className="flex-1 flex overflow-x-hidden">
@@ -156,25 +205,15 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative w-full max-w-2xl">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 shadow-sm"
-              />
-            </div>
-          </div>
+          {!isSearching && banners.length > 0 && (
+            <HomepageBannerCarousel banners={banners} />
+          )}
 
           {/* Products Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                {selectedCategory === 'all' ? 'Featured Products' : categories.find(c => c.id === selectedCategory)?.name}
+                {productSectionTitle}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
@@ -197,7 +236,7 @@ export default function Home() {
                 No products found
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {searchQuery ? 'Try a different search term' : 'Products will appear here soon'}
+                {isSearching ? 'Try a different search term' : 'Products will appear here soon'}
               </p>
             </div>
           )}

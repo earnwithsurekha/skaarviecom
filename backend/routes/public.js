@@ -2,6 +2,85 @@ const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../models');
 
+// @route   GET /api/public/banners
+// @desc    Get active, scheduled homepage banners for the marketplace
+// @access  Public
+router.get('/banners', async (req, res) => {
+  try {
+    const banners = await sequelize.query(`
+      SELECT
+        id,
+        title,
+        description,
+        image_url,
+        link_url,
+        link_type,
+        link_id,
+        target,
+        display_order
+      FROM banners
+      WHERE banner_type = :bannerType
+        AND is_active = 1
+        AND deleted_at IS NULL
+        AND (start_date IS NULL OR start_date <= NOW())
+        AND (end_date IS NULL OR end_date >= NOW())
+      ORDER BY display_order ASC, created_at DESC
+    `, {
+      replacements: { bannerType: 'homepage' },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    res.json({
+      status: 'success',
+      data: { banners }
+    });
+  } catch (error) {
+    console.error('Public banners error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch banners'
+    });
+  }
+});
+
+// @route   POST /api/public/banners/:id/:event
+// @desc    Increment a public banner view or click counter
+// @access  Public
+router.post('/banners/:id/:event', async (req, res) => {
+  const counterColumns = {
+    view: 'view_count',
+    click: 'click_count'
+  };
+  const counterColumn = counterColumns[req.params.event];
+
+  if (!counterColumn) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Unsupported banner event'
+    });
+  }
+
+  try {
+    await sequelize.query(`
+      UPDATE banners
+      SET ${counterColumn} = ${counterColumn} + 1
+      WHERE id = :bannerId
+        AND is_active = 1
+        AND deleted_at IS NULL
+    `, {
+      replacements: { bannerId: req.params.id }
+    });
+
+    res.json({ status: 'success' });
+  } catch (error) {
+    console.error('Public banner tracking error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to track banner event'
+    });
+  }
+});
+
 // @route   GET /api/public/products/:slug
 // @desc    Get product details by slug for public viewing
 // @access  Public

@@ -11,6 +11,7 @@ export default function WithdrawalsPage() {
   const [withdrawals, setWithdrawals] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -18,7 +19,20 @@ export default function WithdrawalsPage() {
 
   useEffect(() => {
     fetchWithdrawals();
-  }, [statusFilter, pagination.page]);
+  }, [statusFilter, debouncedSearchTerm, pagination.page]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   const fetchWithdrawals = async () => {
     try {
@@ -31,12 +45,15 @@ export default function WithdrawalsPage() {
         return;
       }
 
-      const response = await fetch(
-        `/api/admin/withdrawals?status=${statusFilter}&page=${pagination.page}`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }
-      );
+      const params = new URLSearchParams({
+        status: statusFilter,
+        page: pagination.page,
+        search: debouncedSearchTerm,
+      });
+
+      const response = await fetch(`/api/admin/withdrawals?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

@@ -65,6 +65,10 @@ const nextConfig = {
         destination: `${apiUrl}/api/admin/orders/:path*`,
       },
       {
+        source: '/api/admin/returns/:path*',
+        destination: `${apiUrl}/api/admin/returns/:path*`,
+      },
+      {
         source: '/api/admin/categories/:path*',
         destination: `${apiUrl}/api/admin/categories/:path*`,
       },

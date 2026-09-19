@@ -31,13 +31,37 @@ export default function DemandAnalyticsPage() {
     sortBy: 'conversionRate',
     sortOrder: 'DESC',
   });
+  const [searchInput, setSearchInput] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
   useEffect(() => {
     fetchDemandAnalytics();
+  }, [pagination.page, filters.period, filters.search, filters.sortBy, filters.sortOrder]);
+
+  useEffect(() => {
     fetchTrendingProducts();
+  }, []);
+
+  useEffect(() => {
     fetchShareBreakdown();
-  }, [pagination.page, filters.period, filters.sortBy, filters.sortOrder]);
+  }, [filters.period]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((currentFilters) => (
+        currentFilters.search === searchInput
+          ? currentFilters
+          : { ...currentFilters, search: searchInput }
+      ));
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const fetchDemandAnalytics = async () => {
     try {
@@ -118,13 +142,8 @@ export default function DemandAnalyticsPage() {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPagination({ ...pagination, page: 1 });
-    fetchDemandAnalytics();
-  };
-
   const clearFilters = () => {
+    setSearchInput('');
     setFilters({ period: '30d', search: '', sortBy: 'conversionRate', sortOrder: 'DESC' });
     setPagination({ ...pagination, page: 1 });
   };
@@ -321,14 +340,14 @@ export default function DemandAnalyticsPage() {
 
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search products..."
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
             />
           </div>
@@ -376,24 +395,17 @@ export default function DemandAnalyticsPage() {
           </select>
 
           <div className="flex gap-2">
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2 rounded-lg text-white text-sm transition-all hover:opacity-90 active:scale-95"
-              style={{ backgroundColor: 'rgb(var(--color-primary))' }}
-            >
-              Search
-            </button>
-            {filters.search && (
+            {searchInput && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="px-4 py-2 rounded-lg text-sm transition-all hover:opacity-90 active:scale-95 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                className="w-full px-4 py-2 rounded-lg text-sm transition-all hover:opacity-90 active:scale-95 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
               >
                 Clear
               </button>
             )}
           </div>
-        </form>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

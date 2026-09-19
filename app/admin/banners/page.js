@@ -33,6 +33,7 @@ export default function BannersPage() {
     sortBy: 'display_order',
     sortOrder: 'ASC',
   });
+  const [searchInput, setSearchInput] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [formData, setFormData] = useState({
     title: '',
@@ -52,7 +53,24 @@ export default function BannersPage() {
 
   useEffect(() => {
     fetchBanners();
-  }, [pagination.page, filters.bannerType, filters.isActive, filters.sortBy, filters.sortOrder]);
+  }, [pagination.page, filters.bannerType, filters.isActive, filters.search, filters.sortBy, filters.sortOrder]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((currentFilters) => (
+        currentFilters.search === searchInput
+          ? currentFilters
+          : { ...currentFilters, search: searchInput }
+      ));
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const fetchBanners = async () => {
     try {
@@ -412,9 +430,8 @@ export default function BannersPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                onKeyDown={(e) => e.key === 'Enter' && fetchBanners()}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search banners..."
                 className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
               />
@@ -613,14 +630,14 @@ export default function BannersPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="banner-image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Banner Image *
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="space-y-3">
                   {formData.imagePreview && (
-                    <div className="relative h-32 w-48 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    <div className="relative aspect-[3/1] w-full overflow-hidden border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
                       <Image
-                        src={formData.imagePreview.startsWith('blob:') ? formData.imagePreview : formData.imagePreview}
+                        src={formData.imagePreview}
                         alt="Preview"
                         fill
                         className="object-cover"
@@ -628,6 +645,7 @@ export default function BannersPage() {
                     </div>
                   )}
                   <label 
+                    htmlFor="banner-image"
                     className="block w-full cursor-pointer"
                   >
                     <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
@@ -636,6 +654,7 @@ export default function BannersPage() {
                       Choose Banner Image
                     </div>
                     <input
+                      id="banner-image"
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
@@ -647,6 +666,9 @@ export default function BannersPage() {
                       Selected: {formData.image.name}
                     </p>
                   )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Recommended: 1920 x 640 px (3:1). JPG, PNG, GIF, or WebP up to 5MB.
+                  </p>
                 </div>
               </div>
 

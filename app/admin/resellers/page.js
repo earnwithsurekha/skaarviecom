@@ -27,6 +27,7 @@ export default function ResellersManagementPage() {
     search: '',
     sortBy: 'registrationDate',
   });
+  const [searchInput, setSearchInput] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [selectedReseller, setSelectedReseller] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -48,7 +49,24 @@ export default function ResellersManagementPage() {
 
   useEffect(() => {
     fetchResellers();
-  }, [filters.status, filters.type, filters.sortBy, pagination.page]);
+  }, [filters.status, filters.type, filters.search, filters.sortBy, pagination.page]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((currentFilters) => (
+        currentFilters.search === searchInput
+          ? currentFilters
+          : { ...currentFilters, search: searchInput }
+      ));
+      setPagination((currentPagination) => (
+        currentPagination.page === 1
+          ? currentPagination
+          : { ...currentPagination, page: 1 }
+      ));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const fetchResellers = async (appliedFilters = filters, requestedPage = pagination.page) => {
     try {
@@ -228,18 +246,8 @@ export default function ResellersManagementPage() {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const searchValue = new FormData(e.currentTarget).get('search');
-    const search = typeof searchValue === 'string' ? searchValue : '';
-    const appliedFilters = { ...filters, search };
-
-    setFilters(appliedFilters);
-    setPagination({ ...pagination, page: 1 });
-    fetchResellers(appliedFilters, 1);
-  };
-
   const clearFilters = () => {
+    setSearchInput('');
     setFilters({
       status: 'all',
       type: 'all',
@@ -396,15 +404,14 @@ export default function ResellersManagementPage() {
 
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="relative md:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              name="search"
               placeholder="Search by name, email, phone, code..."
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
             />
           </div>
@@ -433,21 +440,14 @@ export default function ResellersManagementPage() {
 
           <div className="flex gap-2">
             <button
-              type="submit"
-              className="flex-1 px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 active:scale-95"
-              style={{ backgroundColor: 'rgb(var(--color-primary))' }}
-            >
-              Search
-            </button>
-            <button
               type="button"
               onClick={clearFilters}
-              className="px-4 py-2 rounded-lg transition-all hover:opacity-90 active:scale-95 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+              className="w-full px-4 py-2 rounded-lg transition-all hover:opacity-90 active:scale-95 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
             >
               Clear
             </button>
           </div>
-        </form>
+        </div>
       </div>
 
       {/* Resellers Table */}

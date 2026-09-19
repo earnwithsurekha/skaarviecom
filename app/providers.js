@@ -22,10 +22,10 @@ export function Providers({ children }) {
               style: {
                 background: 'rgb(var(--color-surface))',
                 color: 'rgb(var(--color-text))',
-                border: '1px solid rgb(var(--color-border))',
+                border: '2px solid rgb(var(--color-text))',
                 padding: '16px',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                borderRadius: '0',
+                boxShadow: 'none',
               },
               success: {
                 duration: 3000,
