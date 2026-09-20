@@ -312,8 +312,8 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="table">
+          <div className="overflow-x-auto overscroll-x-contain">
+            <table className="table min-w-[720px]">
               <thead>
                 <tr>
                   <th>Order ID</th>

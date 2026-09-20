@@ -2,16 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
 import { 
   ShoppingCart, Heart, Share2, Star, Package, Truck,
   ChevronLeft, ChevronRight, Check, AlertCircle
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ProductVariantSelector from '@/components/product/ProductVariantSelector';
+import { addToCart } from '@/store/slices/cartSlice';
+import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVariantMedia';
 
 export default function PublicProductPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const dispatch = useDispatch();
   const referralCode = searchParams.get('ref');
   
   const [loading, setLoading] = useState(true);
@@ -22,7 +27,21 @@ export default function PublicProductPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [addedToCart, setAddedToCart] = useState(false);
+
+  const variants = product?.variants || [];
+  const productUsesSizes = variants.some((variant) => variant.sizeLabel);
+  const productUsesColors = variants.some((variant) => variant.colorName);
+  const selectedVariant = variants.find((variant) => (
+    (!productUsesSizes || variant.sizeLabel === selectedSize)
+    && (!productUsesColors || variant.colorName === selectedColor)
+  ));
+  const availableStock = variants.length > 0
+    ? selectedVariant?.stockQuantity || 0
+    : product?.stock_quantity || 0;
+  const galleryImages = getVariantGalleryImages(images, selectedSize, selectedColor);
 
   useEffect(() => {
     if (params.slug) {
@@ -39,7 +58,7 @@ export default function PublicProductPage() {
 
       if (result.status === 'success') {
         setProduct(result.data.product);
-        setImages(result.data.images || []);
+        setImages(normalizeProductImages(result.data.images || [], (url) => url));
         setVideos(result.data.videos || []);
         setRelatedProducts(result.data.relatedProducts || []);
       } else {
@@ -95,25 +114,32 @@ export default function PublicProductPage() {
   };
 
   const handleAddToCart = () => {
-    // TODO: Implement cart functionality
-    // Store referral code in cart item for order attribution
-    const cartItem = {
+    if (variants.length > 0 && !selectedVariant) {
+      return;
+    }
+
+    dispatch(addToCart({
       productId: product.id,
+      name: product.name,
+      price: product.selling_price,
+      image: galleryImages[0]?.url || null,
+      stock: availableStock,
       quantity,
-      referralCode: referralCode || null
-    };
-    
-    // For now, just show success message
+      referralCode: referralCode || null,
+      selectedSize: selectedVariant?.sizeLabel || null,
+      selectedColor: selectedVariant?.colorName || null,
+    }));
+
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 3000);
   };
 
   const nextImage = () => {
-    setSelectedImageIndex((prev) => (prev + 1) % images.length);
+    setSelectedImageIndex((prev) => (prev + 1) % galleryImages.length);
   };
 
   const prevImage = () => {
-    setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setSelectedImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
   };
 
   if (loading) {
@@ -171,15 +197,15 @@ export default function PublicProductPage() {
                 height: '500px'
               }}
             >
-              {images.length > 0 ? (
+              {galleryImages.length > 0 ? (
                 <>
                   <img
-                    src={images[selectedImageIndex]?.image_url}
+                    src={galleryImages[selectedImageIndex]?.url}
                     alt={product.name}
                     className="w-full h-full object-contain"
                   />
                   
-                  {images.length > 1 && (
+                  {galleryImages.length > 1 && (
                     <>
                       <button
                         onClick={prevImage}
@@ -206,9 +232,9 @@ export default function PublicProductPage() {
             </div>
 
             {/* Thumbnail Gallery */}
-            {images.length > 1 && (
+            {galleryImages.length > 1 && (
               <div className="grid grid-cols-5 gap-2">
-                {images.map((image, index) => (
+                {galleryImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
@@ -221,7 +247,7 @@ export default function PublicProductPage() {
                     }}
                   >
                     <img
-                      src={image.image_url}
+                      src={image.url}
                       alt={`View ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -296,6 +322,22 @@ export default function PublicProductPage() {
                 </span>
               </div>
 
+              <ProductVariantSelector
+                variants={variants}
+                selectedSize={selectedSize}
+                selectedColor={selectedColor}
+                onSelectSize={(size) => {
+                  setSelectedSize(size);
+                  setQuantity(1);
+                  setSelectedImageIndex(0);
+                }}
+                onSelectColor={(color) => {
+                  setSelectedColor(color);
+                  setQuantity(1);
+                  setSelectedImageIndex(0);
+                }}
+              />
+
               {/* Quantity Selector */}
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(var(--color-text))' }}>
@@ -315,7 +357,7 @@ export default function PublicProductPage() {
                   <input
                     type="number"
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => setQuantity(Math.min(availableStock, Math.max(1, parseInt(e.target.value) || 1)))}
                     className="w-20 h-10 text-center rounded-lg"
                     style={{ 
                       backgroundColor: 'rgb(var(--color-background))',
@@ -324,12 +366,13 @@ export default function PublicProductPage() {
                     }}
                   />
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                     className="w-10 h-10 rounded-lg flex items-center justify-center"
                     style={{ 
                       backgroundColor: 'rgb(var(--color-background))',
                       border: '1px solid rgb(var(--color-border))'
                     }}
+                    disabled={quantity >= availableStock || (variants.length > 0 && !selectedVariant)}
                   >
                     +
                   </button>
@@ -340,7 +383,7 @@ export default function PublicProductPage() {
               <div className="space-y-3">
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.stock_status === 'out_of_stock' || addedToCart}
+                  disabled={product.stock_status === 'out_of_stock' || (variants.length > 0 && !selectedVariant) || addedToCart}
                   className="w-full py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   style={{ 
                     backgroundColor: addedToCart ? 'rgb(34, 197, 94)' : 'rgb(var(--color-primary))',

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SKAARVI</string>
+    <string name="title_activity_main">SKAARVI</string>
+    <string name="package_name">com.skaarvi.marketplace</string>
+    <string name="custom_url_scheme">com.skaarvi.marketplace</string>
+</resources>

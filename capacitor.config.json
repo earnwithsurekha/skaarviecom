@@ -1,0 +1,12 @@
+{
+  "appId": "com.skaarvi.marketplace",
+  "appName": "SKAARVI",
+  "webDir": "public",
+  "server": {
+    "url": "https://skaarvi.shop",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

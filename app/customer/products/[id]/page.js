@@ -17,9 +17,11 @@ import {
 import { toast } from 'react-hot-toast';
 import ProductSaveButton from '@/components/product/ProductSaveButton';
 import ProductShareButton from '@/components/product/ProductShareButton';
-import { addToCart } from '@/store/slices/cartSlice';
+import ProductVariantSelector from '@/components/product/ProductVariantSelector';
+import { addToCart, getCartItemId } from '@/store/slices/cartSlice';
 import { getReferralCodeFromURL, saveReferralCodeToCookie, getReferralCodeFromStorage } from '@/lib/cartUtils';
 import { trackProductViewWithReferral } from '@/lib/referralTracking';
+import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVariantMedia';
 
 // Helper functions to handle both S3 and local URLs
 const getImageUrl = (imagePath) => {
@@ -27,14 +29,6 @@ const getImageUrl = (imagePath) => {
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
   if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
   return null;
-};
-
-const getImageUrls = (images, urlField = 'imageUrl') => {
-  if (!Array.isArray(images) || images.length === 0) return [];
-  return images.map(img => {
-    const path = typeof img === 'string' ? img : img[urlField];
-    return getImageUrl(path);
-  }).filter(url => url !== null);
 };
 
 export default function CustomerProductDetailPage() {
@@ -47,8 +41,21 @@ export default function CustomerProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
   const [imageError, setImageError] = useState(false);
+
+  const variants = product?.variants || [];
+  const productUsesSizes = variants.some((variant) => variant.sizeLabel);
+  const productUsesColors = variants.some((variant) => variant.colorName);
+  const selectedVariant = variants.find((variant) => (
+    (!productUsesSizes || variant.sizeLabel === selectedSize)
+    && (!productUsesColors || variant.colorName === selectedColor)
+  ));
+  const availableStock = variants.length > 0
+    ? selectedVariant?.stockQuantity || 0
+    : product?.stock || 0;
 
   const productId = params.id;
 
@@ -78,12 +85,13 @@ export default function CustomerProductDetailPage() {
       
       if (result.status === 'success') {
         const { product: productData, images, videos } = result.data;
+        const normalizedImages = normalizeProductImages(images, getImageUrl);
 
         // Format product data with backend URL for images
         setProduct({
           ...productData,
-          images: getImageUrls(images, 'image_url'),
-          imageUrl: images.length > 0 ? getImageUrl(images[0].image_url) : null,
+          images: normalizedImages,
+          imageUrl: normalizedImages[0]?.url || null,
           videos: videos.map(vid => ({
             url: getImageUrl(vid.video_url),
             thumbnail: getImageUrl(vid.thumbnail_url)
@@ -109,6 +117,10 @@ export default function CustomerProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
+    if (variants.length > 0 && !selectedVariant) {
+      toast.error('Please select an available size and color');
+      return;
+    }
     
     const referralCode = getReferralCodeFromStorage();
     
@@ -116,10 +128,12 @@ export default function CustomerProductDetailPage() {
       productId: product.id,
       name: product.name,
       price: product.sellingPrice || product.price,
-      image: product.imageUrl,
-      stock: product.stock,
+      image: images[0]?.url || product.imageUrl,
+      stock: availableStock,
       quantity,
-      referralCode
+      referralCode,
+      selectedSize: selectedVariant?.sizeLabel || null,
+      selectedColor: selectedVariant?.colorName || null,
     };
     
     console.log('[Add to Cart] Product data:', {
@@ -139,9 +153,16 @@ export default function CustomerProductDetailPage() {
 
   const handleBuyNow = () => {
     if (!product) return;
+    if (variants.length > 0 && !selectedVariant) {
+      toast.error('Please select an available size and color');
+      return;
+    }
     
     // Check if product is already in cart
-    const existingItem = cartItems.find(item => item.productId === product.id);
+    const cartItemId = getCartItemId(product.id, selectedVariant?.sizeLabel, selectedVariant?.colorName);
+    const existingItem = cartItems.find(
+      item => getCartItemId(item.productId, item.selectedSize, item.selectedColor) === cartItemId
+    );
     
     if (!existingItem) {
       // Only add to cart if it's not already there
@@ -193,7 +214,7 @@ export default function CustomerProductDetailPage() {
     );
   }
 
-  const images = product.images || [product.imageUrl].filter(Boolean);
+  const images = getVariantGalleryImages(product.images || [], selectedSize, selectedColor);
   const discount = product.mrp && product.mrp > (product.sellingPrice || product.price)
     ? Math.round(((product.mrp - (product.sellingPrice || product.price)) / product.mrp) * 100)
     : 0;
@@ -224,7 +245,7 @@ export default function CustomerProductDetailPage() {
             }}>
               {images[selectedImage] && !imageError ? (
                 <img
-                  src={images[selectedImage]}
+                  src={images[selectedImage].url}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   onError={() => setImageError(true)}
@@ -273,7 +294,7 @@ export default function CustomerProductDetailPage() {
                     }}
                   >
                     <img
-                      src={image}
+                      src={image.url}
                       alt={`${product.name} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -452,6 +473,24 @@ export default function CustomerProductDetailPage() {
               )}
             </div>
 
+            <ProductVariantSelector
+              variants={variants}
+              selectedSize={selectedSize}
+              selectedColor={selectedColor}
+              onSelectSize={(size) => {
+                setSelectedSize(size);
+                setQuantity(1);
+                setSelectedImage(0);
+                setImageError(false);
+              }}
+              onSelectColor={(color) => {
+                setSelectedColor(color);
+                setQuantity(1);
+                setSelectedImage(0);
+                setImageError(false);
+              }}
+            />
+
             {/* Quantity Selector */}
             <div className="flex items-center gap-4">
               <span className="font-medium" style={{ color: 'rgb(var(--color-text))' }}>Quantity:</span>
@@ -468,10 +507,10 @@ export default function CustomerProductDetailPage() {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                   className="w-10 h-10 rounded-lg border hover:opacity-80 flex items-center justify-center"
                   style={{ borderColor: 'rgb(var(--color-border))' }}
-                  disabled={quantity >= product.stock}
+                  disabled={quantity >= availableStock || (variants.length > 0 && !selectedVariant)}
                 >
                   +
                 </button>
@@ -482,7 +521,7 @@ export default function CustomerProductDetailPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={product.stock === 0 || (variants.length > 0 && !selectedVariant)}
                 className="flex-1 btn btn-outline flex items-center justify-center gap-2"
               >
                 <ShoppingCart className="h-5 w-5" />
@@ -490,7 +529,7 @@ export default function CustomerProductDetailPage() {
               </button>
               <button
                 onClick={handleBuyNow}
-                disabled={product.stock === 0}
+                disabled={product.stock === 0 || (variants.length > 0 && !selectedVariant)}
                 className="flex-1 btn btn-primary"
               >
                 Buy Now

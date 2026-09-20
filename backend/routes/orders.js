@@ -58,7 +58,7 @@ router.get('/', authMiddleware, manufacturerOnly, async (req, res) => {
         as: 'items',
         where: { manufacturerId },
         required: true,
-        attributes: ['id', 'productName', 'productSku', 'quantity', 'sellingPrice', 'itemTotal']
+        attributes: ['id', 'productName', 'productSku', 'quantity', 'selectedSize', 'selectedColor', 'sellingPrice', 'itemTotal']
       }],
       limit: parseInt(limit),
       offset: offset,

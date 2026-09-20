@@ -18,10 +18,12 @@ import {
 import { toast } from 'react-hot-toast';
 import ProductSaveButton from '@/components/product/ProductSaveButton';
 import ProductShareButton from '@/components/product/ProductShareButton';
+import ProductVariantSelector from '@/components/product/ProductVariantSelector';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
-import { addToCart } from '@/store/slices/cartSlice';
+import { addToCart, getCartItemId } from '@/store/slices/cartSlice';
 import { getReferralCodeFromURL, saveReferralCodeToCookie, getReferralCodeFromStorage } from '@/lib/cartUtils';
 import { trackProductViewWithReferral } from '@/lib/referralTracking';
+import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVariantMedia';
 
 // Helper functions to handle both S3 and local URLs
 const getImageUrl = (imagePath) => {
@@ -29,14 +31,6 @@ const getImageUrl = (imagePath) => {
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
   if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
   return null;
-};
-
-const getImageUrls = (images, urlField = 'imageUrl') => {
-  if (!Array.isArray(images) || images.length === 0) return [];
-  return images.map(img => {
-    const path = typeof img === 'string' ? img : img[urlField];
-    return getImageUrl(path);
-  }).filter(url => url !== null);
 };
 
 export default function ProductDetailPage() {
@@ -50,7 +44,20 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [imageError, setImageError] = useState(false);
+
+  const variants = product?.variants || [];
+  const productUsesSizes = variants.some((variant) => variant.sizeLabel);
+  const productUsesColors = variants.some((variant) => variant.colorName);
+  const selectedVariant = variants.find((variant) => (
+    (!productUsesSizes || variant.sizeLabel === selectedSize)
+    && (!productUsesColors || variant.colorName === selectedColor)
+  ));
+  const availableStock = variants.length > 0
+    ? selectedVariant?.stockQuantity || 0
+    : product?.stock || 0;
 
   useEffect(() => {
     if (productId) {
@@ -78,12 +85,13 @@ export default function ProductDetailPage() {
           const productData = result.data.product;
           const images = result.data.images || [];
           const videos = result.data.videos || [];
+          const normalizedImages = normalizeProductImages(images, getImageUrl);
           
           // Format product data with backend URL for images
           setProduct({
             ...productData,
-            images: getImageUrls(images, 'image_url'),
-            imageUrl: images.length > 0 ? getImageUrl(images[0].image_url) : null,
+            images: normalizedImages,
+            imageUrl: normalizedImages[0]?.url || null,
             videos: videos.map(vid => ({
               url: getImageUrl(vid.video_url),
               thumbnail: getImageUrl(vid.thumbnail_url)
@@ -128,6 +136,10 @@ export default function ProductDetailPage() {
       toast.error('This product is out of stock');
       return;
     }
+    if (variants.length > 0 && !selectedVariant) {
+      toast.error('Please select an available size and color');
+      return;
+    }
     
     // Get referral code from storage (cookie or localStorage)
     const referralCode = getReferralCodeFromStorage();
@@ -136,10 +148,12 @@ export default function ProductDetailPage() {
       productId: product.id,
       name: product.name,
       price: product.sellingPrice || product.price,
-      image: product.imageUrl || (product.images && product.images[0]),
-      stock: product.stock_quantity,
+      image: images[0]?.url || product.imageUrl,
+      stock: availableStock,
       quantity: quantity,
       referralCode: referralCode,
+      selectedSize: selectedVariant?.sizeLabel || null,
+      selectedColor: selectedVariant?.colorName || null,
     }));
     
     toast.success(`${quantity} item(s) added to cart!`, {
@@ -160,7 +174,15 @@ export default function ProductDetailPage() {
     }
     
     // Check if product is already in cart
-    const existingItem = cartItems.find(item => item.productId === product.id);
+    if (variants.length > 0 && !selectedVariant) {
+      toast.error('Please select an available size and color');
+      return;
+    }
+
+    const cartItemId = getCartItemId(product.id, selectedVariant?.sizeLabel, selectedVariant?.colorName);
+    const existingItem = cartItems.find(
+      item => getCartItemId(item.productId, item.selectedSize, item.selectedColor) === cartItemId
+    );
     
     if (!existingItem) {
       // Only add to cart if it's not already there
@@ -206,7 +228,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const images = product.images || [product.imageUrl].filter(Boolean);
+  const images = getVariantGalleryImages(product.images || [], selectedSize, selectedColor);
   const discount = product.mrp && product.mrp > (product.sellingPrice || product.price)
     ? Math.round(((product.mrp - (product.sellingPrice || product.price)) / product.mrp) * 100)
     : 0;
@@ -253,7 +275,7 @@ export default function ProductDetailPage() {
             <div className="relative aspect-square bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
               {images[selectedImage] && !imageError ? (
                 <img
-                  src={images[selectedImage]}
+                  src={images[selectedImage].url}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   onError={() => setImageError(true)}
@@ -294,7 +316,7 @@ export default function ProductDetailPage() {
                     }`}
                   >
                     <img
-                      src={image}
+                      src={image.url}
                       alt={`${product.name} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -423,6 +445,24 @@ export default function ProductDetailPage() {
               )}
             </div>
 
+            <ProductVariantSelector
+              variants={variants}
+              selectedSize={selectedSize}
+              selectedColor={selectedColor}
+              onSelectSize={(size) => {
+                setSelectedSize(size);
+                setQuantity(1);
+                setSelectedImage(0);
+                setImageError(false);
+              }}
+              onSelectColor={(color) => {
+                setSelectedColor(color);
+                setQuantity(1);
+                setSelectedImage(0);
+                setImageError(false);
+              }}
+            />
+
             {/* Quantity Selector */}
             <div className="flex items-center gap-4">
               <span className="text-gray-700 dark:text-gray-300 font-medium">Quantity:</span>
@@ -438,9 +478,9 @@ export default function ProductDetailPage() {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                   className="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center"
-                  disabled={quantity >= product.stock}
+                  disabled={quantity >= availableStock || (variants.length > 0 && !selectedVariant)}
                 >
                   +
                 </button>
@@ -451,7 +491,7 @@ export default function ProductDetailPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={product.stock === 0 || (variants.length > 0 && !selectedVariant)}
                 className="flex-1 bg-white dark:bg-gray-800 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <ShoppingCart className="h-5 w-5" />
@@ -459,7 +499,7 @@ export default function ProductDetailPage() {
               </button>
               <button
                 onClick={handleBuyNow}
-                disabled={product.stock === 0}
+                disabled={product.stock === 0 || (variants.length > 0 && !selectedVariant)}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Buy Now

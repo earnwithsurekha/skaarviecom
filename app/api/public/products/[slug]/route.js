@@ -10,6 +10,7 @@ export async function GET(request, { params }) {
     
     const backendResponse = await fetch(`${BACKEND_URL}/api/public/products/${slug}`, {
       method: 'GET',
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
       },

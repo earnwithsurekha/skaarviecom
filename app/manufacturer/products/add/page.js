@@ -2,9 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useDispatch } from 'react-redux';
 import api from '@/lib/api';
-import { ChevronDown, ChevronUp, Plus, X, Upload, FileText, Video, Image as ImageIcon } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, X, FileText, Video, Image as ImageIcon } from 'lucide-react';
+import {
+  getProductSizeConfig,
+  getVariantInventoryKey,
+  PRODUCT_COLOR_PRESETS,
+} from '@/lib/productSizeConfig';
 
 // Section component moved outside to prevent re-creation on every render
 const Section = ({ title, name, isOpen, onToggle, children }) => (
@@ -29,7 +33,6 @@ const Section = ({ title, name, isOpen, onToggle, children }) => (
 export default function AddProductPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useDispatch();
   const editProductId = searchParams.get('id'); // Get product ID from URL for edit mode
 
   // Collapsible sections state
@@ -38,6 +41,7 @@ export default function AddProductPage() {
     media: true,
     pricing: true,
     inventory: true,
+    sizing: true,
     shipping: true,
   });
 
@@ -52,6 +56,11 @@ export default function AddProductPage() {
     costPrice: '',
     stockQuantity: '',
     lowStockThreshold: 10,
+    hasSizeVariants: false,
+    sizeVariants: [],
+    hasColorVariants: false,
+    colorVariants: [],
+    variantQuantities: {},
     weight: '',
     dimensions: { length: '', width: '', height: '' },
     deliveryDays: '',
@@ -61,10 +70,9 @@ export default function AddProductPage() {
   });
 
   // File upload state
-  const [images, setImages] = useState([]);
+  const [imageItems, setImageItems] = useState([]);
   const [videos, setVideos] = useState([]);
   const [catalog, setCatalog] = useState(null);
-  const [imagePreviews, setImagePreviews] = useState([]);
   const [videoPreviews, setVideoPreviews] = useState([]);
 
   // UI state
@@ -77,6 +85,54 @@ export default function AddProductPage() {
   const [productId, setProductId] = useState(null);
   const [autoSaving, setAutoSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [mediaDirty, setMediaDirty] = useState(false);
+  const [customSizeLabel, setCustomSizeLabel] = useState('');
+  const [customColorName, setCustomColorName] = useState('');
+  const [customColorHex, setCustomColorHex] = useState('#111827');
+
+  const selectedCategory = categories.find((category) => category.id === formData.categoryId);
+  const sizeConfig = getProductSizeConfig(selectedCategory?.slug);
+  const usesSizeVariants = Boolean(
+    sizeConfig && (sizeConfig.requirement === 'required' || formData.hasSizeVariants)
+  );
+  const usesColorVariants = formData.hasColorVariants;
+  const usesProductVariants = usesSizeVariants || usesColorVariants;
+  let configuredVariants = [];
+  if (usesSizeVariants) {
+    configuredVariants = formData.sizeVariants.flatMap((sizeLabel) => (
+      usesColorVariants
+        ? formData.colorVariants.map((color) => ({ sizeLabel, ...color }))
+        : [{ sizeLabel, colorName: null, colorHex: null }]
+    ));
+  } else if (usesColorVariants) {
+    configuredVariants = formData.colorVariants.map((color) => ({ sizeLabel: null, ...color }));
+  }
+  const productVariants = configuredVariants.map((variant) => ({
+    ...variant,
+    stockQuantity: Number.parseInt(
+      formData.variantQuantities[getVariantInventoryKey(variant.sizeLabel, variant.colorName)],
+      10
+    ) || 0,
+  }));
+  const totalVariantStock = productVariants.reduce(
+    (total, variant) => total + variant.stockQuantity,
+    0
+  );
+  const mediaAssignmentOptions = [
+    { value: '', label: 'All variants (general image)' },
+    ...formData.colorVariants.map((color) => ({
+      value: `color:${color.colorName.toLocaleLowerCase('en-IN')}`,
+      label: `Color: ${color.colorName} (all sizes)`,
+    })),
+    ...formData.sizeVariants.map((sizeLabel) => ({
+      value: `size:${sizeLabel.toLocaleLowerCase('en-IN')}`,
+      label: `Size: ${sizeLabel} (all colors)`,
+    })),
+    ...productVariants.map((variant) => ({
+      value: getVariantInventoryKey(variant.sizeLabel, variant.colorName).toLocaleLowerCase('en-IN'),
+      label: `Exact: ${[variant.colorName, variant.sizeLabel].filter(Boolean).join(' / ')}`,
+    })),
+  ];
 
   // Fetch categories on mount
   useEffect(() => {
@@ -99,7 +155,7 @@ export default function AddProductPage() {
     }, 30000); // Auto-save every 30 seconds
 
     return () => clearInterval(autoSaveInterval);
-  }, [formData, productId]);
+  }, [formData, productId, mediaDirty]);
 
   const loadProductForEdit = async (id) => {
     try {
@@ -118,6 +174,26 @@ export default function AddProductPage() {
         }
       }
 
+      const loadedVariants = productData.variants || [];
+      const loadedSizes = [...new Set(
+        loadedVariants.map((variant) => variant.sizeLabel).filter(Boolean)
+      )];
+      const loadedColors = loadedVariants
+        .filter((variant) => variant.colorName)
+        .filter((variant, index, allVariants) => (
+          allVariants.findIndex((candidate) => candidate.colorName === variant.colorName) === index
+        ))
+        .map((variant) => ({
+          colorName: variant.colorName,
+          colorHex: variant.colorHex || '#64748b',
+        }));
+      const loadedVariantQuantities = Object.fromEntries(
+        loadedVariants.map((variant) => [
+          getVariantInventoryKey(variant.sizeLabel, variant.colorName),
+          Number.parseInt(variant.stockQuantity, 10) || 0,
+        ])
+      );
+
       // Set form data from loaded product
       setFormData({
         name: productData.name || '',
@@ -129,6 +205,11 @@ export default function AddProductPage() {
         costPrice: productData.costPrice || '',
         stockQuantity: productData.stockQuantity || '',
         lowStockThreshold: productData.lowStockThreshold || 10,
+        hasSizeVariants: loadedSizes.length > 0,
+        sizeVariants: loadedSizes,
+        hasColorVariants: loadedColors.length > 0,
+        colorVariants: loadedColors,
+        variantQuantities: loadedVariantQuantities,
         weight: productData.weight || '',
         dimensions: productData.dimensions || { length: '', width: '', height: '' },
         deliveryDays: productData.deliveryDays || '',
@@ -142,9 +223,18 @@ export default function AddProductPage() {
 
       // Load existing images
       if (productData.images && productData.images.length > 0) {
-        const existingImages = productData.images.map(img => img.imageUrl);
-        setImagePreviews(existingImages);
+        setImageItems(productData.images.map((image) => ({
+          id: image.id,
+          file: null,
+          previewUrl: image.imageUrl,
+          variantKeys: Array.isArray(image.variantKeys)
+            ? image.variantKeys
+            : image.variantKey
+              ? [image.variantKey]
+              : [],
+        })));
       }
+      setMediaDirty(false);
 
       // Load existing videos
       if (productData.videos && productData.videos.length > 0) {
@@ -175,7 +265,97 @@ export default function AddProductPage() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'categoryId') {
+      const nextSizeConfig = getProductSizeConfig(
+        categories.find((category) => category.id === value)?.slug
+      );
+      setFormData((previous) => ({
+        ...previous,
+        categoryId: value,
+        hasSizeVariants: nextSizeConfig?.requirement === 'required'
+          ? true
+          : nextSizeConfig?.requirement === 'optional' && previous.hasSizeVariants,
+        sizeVariants: nextSizeConfig ? previous.sizeVariants : [],
+      }));
+      return;
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const toggleSize = (sizeLabel) => {
+    setFormData((previous) => {
+      const isSelected = previous.sizeVariants.includes(sizeLabel);
+      return {
+        ...previous,
+        sizeVariants: isSelected
+          ? previous.sizeVariants.filter((configuredSize) => configuredSize !== sizeLabel)
+          : [...previous.sizeVariants, sizeLabel],
+      };
+    });
+  };
+
+  const updateVariantQuantity = (sizeLabel, colorName, stockQuantity) => {
+    const variantKey = getVariantInventoryKey(sizeLabel, colorName);
+    setFormData((previous) => ({
+      ...previous,
+      variantQuantities: {
+        ...previous.variantQuantities,
+        [variantKey]: stockQuantity,
+      },
+    }));
+  };
+
+  const addCustomSize = () => {
+    const sizeLabel = customSizeLabel.trim();
+    if (!sizeLabel) return;
+
+    const alreadyExists = formData.sizeVariants.some(
+      (configuredSize) => configuredSize.toLocaleLowerCase('en-IN') === sizeLabel.toLocaleLowerCase('en-IN')
+    );
+    if (alreadyExists) {
+      setError(`Size "${sizeLabel}" is already configured`);
+      return;
+    }
+
+    setFormData((previous) => ({
+      ...previous,
+      sizeVariants: [...previous.sizeVariants, sizeLabel],
+    }));
+    setCustomSizeLabel('');
+    setError('');
+  };
+
+  const toggleColor = (color) => {
+    setFormData((previous) => {
+      const isSelected = previous.colorVariants.some((variant) => variant.colorName === color.colorName);
+      return {
+        ...previous,
+        colorVariants: isSelected
+          ? previous.colorVariants.filter((variant) => variant.colorName !== color.colorName)
+          : [...previous.colorVariants, color],
+      };
+    });
+  };
+
+  const addCustomColor = () => {
+    const colorName = customColorName.trim();
+    if (!colorName) return;
+
+    const alreadyExists = formData.colorVariants.some(
+      (variant) => variant.colorName.toLocaleLowerCase('en-IN') === colorName.toLocaleLowerCase('en-IN')
+    );
+    if (alreadyExists) {
+      setError(`Color "${colorName}" is already configured`);
+      return;
+    }
+
+    setFormData((previous) => ({
+      ...previous,
+      colorVariants: [...previous.colorVariants, { colorName, colorHex: customColorHex }],
+    }));
+    setCustomColorName('');
+    setError('');
   };
 
   const handleDimensionChange = (dimension, value) => {
@@ -212,8 +392,8 @@ export default function AddProductPage() {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     
-    if (images.length + files.length > 10) {
-      setError('Maximum 10 images allowed');
+    if (imageItems.length + files.length > 30) {
+      setError('Maximum 30 images allowed');
       return;
     }
 
@@ -225,21 +405,42 @@ export default function AddProductPage() {
       return true;
     });
 
-    setImages(prev => [...prev, ...validFiles]);
-
-    // Create previews
-    validFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
-    });
+    const newImageItems = validFiles.map((file) => ({
+      id: `new-${crypto.randomUUID()}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      variantKeys: [],
+    }));
+    setImageItems((previous) => [...previous, ...newImageItems]);
+    setMediaDirty(true);
+    e.target.value = '';
   };
 
   const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageItems((previous) => {
+      const removedImage = previous[index];
+      if (removedImage?.file && removedImage.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(removedImage.previewUrl);
+      }
+      return previous.filter((_, imageIndex) => imageIndex !== index);
+    });
+    setMediaDirty(true);
+  };
+
+  const toggleImageAssignment = (imageId, variantKey) => {
+    setImageItems((previous) => previous.map((image) => (
+      image.id === imageId
+        ? {
+            ...image,
+            variantKeys: variantKey === ''
+              ? []
+              : image.variantKeys.includes(variantKey)
+                ? image.variantKeys.filter((configuredKey) => configuredKey !== variantKey)
+                : [...image.variantKeys, variantKey],
+          }
+        : image
+    )));
+    setMediaDirty(true);
   };
 
   // Video handling
@@ -301,7 +502,7 @@ export default function AddProductPage() {
 
   // Auto-save handler
   const handleAutoSave = async () => {
-    if (!productId || autoSaving) return;
+    if (!productId || autoSaving || mediaDirty) return;
 
     setAutoSaving(true);
     try {
@@ -323,11 +524,30 @@ export default function AddProductPage() {
     try {
       // Validation
       if (!isAutoSave) {
-        if (!formData.name || !formData.categoryId || !formData.costPrice || !formData.stockQuantity) {
+        if (!formData.name || !formData.categoryId || !formData.costPrice || (!usesProductVariants && formData.stockQuantity === '')) {
           setError('Please fill in all required fields');
           setLoading(false);
           return;
         }
+        if (usesSizeVariants && formData.sizeVariants.length === 0) {
+          setError('Select at least one size and enter its available quantity');
+          setLoading(false);
+          return;
+        }
+        if (usesColorVariants && formData.colorVariants.length === 0) {
+          setError('Select at least one color and enter its available quantity');
+          setLoading(false);
+          return;
+        }
+      }
+
+      const validMediaAssignmentKeys = new Set(mediaAssignmentOptions.map((option) => option.value));
+      if (!isAutoSave && imageItems.some((image) => (
+        image.variantKeys.some((variantKey) => !validMediaAssignmentKeys.has(variantKey))
+      ))) {
+        setError('One or more images reference a removed size or color. Reassign those images before saving.');
+        setLoading(false);
+        return;
       }
 
       // Prepare form data for multipart upload
@@ -346,10 +566,18 @@ export default function AddProductPage() {
           submitData.append('specifications', JSON.stringify(specsObj));
         } else if (key === 'dimensions') {
           submitData.append('dimensions', JSON.stringify(formData.dimensions));
+        } else if (['sizeVariants', 'hasSizeVariants', 'colorVariants', 'hasColorVariants', 'variantQuantities'].includes(key)) {
+          return;
+        } else if (key === 'stockQuantity' && usesProductVariants) {
+          submitData.append('stockQuantity', totalVariantStock.toString());
         } else if (formData[key] !== '') {
           submitData.append(key, formData[key]);
         }
       });
+      submitData.append(
+        'variants',
+        JSON.stringify(usesProductVariants ? productVariants : [])
+      );
 
       // Set status
       if (submitForApproval) {
@@ -358,19 +586,30 @@ export default function AddProductPage() {
         submitData.set('status', 'draft');
       }
 
-      // Add images
-      images.forEach(image => {
-        submitData.append('images', image);
-      });
+      if (!isAutoSave) {
+        const newImages = imageItems.filter((image) => image.file);
+        const existingImages = imageItems.filter((image) => !image.file);
 
-      // Add videos
-      videos.forEach(video => {
-        submitData.append('videos', video);
-      });
+        newImages.forEach((image) => {
+          submitData.append('images', image.file);
+        });
+        submitData.append(
+          'imageAssignments',
+            JSON.stringify(newImages.map((image) => ({ variantKeys: image.variantKeys })))
+        );
+        if (productId) {
+          submitData.append(
+            'existingImageAssignments',
+            JSON.stringify(existingImages.map((image) => ({ id: image.id, variantKeys: image.variantKeys })))
+          );
+        }
 
-      // Add catalog
-      if (catalog) {
-        submitData.append('catalog', catalog);
+        videos.forEach(video => {
+          submitData.append('videos', video);
+        });
+        if (catalog) {
+          submitData.append('catalog', catalog);
+        }
       }
 
       // Submit to API
@@ -391,6 +630,24 @@ export default function AddProductPage() {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setProductId(response.data.data.product.id);
+      }
+
+      if (!isAutoSave) {
+        const savedImages = response.data.data.product.images || [];
+        imageItems.forEach((image) => {
+          if (image.file && image.previewUrl.startsWith('blob:')) URL.revokeObjectURL(image.previewUrl);
+        });
+        setImageItems(savedImages.map((image) => ({
+          id: image.id,
+          file: null,
+          previewUrl: image.imageUrl,
+          variantKeys: Array.isArray(image.variantKeys)
+            ? image.variantKeys
+            : image.variantKey
+              ? [image.variantKey]
+              : [],
+        })));
+        setMediaDirty(false);
       }
 
       if (!isAutoSave) {
@@ -420,8 +677,13 @@ export default function AddProductPage() {
             {editProductId ? 'Edit Product' : 'Add New Product'}
           </h1>
           <p className="mt-2 text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
-            Fill in the product details below. Changes are auto-saved every 30 seconds.
+            Product details auto-save every 30 seconds. Images and other media are uploaded only when you save the product.
           </p>
+          {mediaDirty && (
+            <p className="mt-1 text-xs font-medium" style={{ color: 'rgb(var(--color-warning))' }}>
+              Unsaved media changes. Use Save Draft or Submit for Approval to upload them.
+            </p>
+          )}
           {lastSaved && (
             <p className="mt-1 text-xs" style={{ color: 'rgb(var(--color-success))' }}>
               Last saved: {lastSaved.toLocaleTimeString()}
@@ -583,7 +845,7 @@ export default function AddProductPage() {
               {/* Images */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(var(--color-text))' }}>
-                  Product Images (Max 10)
+                  Product Images (Max 30)
                 </label>
                 <div className="border-2 border-dashed rounded-lg p-4" style={{ borderColor: 'rgb(var(--color-border))' }}>
                   <input
@@ -606,30 +868,90 @@ export default function AddProductPage() {
                   </label>
                 </div>
 
-                {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-5 gap-4 mt-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          style={{ backgroundColor: 'rgb(var(--color-danger))', color: 'white' }}
-                        >
-                          <X size={14} />
-                        </button>
-                        {index === 0 && (
-                          <span className="absolute bottom-1 left-1 px-2 py-0.5 text-xs rounded" style={{ backgroundColor: 'rgb(var(--color-primary))', color: 'white' }}>
-                            Primary
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                {usesProductVariants && (
+                  <p className="mt-2 text-xs" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                    For one image across every Red size, select "Color: Red (all sizes)". For selected sizes only, check multiple exact options such as Red / M, Red / L, Red / XL, and Red / XXL.
+                  </p>
+                )}
+
+                {imageItems.length > 0 && (
+                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {imageItems.map((image, index) => {
+                      const selectedLabels = mediaAssignmentOptions
+                        .filter((option) => option.value && image.variantKeys.includes(option.value))
+                        .map((option) => option.label);
+                      const assignmentSummary = selectedLabels.length === 0
+                        ? 'All variants (general image)'
+                        : selectedLabels.length <= 2
+                          ? selectedLabels.join(', ')
+                          : `${selectedLabels.slice(0, 2).join(', ')} +${selectedLabels.length - 2}`;
+                      const hasRemovedAssignment = image.variantKeys.some((variantKey) => (
+                        !mediaAssignmentOptions.some((option) => option.value === variantKey)
+                      ));
+
+                      return (
+                        <div key={image.id} className="border p-3" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                          <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                            <img
+                              src={image.previewUrl}
+                              alt={`Product preview ${index + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full"
+                              style={{ backgroundColor: 'rgb(var(--color-danger))', color: 'white' }}
+                              aria-label={`Remove image ${index + 1}`}
+                            >
+                              <X size={16} />
+                            </button>
+                            {index === 0 && (
+                              <span className="absolute bottom-2 left-2 px-2 py-1 text-xs font-medium" style={{ backgroundColor: 'rgb(var(--color-primary))', color: 'white' }}>
+                                Primary
+                              </span>
+                            )}
+                          </div>
+
+                          <details className="mt-3">
+                            <summary
+                              className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 border px-3 py-2 text-sm"
+                              style={{ borderColor: 'rgb(var(--color-border))', color: 'rgb(var(--color-text))' }}
+                            >
+                              <span className="min-w-0 truncate">{assignmentSummary}</span>
+                              <ChevronDown size={16} className="flex-none" />
+                            </summary>
+                            <div className="mt-2 max-h-64 space-y-1 overflow-y-auto border p-2" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                              <label className="flex cursor-pointer items-center gap-2 p-2 text-sm" style={{ color: 'rgb(var(--color-text))' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={image.variantKeys.length === 0}
+                                  onChange={() => toggleImageAssignment(image.id, '')}
+                                  className="h-4 w-4"
+                                />
+                                <span>All variants (general image)</span>
+                              </label>
+                              {mediaAssignmentOptions.filter((option) => option.value).map((option) => (
+                                <label key={option.value} className="flex cursor-pointer items-start gap-2 p-2 text-sm" style={{ color: 'rgb(var(--color-text))' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={image.variantKeys.includes(option.value)}
+                                    onChange={() => toggleImageAssignment(image.id, option.value)}
+                                    className="mt-0.5 h-4 w-4 flex-none"
+                                  />
+                                  <span>{option.label}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </details>
+                          {hasRemovedAssignment && (
+                            <p className="mt-2 text-xs" style={{ color: 'rgb(var(--color-danger))' }}>
+                              A selected size or color was removed. Update this image assignment before saving.
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -764,21 +1086,286 @@ export default function AddProductPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {sizeConfig && (
+                <div className="border p-4" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
+                          {sizeConfig.title}
+                        </h3>
+                        <span
+                          className="px-2 py-0.5 text-xs font-medium"
+                          style={{
+                            backgroundColor: 'rgb(var(--color-surface))',
+                            color: 'rgb(var(--color-text-secondary))',
+                          }}
+                        >
+                          {sizeConfig.requirement === 'required' ? 'Required' : 'Optional'}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                        {sizeConfig.description}
+                      </p>
+                    </div>
+
+                    {sizeConfig.requirement === 'optional' && (
+                      <label className="flex cursor-pointer items-center gap-2 text-sm" style={{ color: 'rgb(var(--color-text))' }}>
+                        <input
+                          type="checkbox"
+                          checked={formData.hasSizeVariants}
+                          onChange={(event) => setFormData((previous) => ({
+                            ...previous,
+                            hasSizeVariants: event.target.checked,
+                          }))}
+                          className="h-4 w-4"
+                        />
+                        <span>Track stock by size</span>
+                      </label>
+                    )}
+                  </div>
+
+                  {usesSizeVariants && (
+                    <div className="mt-5 space-y-5">
+                      {sizeConfig.groups.map((group) => (
+                        <div key={group.label}>
+                          <p className="mb-2 text-sm font-medium" style={{ color: 'rgb(var(--color-text))' }}>
+                            {group.label}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {group.sizes.map((sizeLabel) => {
+                              const selected = formData.sizeVariants.includes(sizeLabel);
+                              return (
+                                <button
+                                  key={sizeLabel}
+                                  type="button"
+                                  onClick={() => toggleSize(sizeLabel)}
+                                  className="min-h-10 border px-3 py-2 text-sm font-medium"
+                                  style={{
+                                    backgroundColor: selected ? 'rgb(var(--color-primary))' : 'rgb(var(--color-background))',
+                                    borderColor: selected ? 'rgb(var(--color-primary))' : 'rgb(var(--color-border))',
+                                    color: selected ? '#ffffff' : 'rgb(var(--color-text))',
+                                  }}
+                                  aria-pressed={selected}
+                                >
+                                  {sizeLabel}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      <div>
+                        <p className="mb-2 text-sm font-medium" style={{ color: 'rgb(var(--color-text))' }}>
+                          Custom size
+                        </p>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <input
+                            type="text"
+                            value={customSizeLabel}
+                            onChange={(event) => setCustomSizeLabel(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter') {
+                                event.preventDefault();
+                                addCustomSize();
+                              }
+                            }}
+                            className="input flex-1"
+                            placeholder="Example: 52 in, EU 39, Ring 25"
+                            maxLength={50}
+                          />
+                          <button type="button" onClick={addCustomSize} className="btn btn-outline">
+                            <Plus size={18} /> Add Size
+                          </button>
+                        </div>
+                      </div>
+
+                      {formData.sizeVariants.length === 0 && (
+                        <p className="text-sm" style={{ color: 'rgb(var(--color-danger))' }}>
+                          No sizes configured yet.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="border p-4" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
+                        Color variants
+                      </h3>
+                      <span className="px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: 'rgb(var(--color-surface))', color: 'rgb(var(--color-text-secondary))' }}>
+                        Optional
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Enable colors and track stock for each color or size-and-color combination.
+                    </p>
+                  </div>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm" style={{ color: 'rgb(var(--color-text))' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.hasColorVariants}
+                      onChange={(event) => setFormData((previous) => ({
+                        ...previous,
+                        hasColorVariants: event.target.checked,
+                      }))}
+                      className="h-4 w-4"
+                    />
+                    <span>Track stock by color</span>
+                  </label>
+                </div>
+
+                {usesColorVariants && (
+                  <div className="mt-5 space-y-5">
+                    <div className="flex flex-wrap gap-2">
+                      {PRODUCT_COLOR_PRESETS.map((color) => {
+                        const selected = formData.colorVariants.some((variant) => variant.colorName === color.colorName);
+                        return (
+                          <button
+                            key={color.colorName}
+                            type="button"
+                            onClick={() => toggleColor(color)}
+                            className="flex min-h-10 items-center gap-2 border px-3 py-2 text-sm font-medium"
+                            style={{
+                              backgroundColor: selected ? 'rgb(var(--color-primary))' : 'rgb(var(--color-background))',
+                              borderColor: selected ? 'rgb(var(--color-primary))' : 'rgb(var(--color-border))',
+                              color: selected ? '#ffffff' : 'rgb(var(--color-text))',
+                            }}
+                            aria-pressed={selected}
+                          >
+                            <span className="h-5 w-5 rounded-full border border-black/20" style={{ backgroundColor: color.colorHex }} aria-hidden="true" />
+                            {color.colorName}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div>
+                      <p className="mb-2 text-sm font-medium" style={{ color: 'rgb(var(--color-text))' }}>
+                        Custom color
+                      </p>
+                      <div className="grid grid-cols-[48px_minmax(0,1fr)] gap-2 sm:grid-cols-[48px_minmax(0,1fr)_auto]">
+                        <input
+                          type="color"
+                          value={customColorHex}
+                          onChange={(event) => setCustomColorHex(event.target.value)}
+                          className="h-10 w-12 cursor-pointer border p-1"
+                          style={{ borderColor: 'rgb(var(--color-border))' }}
+                          aria-label="Custom color swatch"
+                        />
+                        <input
+                          type="text"
+                          value={customColorName}
+                          onChange={(event) => setCustomColorName(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault();
+                              addCustomColor();
+                            }
+                          }}
+                          className="input"
+                          placeholder="Example: Sky Blue"
+                          maxLength={50}
+                        />
+                        <button type="button" onClick={addCustomColor} className="btn btn-outline col-span-2 sm:col-span-1">
+                          <Plus size={18} /> Add Color
+                        </button>
+                      </div>
+                    </div>
+
+                    {formData.colorVariants.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {formData.colorVariants.map((color) => (
+                          <button
+                            key={color.colorName}
+                            type="button"
+                            onClick={() => toggleColor(color)}
+                            className="flex items-center gap-2 border px-3 py-2 text-sm"
+                            style={{ borderColor: 'rgb(var(--color-border))', color: 'rgb(var(--color-text))' }}
+                            title={`Remove ${color.colorName}`}
+                          >
+                            <span className="h-5 w-5 rounded-full border border-black/20" style={{ backgroundColor: color.colorHex }} aria-hidden="true" />
+                            {color.colorName}
+                            <X size={14} />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm" style={{ color: 'rgb(var(--color-danger))' }}>
+                        No colors configured yet.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {usesProductVariants && productVariants.length > 0 && (
+                <div className="border p-4" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                  <div className="mb-3">
+                    <h3 className="font-semibold" style={{ color: 'rgb(var(--color-text))' }}>Variant inventory</h3>
+                    <p className="text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Enter the available quantity for every combination you sell.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-3 text-xs font-medium uppercase" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      <span>Variant</span>
+                      <span>Quantity</span>
+                    </div>
+                    {productVariants.map((variant) => {
+                      const variantKey = getVariantInventoryKey(variant.sizeLabel, variant.colorName);
+                      return (
+                        <div key={variantKey} className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-3 border-t pt-2" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                          <div className="flex min-w-0 items-center gap-2">
+                            {variant.colorName && (
+                              <span className="h-5 w-5 flex-none rounded-full border border-black/20" style={{ backgroundColor: variant.colorHex }} aria-hidden="true" />
+                            )}
+                            <span className="truncate font-medium" style={{ color: 'rgb(var(--color-text))' }}>
+                              {[variant.colorName, variant.sizeLabel].filter(Boolean).join(' / ')}
+                            </span>
+                          </div>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={formData.variantQuantities[variantKey] ?? ''}
+                            onChange={(event) => updateVariantQuantity(variant.sizeLabel, variant.colorName, event.target.value)}
+                            className="input"
+                            aria-label={`Stock quantity for ${[variant.colorName, variant.sizeLabel].filter(Boolean).join(' / ')}`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(var(--color-text))' }}>
-                    Stock Quantity <span className="text-red-500">*</span>
+                    {usesProductVariants ? 'Total Stock' : 'Stock Quantity'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     name="stockQuantity"
-                    value={formData.stockQuantity}
+                    value={usesProductVariants ? totalVariantStock : formData.stockQuantity}
                     onChange={handleInputChange}
                     min="0"
                     className="input"
                     placeholder="0"
+                    readOnly={usesProductVariants}
                     required
                   />
+                  {usesProductVariants && (
+                    <p className="mt-1 text-xs" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                      Calculated from the configured variant quantities.
+                    </p>
+                  )}
                 </div>
 
                 <div>

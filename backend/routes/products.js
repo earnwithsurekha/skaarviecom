@@ -3,9 +3,17 @@ const router = express.Router();
 const { body, param, query, validationResult } = require('express-validator');
 const { authMiddleware, manufacturerOnly, adminOrManufacturer } = require('../middleware/auth');
 const { uploadMiddleware, uploadProductFile, deleteFromS3, validateImageQuality } = require('../middleware/upload');
-const { Product, ProductImage, ProductVideo, Category } = require('../models');
+const { Product, ProductImage, ProductVideo, ProductVariant, Category } = require('../models');
 const { PAGINATION, PRODUCT_STATUS, PLATFORM } = require('../config/constants');
 const sequelize = require('../config/database');
+const {
+  categoryRequiresSizes,
+  getTotalVariantStock,
+  parseExistingImageAssignments,
+  parseNewImageAssignments,
+  parseProductVariants,
+  replaceProductVariants,
+} = require('../utils/productVariants');
 
 // Helper function to calculate selling price
 const calculateSellingPrice = (costPrice, skaarviMargin, resellerMargin) => {
@@ -13,6 +21,74 @@ const calculateSellingPrice = (costPrice, skaarviMargin, resellerMargin) => {
   const skaarvi = parseFloat(skaarviMargin) / 100;
   const reseller = parseFloat(resellerMargin) / 100;
   return price * (1 + skaarvi + reseller);
+};
+
+const uploadProductImages = async ({
+  files,
+  assignments,
+  productId,
+  manufacturerId,
+  productName,
+  startSortOrder,
+  transaction,
+}) => {
+  for (let index = 0; index < files.length; index++) {
+    const file = files[index];
+    const assignment = assignments[index];
+    const imageUrl = await uploadProductFile(file, manufacturerId, productName, 'images');
+
+    await ProductImage.create({
+      productId,
+      imageUrl,
+      altText: productName,
+      sortOrder: startSortOrder + index,
+      isPrimary: false,
+      fileSize: file.size,
+      ...assignment,
+    }, { transaction });
+  }
+};
+
+const synchronizeExistingImages = async ({ productId, assignments, transaction }) => {
+  const existingImages = await ProductImage.findAll({ where: { productId }, transaction });
+  if (assignments === undefined) return existingImages.length;
+
+  const existingImagesById = new Map(existingImages.map((image) => [image.id, image]));
+  const retainedIds = new Set(assignments.map((assignment) => assignment.id));
+
+  for (const assignment of assignments) {
+    const image = existingImagesById.get(assignment.id);
+    if (!image) {
+      throw new Error('An existing image assignment does not belong to this product');
+    }
+    await image.update({
+      variantKeys: assignment.variantKeys,
+      variantKey: assignment.variantKey,
+      sizeLabel: assignment.sizeLabel,
+      colorName: assignment.colorName,
+      sortOrder: assignment.sortOrder,
+    }, { transaction });
+  }
+
+  for (const image of existingImages) {
+    if (!retainedIds.has(image.id)) {
+      await image.destroy({ transaction });
+    }
+  }
+
+  return assignments.length;
+};
+
+const updatePrimaryProductImage = async (productId, transaction) => {
+  await ProductImage.update({ isPrimary: false }, { where: { productId }, transaction });
+  const primaryImage = await ProductImage.findOne({
+    where: { productId },
+    order: [['sortOrder', 'ASC'], ['createdAt', 'ASC']],
+    transaction,
+  });
+  if (primaryImage) {
+    await primaryImage.update({ isPrimary: true }, { transaction });
+  }
 };
 
 // Validation middleware for product creation
@@ -87,12 +163,17 @@ router.get('/', authMiddleware, manufacturerOnly, async (req, res) => {
         {
           model: ProductImage,
           as: 'images',
-          attributes: ['id', 'imageUrl', 'thumbnailUrl', 'isPrimary', 'sortOrder'],
+          attributes: ['id', 'imageUrl', 'thumbnailUrl', 'variantKeys', 'variantKey', 'sizeLabel', 'colorName', 'isPrimary', 'sortOrder'],
         },
         {
           model: ProductVideo,
           as: 'videos',
           attributes: ['id', 'videoUrl', 'thumbnailUrl', 'sortOrder'],
+        },
+        {
+          model: ProductVariant,
+          as: 'variants',
+          attributes: ['id', 'sizeLabel', 'colorName', 'colorHex', 'stockQuantity', 'sortOrder'],
         },
       ],
       limit: parseInt(limit),
@@ -159,6 +240,11 @@ router.get('/:id', authMiddleware, adminOrManufacturer, async (req, res) => {
           model: ProductVideo,
           as: 'videos',
           order: [['sortOrder', 'ASC']],
+        },
+        {
+          model: ProductVariant,
+          as: 'variants',
+          attributes: ['id', 'sizeLabel', 'colorName', 'colorHex', 'stockQuantity', 'sortOrder'],
         },
       ],
     });
@@ -240,6 +326,8 @@ router.post('/',
         shippingCharges,
         shippingInfo,
         tags,
+        variants: rawVariants,
+        imageAssignments: rawImageAssignments,
         status = PRODUCT_STATUS.PENDING_APPROVAL, // Submit for approval by default
       } = req.body;
 
@@ -259,6 +347,32 @@ router.post('/',
           message: 'Category not found',
         });
       }
+
+      let variants;
+      let newImageAssignments;
+      try {
+        variants = parseProductVariants(rawVariants) || [];
+        newImageAssignments = parseNewImageAssignments(
+          rawImageAssignments,
+          req.files?.images?.length || 0,
+          variants
+        );
+      } catch (variantError) {
+        await transaction.rollback();
+        return res.status(400).json({ status: 'error', message: variantError.message });
+      }
+
+      if (categoryRequiresSizes(category) && (variants.length === 0 || variants.some((variant) => !variant.sizeLabel))) {
+        await transaction.rollback();
+        return res.status(400).json({
+          status: 'error',
+          message: `${category.name} products require at least one configured size`,
+        });
+      }
+
+      const resolvedStockQuantity = variants.length > 0
+        ? getTotalVariantStock(variants)
+        : Number.parseInt(stockQuantity, 10) || 0;
 
       // Check SKU uniqueness if provided
       if (sku) {
@@ -319,7 +433,7 @@ router.post('/',
         resellerMargin,
         skaarviMargin,
         sellingPrice,
-        stockQuantity: parseInt(stockQuantity),
+        stockQuantity: resolvedStockQuantity,
         lowStockThreshold: parseInt(lowStockThreshold),
         weight: weight ? parseFloat(weight) : null,
         dimensions: parsedDimensions,
@@ -332,25 +446,28 @@ router.post('/',
 
       console.log('Product created with ID:', product.id);
 
+      await replaceProductVariants({
+        ProductVariant,
+        productId: product.id,
+        variants,
+        transaction,
+      });
+
       // Handle image uploads - upload to S3
       if (req.files && req.files.images) {
         const imageFiles = req.files.images;
         console.log(`Processing ${imageFiles.length} images...`);
-        
-        for (let i = 0; i < imageFiles.length; i++) {
-          const file = imageFiles[i];
-          const imageUrl = await uploadProductFile(file, req.user.manufacturerId, name, 'images');
-          console.log(`Image ${i + 1} uploaded to S3:`, imageUrl);
-          
-          await ProductImage.create({
-            productId: product.id,
-            imageUrl,
-            altText: name,
-            sortOrder: i,
-            isPrimary: i === 0, // First image is primary
-            fileSize: file.size,
-          }, { transaction });
-        }
+
+        await uploadProductImages({
+          files: imageFiles,
+          assignments: newImageAssignments,
+          productId: product.id,
+          manufacturerId: req.user.manufacturerId,
+          productName: name,
+          startSortOrder: 0,
+          transaction,
+        });
+        await updatePrimaryProductImage(product.id, transaction);
       }
 
       // Handle video uploads - upload to S3
@@ -391,8 +508,13 @@ router.post('/',
         where: { id: product.id },
         include: [
           { model: Category, as: 'category' },
-          { model: ProductImage, as: 'images' },
+          {
+            model: ProductImage,
+            as: 'images',
+            attributes: ['id', 'imageUrl', 'variantKeys', 'variantKey', 'sizeLabel', 'colorName', 'isPrimary', 'sortOrder'],
+          },
           { model: ProductVideo, as: 'videos' },
+          { model: ProductVariant, as: 'variants' },
         ],
       });
 
@@ -462,6 +584,9 @@ router.put('/:id',
         shippingCharges,
         shippingInfo,
         tags,
+        variants: rawVariants,
+        imageAssignments: rawImageAssignments,
+        existingImageAssignments: rawExistingImageAssignments,
         status,
       } = req.body;
 
@@ -490,6 +615,7 @@ router.put('/:id',
       let parsedSpecifications = specifications;
       let parsedDimensions = dimensions;
       let parsedTags = tags;
+      let variants;
 
       try {
         if (typeof specifications === 'string') {
@@ -501,12 +627,61 @@ router.put('/:id',
         if (typeof tags === 'string') {
           parsedTags = JSON.parse(tags);
         }
+        variants = parseProductVariants(rawVariants);
       } catch (parseError) {
         await transaction.rollback();
         return res.status(400).json({
           status: 'error',
-          message: 'Invalid JSON format in specifications, dimensions, or tags',
+          message: parseError.message || 'Invalid product data',
         });
+      }
+
+      const targetCategory = categoryId
+        ? await Category.findByPk(categoryId, { transaction })
+        : await product.getCategory({ transaction });
+
+      if (!targetCategory) {
+        await transaction.rollback();
+        return res.status(404).json({ status: 'error', message: 'Category not found' });
+      }
+
+      const existingVariantCount = await ProductVariant.count({
+        where: { productId: product.id },
+        transaction,
+      });
+      const missingRequiredSizes = variants === undefined
+        ? existingVariantCount === 0
+        : variants.length === 0 || variants.some((variant) => !variant.sizeLabel);
+
+      if (categoryRequiresSizes(targetCategory) && missingRequiredSizes) {
+        await transaction.rollback();
+        return res.status(400).json({
+          status: 'error',
+          message: `${targetCategory.name} products require at least one configured size`,
+        });
+      }
+
+      const activeVariants = variants ?? (await ProductVariant.findAll({
+        where: { productId: product.id },
+        order: [['sortOrder', 'ASC']],
+        transaction,
+      })).map((variant) => variant.get({ plain: true }));
+
+      let newImageAssignments;
+      let existingImageAssignments;
+      try {
+        newImageAssignments = parseNewImageAssignments(
+          rawImageAssignments,
+          req.files?.images?.length || 0,
+          activeVariants
+        );
+        existingImageAssignments = parseExistingImageAssignments(
+          rawExistingImageAssignments,
+          activeVariants
+        );
+      } catch (imageAssignmentError) {
+        await transaction.rollback();
+        return res.status(400).json({ status: 'error', message: imageAssignmentError.message });
       }
 
       // Update product fields
@@ -527,7 +702,18 @@ router.put('/:id',
         );
       }
       // resellerMargin and skaarviMargin are admin-only (rejected above)
-      if (stockQuantity !== undefined) updateData.stockQuantity = parseInt(stockQuantity);
+      if (variants !== undefined) {
+        updateData.stockQuantity = getTotalVariantStock(variants);
+      } else if (stockQuantity !== undefined) {
+        if (existingVariantCount > 0) {
+          await transaction.rollback();
+          return res.status(409).json({
+            status: 'error',
+            message: 'This product uses size or color variants. Include variant quantities when updating stock.',
+          });
+        }
+        updateData.stockQuantity = parseInt(stockQuantity);
+      }
       if (lowStockThreshold !== undefined) updateData.lowStockThreshold = parseInt(lowStockThreshold);
       if (weight !== undefined) updateData.weight = parseFloat(weight);
       if (parsedDimensions !== undefined) updateData.dimensions = parsedDimensions;
@@ -539,33 +725,45 @@ router.put('/:id',
 
       await product.update(updateData, { transaction });
 
-      // Handle new image uploads - upload to S3
-      if (req.files && req.files.images) {
-        // Delete old image records (old S3 files can be cleaned up via lifecycle policies)
-        await ProductImage.destroy({ 
-          where: { productId: product.id },
-          transaction 
+      if (variants !== undefined) {
+        await replaceProductVariants({
+          ProductVariant,
+          productId: product.id,
+          variants,
+          transaction,
         });
+      }
 
-        // Upload new images to S3
-        const imageFiles = req.files.images;
-        const productName = name || product.name;
-        console.log(`Updating ${imageFiles.length} images for product: ${productName}`);
-        
-        for (let i = 0; i < imageFiles.length; i++) {
-          const file = imageFiles[i];
-          const imageUrl = await uploadProductFile(file, req.user.manufacturerId, productName, 'images');
-          console.log(`Image ${i + 1} uploaded to S3:`, imageUrl);
-          
-          await ProductImage.create({
-            productId: product.id,
-            imageUrl,
-            altText: productName,
-            sortOrder: i,
-            isPrimary: i === 0,
-            fileSize: file.size,
-          }, { transaction });
-        }
+      const imageFiles = req.files?.images || [];
+      let retainedImageCount;
+      if (existingImageAssignments !== undefined) {
+        retainedImageCount = await synchronizeExistingImages({
+          productId: product.id,
+          assignments: existingImageAssignments,
+          transaction,
+        });
+      } else if (imageFiles.length > 0) {
+        // Older clients replace the complete image set when uploading new files.
+        await ProductImage.destroy({ where: { productId: product.id }, transaction });
+        retainedImageCount = 0;
+      } else {
+        retainedImageCount = await ProductImage.count({ where: { productId: product.id }, transaction });
+      }
+
+      if (imageFiles.length > 0) {
+        await uploadProductImages({
+          files: imageFiles,
+          assignments: newImageAssignments,
+          productId: product.id,
+          manufacturerId: req.user.manufacturerId,
+          productName: name || product.name,
+          startSortOrder: retainedImageCount,
+          transaction,
+        });
+      }
+
+      if (existingImageAssignments !== undefined || imageFiles.length > 0) {
+        await updatePrimaryProductImage(product.id, transaction);
       }
 
       // Handle new video uploads - upload to S3
@@ -614,8 +812,13 @@ router.put('/:id',
         where: { id: product.id },
         include: [
           { model: Category, as: 'category' },
-          { model: ProductImage, as: 'images' },
+          {
+            model: ProductImage,
+            as: 'images',
+            attributes: ['id', 'imageUrl', 'variantKeys', 'variantKey', 'sizeLabel', 'colorName', 'isPrimary', 'sortOrder'],
+          },
           { model: ProductVideo, as: 'videos' },
+          { model: ProductVariant, as: 'variants' },
         ],
       });
 
@@ -716,7 +919,16 @@ router.patch('/:id/stock', authMiddleware, manufacturerOnly, async (req, res) =>
     }
 
     const updateData = {};
-    if (stockQuantity !== undefined) updateData.stockQuantity = parseInt(stockQuantity);
+    if (stockQuantity !== undefined) {
+      const variantCount = await ProductVariant.count({ where: { productId: product.id } });
+      if (variantCount > 0) {
+        return res.status(409).json({
+          status: 'error',
+          message: 'This product uses size or color variants. Update stock from Edit Product.',
+        });
+      }
+      updateData.stockQuantity = parseInt(stockQuantity);
+    }
     if (lowStockThreshold !== undefined) updateData.lowStockThreshold = parseInt(lowStockThreshold);
 
     await product.update(updateData);

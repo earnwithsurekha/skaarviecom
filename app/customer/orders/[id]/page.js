@@ -318,6 +318,11 @@ export default function OrderDetailPage() {
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                       {item.product_name}
                     </h3>
+                    {(item.selected_color || item.selected_size) && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {[item.selected_color, item.selected_size].filter(Boolean).join(' / ')}
+                      </p>
+                    )}
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                       Quantity: {item.quantity}
                     </p>

@@ -188,8 +188,8 @@ export default function InventoryPage() {
               No products found
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto overscroll-x-contain">
+              <table className="w-full min-w-[760px]">
                 <thead style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -250,30 +250,43 @@ export default function InventoryPage() {
                       </td>
                       <td className="px-6 py-4 text-sm">
                         <div className="flex space-x-2">
-                          <button
-                            onClick={() => openModal(product, 'increase')}
-                            className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
-                            style={{ color: 'rgb(var(--color-success))', backgroundColor: 'rgba(34, 197, 94, 0.1)' }}
-                            title="Add Stock"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => openModal(product, 'decrease')}
-                            className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
-                            style={{ color: 'rgb(var(--color-danger))', backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
-                            title="Remove Stock"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => openModal(product, 'update')}
-                            className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
-                            style={{ color: 'rgb(var(--color-primary))', backgroundColor: 'rgba(var(--color-primary), 0.1)' }}
-                            title="Update Stock"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
+                          {product.hasVariants ? (
+                            <button
+                              onClick={() => router.push(`/manufacturer/products/add?id=${product.id}`)}
+                              className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                              style={{ color: 'rgb(var(--color-primary))', backgroundColor: 'rgba(var(--color-primary), 0.1)' }}
+                              title="Edit Variant Stock"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => openModal(product, 'increase')}
+                                className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                                style={{ color: 'rgb(var(--color-success))', backgroundColor: 'rgba(34, 197, 94, 0.1)' }}
+                                title="Add Stock"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => openModal(product, 'decrease')}
+                                className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                                style={{ color: 'rgb(var(--color-danger))', backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
+                                title="Remove Stock"
+                              >
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => openModal(product, 'update')}
+                                className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                                style={{ color: 'rgb(var(--color-primary))', backgroundColor: 'rgba(var(--color-primary), 0.1)' }}
+                                title="Update Stock"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
                           <button
                             onClick={() => router.push(`/manufacturer/inventory/${product.id}/history`)}
                             className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"

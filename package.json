@@ -8,9 +8,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "android:assets": "capacitor-assets generate --android --iconBackgroundColor \"#4f46e5\" --iconBackgroundColorDark \"#312e81\" --splashBackgroundColor \"#4f46e5\" --splashBackgroundColorDark \"#312e81\"",
+    "android:sync": "cap sync android",
+    "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "android:install": "cd android && gradlew.bat installDebug"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "@hookform/resolvers": "^3.3.3",
     "@reduxjs/toolkit": "^2.0.1",
     "aws-sdk": "^2.1515.0",
@@ -40,6 +46,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
