@@ -288,6 +288,8 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           price: item.price,
           referralCode: item.referralCode,
+          selectedSize: item.selectedSize || null,
+          selectedColor: item.selectedColor || null,
         })),
         shippingAddress: shippingInfo,
         paymentMethod,
@@ -559,7 +561,7 @@ export default function CheckoutPage() {
               {/* Cart Items */}
               <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.productId} className="flex gap-3">
+                  <div key={item.cartItemId || `${item.productId}::${item.selectedSize || ''}::${item.selectedColor || ''}`} className="flex gap-3">
                     <div className="w-16 h-16 flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
                       {item.image ? (
                         <img
@@ -578,7 +580,8 @@ export default function CheckoutPage() {
                         {item.name}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Qty: {item.quantity}
+                        {item.selectedColor ? `Color: ${item.selectedColor} · ` : ''}
+                        {item.selectedSize ? `Size: ${item.selectedSize} · ` : ''}Qty: {item.quantity}
                       </p>
                       <p className="text-sm font-bold text-gray-900 dark:text-white">
                         {formatPrice(item.price * item.quantity)}

@@ -181,6 +181,16 @@ const OrderItem = sequelize.define('OrderItem', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  selectedSize: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    field: 'selected_size',
+  },
+  selectedColor: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    field: 'selected_color',
+  },
   costPrice: {
     type: DataTypes.DECIMAL(12, 2),
     allowNull: false,

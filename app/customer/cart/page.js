@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft, Package, Tag, Home } from 'lucide-react';
-import { removeFromCart, updateQuantity, clearCart, validateCart } from '@/store/slices/cartSlice';
+import { removeFromCart, updateQuantity, clearCart, validateCart, getCartItemId } from '@/store/slices/cartSlice';
 import { formatPrice } from '@/lib/cartUtils';
 import toast from 'react-hot-toast';
 
@@ -28,12 +28,12 @@ export default function CustomerCartPage() {
     quantityType: typeof item.quantity
   })));
 
-  const handleRemoveItem = (productId, productName) => {
-    dispatch(removeFromCart(productId));
+  const handleRemoveItem = (cartItemId, productName) => {
+    dispatch(removeFromCart(cartItemId));
     toast.success(`${productName} removed from cart`);
   };
 
-  const handleUpdateQuantity = (productId, newQuantity, maxStock) => {
+  const handleUpdateQuantity = (cartItemId, newQuantity, maxStock) => {
     if (newQuantity < 1) {
       return;
     }
@@ -41,7 +41,7 @@ export default function CustomerCartPage() {
       toast.error(`Only ${maxStock} items available in stock`);
       return;
     }
-    dispatch(updateQuantity({ productId, quantity: newQuantity }));
+    dispatch(updateQuantity({ cartItemId, quantity: newQuantity }));
   };
 
   const handleClearCart = () => {
@@ -146,7 +146,7 @@ export default function CustomerCartPage() {
               {/* Cart Items List */}
               {items.map((item) => (
                 <div
-                  key={item.productId}
+                  key={getCartItemId(item.productId, item.selectedSize, item.selectedColor)}
                   className="rounded-lg shadow p-4 flex gap-4"
                   style={{ backgroundColor: 'rgb(var(--color-surface))' }}
                 >
@@ -181,11 +181,21 @@ export default function CustomerCartPage() {
                     <p className="text-lg font-bold mb-2" style={{ color: 'rgb(var(--color-primary))' }}>
                       {formatPrice(item.price)}
                     </p>
+                    {item.selectedSize && (
+                      <p className="mb-2 text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                        Size: <span className="font-semibold">{item.selectedSize}</span>
+                      </p>
+                    )}
+                    {item.selectedColor && (
+                      <p className="mb-2 text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                        Color: <span className="font-semibold">{item.selectedColor}</span>
+                      </p>
+                    )}
 
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1, item.maxStock)}
+                        onClick={() => handleUpdateQuantity(getCartItemId(item.productId, item.selectedSize, item.selectedColor), item.quantity - 1, item.maxStock)}
                         disabled={item.quantity <= 1}
                         className="w-8 h-8 rounded flex items-center justify-center border disabled:opacity-50"
                         style={{ borderColor: 'rgb(var(--color-border))' }}
@@ -196,7 +206,7 @@ export default function CustomerCartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1, item.maxStock)}
+                        onClick={() => handleUpdateQuantity(getCartItemId(item.productId, item.selectedSize, item.selectedColor), item.quantity + 1, item.maxStock)}
                         disabled={item.quantity >= item.maxStock}
                         className="w-8 h-8 rounded flex items-center justify-center border disabled:opacity-50"
                         style={{ borderColor: 'rgb(var(--color-border))' }}
@@ -204,7 +214,7 @@ export default function CustomerCartPage() {
                         <Plus className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleRemoveItem(item.productId, item.name)}
+                        onClick={() => handleRemoveItem(getCartItemId(item.productId, item.selectedSize, item.selectedColor), item.name)}
                         className="ml-auto p-2 rounded hover:opacity-80"
                         style={{ color: 'rgb(var(--color-danger))' }}
                       >

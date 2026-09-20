@@ -1,5 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+export const getCartItemId = (productId, selectedSize, selectedColor) => (
+  (selectedSize || selectedColor)
+    ? `${productId}::${selectedSize || ''}::${selectedColor || ''}`
+    : productId
+);
+
 // Helper function to calculate totals
 const calculateTotals = (items) => {
   const subtotal = items.reduce((sum, item) => {
@@ -41,6 +47,7 @@ const migrateCartState = (state) => {
   // Fix any items with invalid data
   const validItems = state.items.map(item => ({
     ...item,
+    cartItemId: getCartItemId(item.productId, item.selectedSize, item.selectedColor),
     price: parseFloat(item.price) || 0,
     quantity: parseInt(item.quantity) || 1,
     maxStock: parseInt(item.maxStock) || parseInt(item.stock) || 0,
@@ -60,7 +67,8 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const { productId, name, price, image, stock, quantity = 1, referralCode } = action.payload;
+      const { productId, name, price, image, stock, quantity = 1, referralCode, selectedSize, selectedColor } = action.payload;
+      const cartItemId = getCartItemId(productId, selectedSize, selectedColor);
       
       console.log('[Cart Slice] Received:', { productId, name, price, image, stock, quantity, referralCode });
       
@@ -71,7 +79,9 @@ const cartSlice = createSlice({
       
       console.log('[Cart Slice] Converted:', { numericPrice, numericQuantity, numericStock });
       
-      const existingItem = state.items.find(item => item.productId === productId);
+      const existingItem = state.items.find(
+        item => getCartItemId(item.productId, item.selectedSize, item.selectedColor) === cartItemId
+      );
       
       if (existingItem) {
         // Update quantity if already in cart
@@ -81,6 +91,9 @@ const cartSlice = createSlice({
         // Add new item to cart
         const newItem = {
           productId,
+          cartItemId,
+          selectedSize: selectedSize || null,
+          selectedColor: selectedColor || null,
           name,
           price: numericPrice,
           quantity: Math.min(numericQuantity, numericStock),
@@ -103,8 +116,10 @@ const cartSlice = createSlice({
     },
     
     removeFromCart: (state, action) => {
-      const productId = action.payload;
-      state.items = state.items.filter(item => item.productId !== productId);
+      const cartItemId = action.payload;
+      state.items = state.items.filter(
+        item => getCartItemId(item.productId, item.selectedSize, item.selectedColor) !== cartItemId
+      );
       
       // Recalculate totals
       const totals = calculateTotals(state.items);
@@ -115,8 +130,11 @@ const cartSlice = createSlice({
     },
     
     updateQuantity: (state, action) => {
-      const { productId, quantity } = action.payload;
-      const item = state.items.find(item => item.productId === productId);
+      const { cartItemId, productId, selectedSize, selectedColor, quantity } = action.payload;
+      const targetCartItemId = cartItemId || getCartItemId(productId, selectedSize, selectedColor);
+      const item = state.items.find(
+        cartItem => getCartItemId(cartItem.productId, cartItem.selectedSize, cartItem.selectedColor) === targetCartItemId
+      );
       
       if (item) {
         item.quantity = Math.max(1, Math.min(quantity, item.maxStock));
@@ -152,6 +170,7 @@ const cartSlice = createSlice({
       // Fix any items with invalid data
       state.items = state.items.map(item => ({
         ...item,
+        cartItemId: getCartItemId(item.productId, item.selectedSize, item.selectedColor),
         price: parseFloat(item.price) || 0,
         quantity: parseInt(item.quantity) || 1,
         maxStock: parseInt(item.maxStock) || parseInt(item.stock) || 0,
@@ -171,7 +190,10 @@ const cartSlice = createSlice({
     // Load cart from localStorage (for guest users)
     loadCart: (state, action) => {
       const { items, referralCode } = action.payload;
-      state.items = items || [];
+      state.items = (items || []).map((item) => ({
+        ...item,
+        cartItemId: getCartItemId(item.productId, item.selectedSize, item.selectedColor),
+      }));
       state.referralCode = referralCode || null;
       
       // Recalculate totals
@@ -190,7 +212,10 @@ const cartSlice = createSlice({
       if (!guestItems || guestItems.length === 0) return;
       
       guestItems.forEach(guestItem => {
-        const existingItem = state.items.find(item => item.productId === guestItem.productId);
+        const guestCartItemId = getCartItemId(guestItem.productId, guestItem.selectedSize, guestItem.selectedColor);
+        const existingItem = state.items.find(
+          item => getCartItemId(item.productId, item.selectedSize, item.selectedColor) === guestCartItemId
+        );
         
         if (existingItem) {
           // Sum quantities
@@ -198,7 +223,7 @@ const cartSlice = createSlice({
           existingItem.quantity = Math.min(newQuantity, guestItem.maxStock);
         } else {
           // Add guest item to cart
-          state.items.push(guestItem);
+          state.items.push({ ...guestItem, cartItemId: guestCartItemId });
         }
       });
       

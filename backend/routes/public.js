@@ -132,7 +132,14 @@ router.get('/products/:slug', async (req, res) => {
 
     // Get product images
     const images = await sequelize.query(`
-      SELECT image_url, sort_order, alt_text
+      SELECT
+        image_url,
+        sort_order,
+        alt_text,
+        variant_keys as variantKeys,
+        variant_key as variantKey,
+        size_label as sizeLabel,
+        color_name as colorName
       FROM product_images
       WHERE product_id = :productId
       ORDER BY sort_order
@@ -147,6 +154,21 @@ router.get('/products/:slug', async (req, res) => {
       FROM product_videos
       WHERE product_id = :productId
       ORDER BY sort_order
+    `, {
+      replacements: { productId: product.id },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    const variants = await sequelize.query(`
+      SELECT
+        size_label as sizeLabel,
+        color_name as colorName,
+        color_hex as colorHex,
+        stock_quantity as stockQuantity,
+        sort_order as sortOrder
+      FROM product_variants
+      WHERE product_id = :productId
+      ORDER BY sort_order, size_label
     `, {
       replacements: { productId: product.id },
       type: sequelize.QueryTypes.SELECT
@@ -181,7 +203,12 @@ router.get('/products/:slug', async (req, res) => {
       data: {
         product: {
           ...product,
-          reseller_profit: parseFloat(product.reseller_margin) || 0
+          reseller_profit: parseFloat(product.reseller_margin) || 0,
+          hasVariants: variants.length > 0,
+          variants: variants.map((variant) => ({
+            ...variant,
+            stockQuantity: Number.parseInt(variant.stockQuantity, 10) || 0
+          }))
         },
         images,
         videos,

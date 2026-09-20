@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "test": "jest --coverage",
     "migrate": "node scripts/migrate.js",
+    "migrate:product-variants": "node run-product-variant-migration.js",
     "seed:categories": "node seeds/seedCategories.js"
   },
   "keywords": [

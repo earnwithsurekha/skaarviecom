@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, param, query, validationResult } = require('express-validator');
 const { authMiddleware, manufacturerOnly } = require('../middleware/auth');
-const { Product, StockLog } = require('../models');
+const { Product, ProductVariant, StockLog } = require('../models');
 const { PAGINATION } = require('../config/constants');
 const notificationService = require('../services/notificationService');
 const sequelize = require('../config/database');
@@ -74,9 +74,15 @@ router.get('/', authMiddleware, manufacturerOnly, async (req, res) => {
         'costPrice',
         'updatedAt',
       ],
+      include: [{
+        model: ProductVariant,
+        as: 'variants',
+        attributes: ['id'],
+      }],
       limit: parseInt(limit),
       offset,
       order: [[sort_by, sort_order.toUpperCase()]],
+      distinct: true,
     });
 
     // Calculate stock statistics
@@ -103,6 +109,7 @@ router.get('/', authMiddleware, manufacturerOnly, async (req, res) => {
         stockStatus,
         stockValue: product.stockQuantity * product.costPrice,
         lastUpdated: product.updatedAt,
+        hasVariants: product.variants.length > 0,
       };
     });
 
@@ -296,6 +303,14 @@ router.patch(
         });
       }
 
+      if (await ProductVariant.count({ where: { productId: product.id }, transaction })) {
+        await transaction.rollback();
+        return res.status(409).json({
+          status: 'error',
+          message: 'This product uses size or color variants. Update stock from Edit Product.',
+        });
+      }
+
       const previousStock = product.stockQuantity;
       const newStock = previousStock + parseInt(quantity);
 
@@ -371,6 +386,14 @@ router.patch(
         return res.status(404).json({
           status: 'error',
           message: 'Product not found',
+        });
+      }
+
+      if (await ProductVariant.count({ where: { productId: product.id }, transaction })) {
+        await transaction.rollback();
+        return res.status(409).json({
+          status: 'error',
+          message: 'This product uses size or color variants. Update stock from Edit Product.',
         });
       }
 
@@ -475,6 +498,14 @@ router.patch(
         return res.status(404).json({
           status: 'error',
           message: 'Product not found',
+        });
+      }
+
+      if (await ProductVariant.count({ where: { productId: product.id }, transaction })) {
+        await transaction.rollback();
+        return res.status(409).json({
+          status: 'error',
+          message: 'This product uses size or color variants. Update stock from Edit Product.',
         });
       }
 

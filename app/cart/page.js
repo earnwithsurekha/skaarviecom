@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft, Package, Tag, Home } from 'lucide-react';
-import { removeFromCart, updateQuantity, clearCart } from '@/store/slices/cartSlice';
+import { removeFromCart, updateQuantity, clearCart, getCartItemId } from '@/store/slices/cartSlice';
 import { formatPrice } from '@/lib/cartUtils';
 import PublicHeader from '@/components/PublicHeader';
 import Footer from '@/components/Footer';
@@ -15,12 +15,12 @@ export default function CartPage() {
   const { items, subtotal, totalItems, shipping, total, referralCode } = useSelector((state) => state.cart);
   const { isAuthenticated } = useSelector((state) => state.auth);
 
-  const handleRemoveItem = (productId, productName) => {
-    dispatch(removeFromCart(productId));
+  const handleRemoveItem = (cartItemId, productName) => {
+    dispatch(removeFromCart(cartItemId));
     toast.success(`${productName} removed from cart`);
   };
 
-  const handleUpdateQuantity = (productId, newQuantity, maxStock) => {
+  const handleUpdateQuantity = (cartItemId, newQuantity, maxStock) => {
     if (newQuantity < 1) {
       return;
     }
@@ -28,7 +28,7 @@ export default function CartPage() {
       toast.error(`Only ${maxStock} items available in stock`);
       return;
     }
-    dispatch(updateQuantity({ productId, quantity: newQuantity }));
+    dispatch(updateQuantity({ cartItemId, quantity: newQuantity }));
   };
 
   const handleClearCart = () => {
@@ -131,7 +131,7 @@ export default function CartPage() {
               {/* Cart Items List */}
               {items.map((item) => (
                 <div
-                  key={item.productId}
+                  key={getCartItemId(item.productId, item.selectedSize, item.selectedColor)}
                   className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex gap-4"
                 >
                   {/* Product Image */}
@@ -163,6 +163,16 @@ export default function CartPage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
                       {formatPrice(item.price)}
                     </p>
+                    {item.selectedSize && (
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Size: <span className="font-semibold">{item.selectedSize}</span>
+                      </p>
+                    )}
+                    {item.selectedColor && (
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Color: <span className="font-semibold">{item.selectedColor}</span>
+                      </p>
+                    )}
                     {item.referralCode && (
                       <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                         Via: {item.referralCode}
@@ -173,7 +183,7 @@ export default function CartPage() {
                   {/* Quantity Controls */}
                   <div className="flex flex-col items-end justify-between">
                     <button
-                      onClick={() => handleRemoveItem(item.productId, item.name)}
+                      onClick={() => handleRemoveItem(getCartItemId(item.productId, item.selectedSize, item.selectedColor), item.name)}
                       className="text-red-600 hover:text-red-700 transition-colors"
                       title="Remove from cart"
                     >
@@ -182,7 +192,7 @@ export default function CartPage() {
 
                     <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                       <button
-                        onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1, item.maxStock)}
+                        onClick={() => handleUpdateQuantity(getCartItemId(item.productId, item.selectedSize, item.selectedColor), item.quantity - 1, item.maxStock)}
                         disabled={item.quantity <= 1}
                         className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
@@ -192,7 +202,7 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1, item.maxStock)}
+                        onClick={() => handleUpdateQuantity(getCartItemId(item.productId, item.selectedSize, item.selectedColor), item.quantity + 1, item.maxStock)}
                         disabled={item.quantity >= item.maxStock}
                         className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >

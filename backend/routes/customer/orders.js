@@ -3,6 +3,7 @@ const router = express.Router();
 const { QueryTypes } = require('sequelize');
 const { calculateCommission, creditPendingCommission } = require('../../services/commissionService');
 const { sendOrderLifecycleEmail } = require('../../services/orderEmailService');
+const { resolveVariantSelection } = require('../../utils/productVariants');
 
 // @route   POST /api/customer/orders
 // @desc    Create a new order (guest or authenticated)
@@ -234,9 +235,11 @@ router.post('/orders', async (req, res) => {
       const [product] = await sequelize.query(
         `SELECT 
           p.id, p.name, p.sku, p.manufacturer_id,
-          p.cost_price, p.reseller_margin, p.skaarvi_margin, p.selling_price
+          p.cost_price, p.reseller_margin, p.skaarvi_margin, p.selling_price,
+          p.stock_quantity
          FROM products p
-         WHERE p.id = ? AND p.deleted_at IS NULL`,
+         WHERE p.id = ? AND p.deleted_at IS NULL
+         FOR UPDATE`,
         {
           replacements: [item.productId],
           type: QueryTypes.SELECT,
@@ -255,6 +258,60 @@ router.post('/orders', async (req, res) => {
       const costPrice = parseFloat(product.cost_price) || 0;
       const quantity = parseInt(item.quantity) || 0;
 
+      if (quantity < 1) {
+        const quantityError = new Error(`Invalid quantity for ${product.name}`);
+        quantityError.statusCode = 400;
+        throw quantityError;
+      }
+
+      const productVariants = await sequelize.query(
+        `SELECT id, size_label, color_name, stock_quantity
+         FROM product_variants
+         WHERE product_id = ?
+         FOR UPDATE`,
+        {
+          replacements: [product.id],
+          type: QueryTypes.SELECT,
+          transaction
+        }
+      );
+      const selectedSize = typeof item.selectedSize === 'string' ? item.selectedSize.trim() : '';
+      const selectedColor = typeof item.selectedColor === 'string' ? item.selectedColor.trim() : '';
+      const {
+        selectedVariant,
+        usesSizes: productUsesSizes,
+        usesColors: productUsesColors,
+      } = resolveVariantSelection(productVariants, selectedSize, selectedColor);
+
+      if (productUsesSizes && !selectedSize) {
+        const sizeError = new Error(`Please select a size for ${product.name}`);
+        sizeError.statusCode = 400;
+        throw sizeError;
+      }
+      if (productUsesColors && !selectedColor) {
+        const colorError = new Error(`Please select a color for ${product.name}`);
+        colorError.statusCode = 400;
+        throw colorError;
+      }
+      if (productVariants.length > 0 && !selectedVariant) {
+        const variantError = new Error(`The selected size and color combination is not available for ${product.name}`);
+        variantError.statusCode = 400;
+        throw variantError;
+      }
+      if (selectedVariant && selectedVariant.stock_quantity < quantity) {
+        const variantDescription = [selectedVariant.color_name, selectedVariant.size_label]
+          .filter(Boolean)
+          .join(' / ');
+        const stockError = new Error(`Only ${selectedVariant.stock_quantity} unit(s) of ${product.name} (${variantDescription}) are available`);
+        stockError.statusCode = 409;
+        throw stockError;
+      }
+      if (product.stock_quantity < quantity) {
+        const stockError = new Error(`Only ${product.stock_quantity} unit(s) of ${product.name} are available`);
+        stockError.statusCode = 409;
+        throw stockError;
+      }
+
       const itemTotal = sellingPrice * quantity;
       const resellerCommission = resellerMargin * quantity;
       const skaarviRevenue = skaarviMargin * quantity;
@@ -264,10 +321,10 @@ router.post('/orders', async (req, res) => {
       await sequelize.query(
         `INSERT INTO order_items 
          (order_id, product_id, manufacturer_id, product_name, product_sku,
-          quantity, cost_price, reseller_margin, skaarvi_margin, selling_price,
+          quantity, selected_size, selected_color, cost_price, reseller_margin, skaarvi_margin, selling_price,
           item_total, platform_fee, manufacturer_amount, reseller_commission, skaarvi_revenue,
           created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
         {
           replacements: [
             orderId,
@@ -276,6 +333,8 @@ router.post('/orders', async (req, res) => {
             product.name,
             product.sku || null,
             quantity,
+            selectedVariant?.size_label || null,
+            selectedVariant?.color_name || null,
             costPrice,
             resellerMargin,
             skaarviMargin,
@@ -291,14 +350,27 @@ router.post('/orders', async (req, res) => {
         }
       );
 
+      if (selectedVariant) {
+        await sequelize.query(
+          `UPDATE product_variants
+           SET stock_quantity = stock_quantity - ?
+           WHERE id = ?`,
+          {
+            replacements: [quantity, selectedVariant.id],
+            type: QueryTypes.UPDATE,
+            transaction
+          }
+        );
+      }
+
       // Update product stock
       await sequelize.query(
         `UPDATE products 
          SET stock_quantity = stock_quantity - ?,
              sales_count = sales_count + ?
-         WHERE id = ? AND stock_quantity >= ?`,
+         WHERE id = ?`,
         {
-          replacements: [quantity, quantity, product.id, quantity],
+          replacements: [quantity, quantity, product.id],
           type: QueryTypes.UPDATE,
           transaction
         }
@@ -348,9 +420,9 @@ router.post('/orders', async (req, res) => {
   } catch (error) {
     await transaction.rollback();
     console.error('[Customer Order] Error creating order:', error);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       status: 'error',
-      message: 'Failed to place order',
+      message: error.statusCode ? error.message : 'Failed to place order',
       error: error.message
     });
   }
@@ -507,6 +579,8 @@ router.get('/orders/:id', async (req, res) => {
         oi.product_id,
         oi.product_name,
         oi.quantity,
+        oi.selected_size,
+        oi.selected_color,
         oi.selling_price as price,
         oi.item_total as subtotal,
         (SELECT image_url FROM product_images WHERE product_id = oi.product_id ORDER BY sort_order LIMIT 1) as product_image
@@ -658,7 +732,7 @@ router.post('/orders/:id/cancel', async (req, res) => {
 
     // Restore product stock for each order item
     const orderItems = await sequelize.query(
-      'SELECT oi.product_id, oi.quantity, oi.manufacturer_id FROM order_items oi WHERE oi.order_id = ?',
+      'SELECT oi.product_id, oi.quantity, oi.manufacturer_id, oi.selected_size, oi.selected_color FROM order_items oi WHERE oi.order_id = ?',
       {
         replacements: [orderId],
         type: QueryTypes.SELECT,
@@ -689,6 +763,28 @@ router.post('/orders/:id/cancel', async (req, res) => {
           transaction
         }
       );
+
+      if (item.selected_size || item.selected_color) {
+        await sequelize.query(
+          `UPDATE product_variants
+           SET stock_quantity = stock_quantity + ?
+           WHERE product_id = ?
+             AND (size_label = ? OR (size_label IS NULL AND ? IS NULL))
+             AND (color_name = ? OR (color_name IS NULL AND ? IS NULL))`,
+          {
+            replacements: [
+              item.quantity,
+              item.product_id,
+              item.selected_size,
+              item.selected_size,
+              item.selected_color,
+              item.selected_color
+            ],
+            type: QueryTypes.UPDATE,
+            transaction
+          }
+        );
+      }
 
       // Add stock log entry
       await sequelize.query(

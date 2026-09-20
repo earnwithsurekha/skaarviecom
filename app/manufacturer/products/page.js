@@ -175,8 +175,8 @@ export default function ProductsPage() {
           </div>
         ) : (
           <>
-            <div className="card overflow-hidden">
-              <table className="min-w-full divide-y" style={{ borderColor: 'rgb(var(--color-border))' }}>
+            <div className="card overflow-x-auto overscroll-x-contain">
+              <table className="w-full min-w-[760px] divide-y" style={{ borderColor: 'rgb(var(--color-border))' }}>
                 <thead style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'rgb(var(--color-text-secondary))' }}>

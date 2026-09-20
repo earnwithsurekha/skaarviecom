@@ -13,8 +13,8 @@ export default function OrdersTable({ orders, onRefresh }) {
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="table">
+    <div className="overflow-x-auto overscroll-x-contain">
+      <table className="table min-w-[1200px]">
         <thead>
           <tr>
             <th>Order ID</th>

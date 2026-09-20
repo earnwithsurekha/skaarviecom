@@ -268,7 +268,7 @@ router.post('/:id/approve', authMiddleware, adminOnly, async (req, res) => {
 
     // Restore product stock for each order item
     const orderItems = await sequelize.query(
-      'SELECT oi.product_id, oi.quantity, oi.manufacturer_id FROM order_items oi WHERE oi.order_id = ?',
+      'SELECT oi.product_id, oi.quantity, oi.manufacturer_id, oi.selected_size, oi.selected_color FROM order_items oi WHERE oi.order_id = ?',
       {
         replacements: [id],
         type: QueryTypes.SELECT,
@@ -299,6 +299,28 @@ router.post('/:id/approve', authMiddleware, adminOnly, async (req, res) => {
           transaction
         }
       );
+
+      if (item.selected_size || item.selected_color) {
+        await sequelize.query(
+          `UPDATE product_variants
+           SET stock_quantity = stock_quantity + ?
+           WHERE product_id = ?
+             AND (size_label = ? OR (size_label IS NULL AND ? IS NULL))
+             AND (color_name = ? OR (color_name IS NULL AND ? IS NULL))`,
+          {
+            replacements: [
+              item.quantity,
+              item.product_id,
+              item.selected_size,
+              item.selected_size,
+              item.selected_color,
+              item.selected_color
+            ],
+            type: QueryTypes.UPDATE,
+            transaction
+          }
+        );
+      }
 
       // Add stock log entry
       await sequelize.query(

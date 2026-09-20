@@ -26,9 +26,19 @@ export default function ManufacturerLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useDispatch();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme } = useTheme();
   const { user } = useSelector(state => state.auth);
+
+  useEffect(() => {
+    setSidebarOpen(window.innerWidth >= 1024);
+  }, []);
+
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     // Skip auth check for registration page

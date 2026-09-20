@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Share2, 
   MessageCircle, 
@@ -12,6 +13,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+const MENU_WIDTH = 192;
+const MENU_HEIGHT = 183;
+const MENU_GAP = 8;
+const VIEWPORT_MARGIN = 12;
+
 export default function ProductShareButton({ 
   productId, 
   productName,
@@ -21,15 +27,24 @@ export default function ProductShareButton({
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef(null);
 
   useEffect(() => {
     if (showMenu && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const left = Math.min(
+        Math.max(rect.right - MENU_WIDTH, VIEWPORT_MARGIN),
+        window.innerWidth - MENU_WIDTH - VIEWPORT_MARGIN
+      );
+      const fitsBelow = window.innerHeight - rect.bottom >= MENU_HEIGHT + MENU_GAP;
+      const top = fitsBelow
+        ? rect.bottom + MENU_GAP
+        : Math.max(VIEWPORT_MARGIN, rect.top - MENU_HEIGHT - MENU_GAP);
+
       setMenuPosition({
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right
+        top,
+        left
       });
     }
 
@@ -42,7 +57,11 @@ export default function ProductShareButton({
 
     if (showMenu) {
       window.addEventListener('scroll', handleScroll, true);
-      return () => window.removeEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleScroll);
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleScroll);
+      };
     }
   }, [showMenu]);
 
@@ -77,7 +96,7 @@ export default function ProductShareButton({
   };
 
   const generateSessionId = () => {
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = `session_${crypto.randomUUID()}`;
     localStorage.setItem('session_id', sessionId);
     return sessionId;
   };
@@ -118,6 +137,7 @@ export default function ProductShareButton({
         setShowMenu(false);
       }, 2000);
     } catch (error) {
+      console.error('Copy product link error:', error);
       toast.error('Failed to copy link');
     }
   };
@@ -131,7 +151,7 @@ export default function ProductShareButton({
   };
 
   return (
-    <div className="relative z-50" onClick={(e) => e.stopPropagation()}>
+    <div className="relative z-50">
       <button
         ref={buttonRef}
         onClick={(e) => {
@@ -140,14 +160,19 @@ export default function ProductShareButton({
         }}
         className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all"
         title="Share product"
+        aria-label="Share product"
+        aria-haspopup="menu"
+        aria-expanded={showMenu}
       >
         <Share2 className="h-4 w-4" />
       </button>
 
-      {showMenu && (
+      {showMenu && typeof document !== 'undefined' && createPortal(
         <>
           {/* Backdrop */}
-          <div 
+          <button
+            type="button"
+            aria-label="Close share menu"
             className="fixed inset-0 z-[9998]"
             onClick={(e) => {
               e.stopPropagation();
@@ -156,13 +181,14 @@ export default function ProductShareButton({
           />
           
           {/* Share Menu - Fixed positioning */}
-          <div 
-            className="fixed w-48 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 z-[9999] shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+          <dialog
+            open
+            className="pointer-events-none fixed m-0 w-48 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 z-[9999] shadow-2xl"
             style={{
               top: `${menuPosition.top}px`,
-              right: `${menuPosition.right}px`,
+              left: `${menuPosition.left}px`,
             }}
+            aria-label={`Share ${productName}`}
           >
             <div className="p-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <h3 className="text-xs font-semibold text-gray-900 dark:text-white">Share</h3>
@@ -171,7 +197,7 @@ export default function ProductShareButton({
                   e.stopPropagation();
                   setShowMenu(false);
                 }}
-                className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                className="pointer-events-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
               >
                 <X className="h-3 w-3 text-gray-500" />
               </button>
@@ -181,7 +207,7 @@ export default function ProductShareButton({
               {/* WhatsApp */}
               <button
                 onClick={handleWhatsAppShare}
-                className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
+                className="pointer-events-auto w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
               >
                 <div className="p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
                   <MessageCircle className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
@@ -194,7 +220,7 @@ export default function ProductShareButton({
               {/* Email */}
               <button
                 onClick={handleEmailShare}
-                className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
+                className="pointer-events-auto w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
               >
                 <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
                   <Mail className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
@@ -207,7 +233,7 @@ export default function ProductShareButton({
               {/* Copy Link */}
               <button
                 onClick={handleCopyLink}
-                className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
+                className="pointer-events-auto w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
               >
                 <div className="p-1 bg-gray-100 dark:bg-gray-600 rounded-full">
                   {copied ? (
@@ -224,7 +250,7 @@ export default function ProductShareButton({
               {/* QR Code */}
               <button
                 onClick={handleQRCode}
-                className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
+                className="pointer-events-auto w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-left"
               >
                 <div className="p-1 bg-purple-100 dark:bg-purple-900/30 rounded-full">
                   <QrCode className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
@@ -234,8 +260,9 @@ export default function ProductShareButton({
                 </span>
               </button>
             </div>
-          </div>
-        </>
+          </dialog>
+        </>,
+        document.body
       )}
     </div>
   );

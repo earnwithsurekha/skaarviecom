@@ -69,6 +69,20 @@ Run the database schema from the root project:
 psql -U postgres -d skaarvi_resell_db -f ../DATABASE-SCHEMA.sql
 ```
 
+For an existing MySQL database, apply the product size/color variant schema:
+
+```bash
+npm run migrate:product-variants
+```
+
+Run this command once in each environment before deploying backend code that
+uses product variants. The migration is idempotent and can be run again safely.
+
+Product images can be assigned to all variants, one color, one size, or multiple
+exact size/color combinations. For example, one Red image can cover all Red
+sizes or only Red/M, Red/L, Red/XL, and Red/XXL. Buyer galleries prefer exact
+matches, then matching color or size images, and finally general product images.
+
 ### 4. Start Development Server
 
 ```bash

@@ -188,7 +188,7 @@ export default function StockHistoryPage({ params }) {
                         </span>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-4 mb-2">
+                      <div className="grid grid-cols-1 gap-4 mb-2 sm:grid-cols-3">
                         <div>
                           <span className="text-xs text-gray-500 dark:text-gray-400">Previous Stock</span>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">

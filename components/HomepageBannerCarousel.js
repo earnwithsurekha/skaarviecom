@@ -116,7 +116,7 @@ export default function HomepageBannerCarousel({ banners }) {
       onBlurCapture={() => setIsPaused(false)}
       onTouchStart={event => { touchStartX.current = event.touches[0].clientX; }}
       onTouchEnd={handleTouchEnd}
-      className="relative mb-7 overflow-hidden border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
+      className="relative -mx-4 -mt-4 mb-7 overflow-hidden bg-slate-100 dark:bg-slate-800 lg:-mx-8 lg:-mt-8"
     >
       <div className="relative aspect-[3/1] w-full">
         {href ? (
@@ -141,18 +141,18 @@ export default function HomepageBannerCarousel({ banners }) {
               onClick={showPrevious}
               aria-label="Previous banner"
               title="Previous banner"
-              className="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center border border-white/70 bg-white/90 text-slate-800 hover:bg-white sm:left-4"
+              className="absolute left-2 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center bg-transparent text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.85)] transition-opacity hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:left-3"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-8 w-8" strokeWidth={2.5} />
             </button>
             <button
               type="button"
               onClick={showNext}
               aria-label="Next banner"
               title="Next banner"
-              className="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center border border-white/70 bg-white/90 text-slate-800 hover:bg-white sm:right-4"
+              className="absolute right-2 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center bg-transparent text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.85)] transition-opacity hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:right-3"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-8 w-8" strokeWidth={2.5} />
             </button>
           </>
         )}

@@ -262,6 +262,62 @@ const Product = sequelize.define('Product', {
   },
 });
 
+const ProductVariant = sequelize.define('ProductVariant', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  productId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'product_id',
+    references: {
+      model: 'products',
+      key: 'id',
+    },
+  },
+  variantKey: {
+    type: DataTypes.STRING(150),
+    allowNull: false,
+    field: 'variant_key',
+  },
+  sizeLabel: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    field: 'size_label',
+  },
+  colorName: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    field: 'color_name',
+  },
+  colorHex: {
+    type: DataTypes.STRING(7),
+    allowNull: true,
+    field: 'color_hex',
+  },
+  stockQuantity: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: false,
+    defaultValue: 0,
+    field: 'stock_quantity',
+  },
+  sortOrder: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: false,
+    defaultValue: 0,
+    field: 'sort_order',
+  },
+}, {
+  tableName: 'product_variants',
+  timestamps: true,
+  underscored: true,
+  indexes: [
+    { unique: true, fields: ['product_id', 'variant_key'] },
+  ],
+});
+
 // Product Image Model
 const ProductImage = sequelize.define('ProductImage', {
   id: {
@@ -277,6 +333,26 @@ const ProductImage = sequelize.define('ProductImage', {
       model: 'products',
       key: 'id',
     },
+  },
+  variantKey: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+    field: 'variant_key',
+  },
+  variantKeys: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    field: 'variant_keys',
+  },
+  sizeLabel: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    field: 'size_label',
+  },
+  colorName: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    field: 'color_name',
   },
   imageUrl: {
     type: DataTypes.TEXT,
@@ -430,12 +506,14 @@ Product.belongsTo(Manufacturer, { foreignKey: 'manufacturer_id', as: 'manufactur
 Product.hasMany(ProductImage, { foreignKey: 'product_id', as: 'images', onDelete: 'CASCADE' });
 Product.hasMany(ProductVideo, { foreignKey: 'product_id', as: 'videos', onDelete: 'CASCADE' });
 Product.hasMany(ProductPricingHistory, { foreignKey: 'product_id', as: 'priceHistory', onDelete: 'CASCADE' });
+Product.hasMany(ProductVariant, { foreignKey: 'product_id', as: 'variants', onDelete: 'CASCADE' });
 
 Manufacturer.hasMany(Product, { foreignKey: 'manufacturer_id', as: 'products' });
 
 ProductImage.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 ProductVideo.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 ProductPricingHistory.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+ProductVariant.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
 // Analytics associations
 Product.hasMany(ProductSave, { foreignKey: 'product_id', as: 'saves', onDelete: 'CASCADE' });
@@ -463,6 +541,7 @@ module.exports = {
   ProductImage,
   ProductVideo,
   ProductPricingHistory,
+  ProductVariant,
   ProductSave,
   ProductShare,
   ProductClick,

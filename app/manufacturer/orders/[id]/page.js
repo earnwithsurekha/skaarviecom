@@ -281,12 +281,13 @@ export default function OrderDetailPage() {
                   Order Items
                 </h2>
               </div>
-              <div className="overflow-x-auto">
-                <table className="table">
+              <div className="overflow-x-auto overscroll-x-contain">
+                <table className="table min-w-[640px]">
                   <thead>
                     <tr>
                       <th>Product</th>
                       <th>SKU</th>
+                      <th>Variant</th>
                       <th>Quantity</th>
                       <th>Unit Price</th>
                       <th>Total</th>
@@ -297,6 +298,9 @@ export default function OrderDetailPage() {
                       <tr key={item.id}>
                         <td className="font-medium">{item.productName}</td>
                         <td className="text-gray-600">{item.productSku || 'N/A'}</td>
+                        <td className="text-gray-600">
+                          {[item.selectedColor, item.selectedSize].filter(Boolean).join(' / ') || 'Standard'}
+                        </td>
                         <td>{item.quantity}</td>
                         <td>{formatCurrency(item.sellingPrice)}</td>
                         <td className="font-semibold">{formatCurrency(item.itemTotal)}</td>

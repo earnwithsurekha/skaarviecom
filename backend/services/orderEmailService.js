@@ -162,7 +162,7 @@ const loadOrderEmailContext = async (sequelize, orderId) => {
   if (!order) return null;
 
   const items = await sequelize.query(
-    `SELECT product_name, product_sku, quantity, selling_price, item_total
+    `SELECT product_name, product_sku, quantity, selected_size, selected_color, selling_price, item_total
      FROM order_items
      WHERE order_id = ?
      ORDER BY created_at ASC`,
@@ -190,6 +190,7 @@ const renderItemsHtml = (items) => items.map((item) => `
     <td style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
       <div style="font-weight:600;color:#111827;">${escapeHtml(item.product_name)}</div>
       ${item.product_sku ? `<div style="font-size:12px;color:#6b7280;margin-top:3px;">SKU: ${escapeHtml(item.product_sku)}</div>` : ''}
+      ${(item.selected_color || item.selected_size) ? `<div style="font-size:12px;color:#6b7280;margin-top:3px;">${escapeHtml([item.selected_color, item.selected_size].filter(Boolean).join(' / '))}</div>` : ''}
     </td>
     <td style="padding:12px 8px;border-bottom:1px solid #e5e7eb;text-align:center;color:#4b5563;">${escapeHtml(item.quantity)}</td>
     <td style="padding:12px 0;border-bottom:1px solid #e5e7eb;text-align:right;color:#111827;">&#8377;${formatAmount(item.item_total)}</td>
@@ -276,7 +277,7 @@ const buildHtml = (context, content) => {
 const buildText = (context, content) => {
   const { order, items, shippingAddress } = context;
   const itemLines = items.map((item) =>
-    `- ${item.product_name} x ${item.quantity}: Rs. ${formatAmount(item.item_total)}`
+    `- ${item.product_name}${(item.selected_color || item.selected_size) ? ` (${[item.selected_color, item.selected_size].filter(Boolean).join(' / ')})` : ''} x ${item.quantity}: Rs. ${formatAmount(item.item_total)}`
   ).join('\n');
   const address = [
     shippingAddress.fullName || shippingAddress.full_name,
