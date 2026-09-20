@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { query, validationResult } = require('express-validator');
+const { body, query, validationResult } = require('express-validator');
 const { authMiddleware, manufacturerOnly } = require('../middleware/auth');
 const notificationService = require('../services/notificationService');
 const Notification = require('../models/notification');
+const DeviceToken = require('../models/deviceToken');
 const { Op } = require('sequelize');
+
+const getUserId = (request) => request.user.userId || request.user.id;
 
 // Helper function to handle validation errors
 const handleValidationErrors = (req, res, next) => {
@@ -18,6 +21,76 @@ const handleValidationErrors = (req, res, next) => {
   }
   next();
 };
+
+// @route   POST /api/notifications/devices
+// @desc    Register or refresh an FCM token for the authenticated user
+// @access  Private
+router.post(
+  '/devices',
+  authMiddleware,
+  [
+    body('token').isString().trim().isLength({ min: 20, max: 512 }),
+    body('platform').isIn(['android', 'ios', 'web']),
+    body('deviceId').optional({ nullable: true }).isString().trim().isLength({ max: 255 }),
+  ],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { token, platform, deviceId = null } = req.body;
+      const [deviceToken, created] = await DeviceToken.findOrCreate({
+        where: { token },
+        defaults: {
+          userId,
+          platform,
+          deviceId,
+          isActive: true,
+          lastSeenAt: new Date(),
+        },
+      });
+
+      if (!created) {
+        await deviceToken.update({
+          userId,
+          platform,
+          deviceId,
+          isActive: true,
+          lastSeenAt: new Date(),
+        });
+      }
+
+      return res.status(created ? 201 : 200).json({
+        status: 'success',
+        message: created ? 'Device registered' : 'Device registration refreshed',
+      });
+    } catch (error) {
+      console.error('Register notification device error:', error);
+      return res.status(500).json({ status: 'error', message: 'Failed to register device' });
+    }
+  }
+);
+
+// @route   DELETE /api/notifications/devices
+// @desc    Deactivate an FCM token for the authenticated user
+// @access  Private
+router.delete(
+  '/devices',
+  authMiddleware,
+  [body('token').isString().trim().isLength({ min: 20, max: 512 })],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      await DeviceToken.update(
+        { isActive: false },
+        { where: { token: req.body.token, userId: getUserId(req) } }
+      );
+      return res.status(200).json({ status: 'success', message: 'Device unregistered' });
+    } catch (error) {
+      console.error('Unregister notification device error:', error);
+      return res.status(500).json({ status: 'error', message: 'Failed to unregister device' });
+    }
+  }
+);
 
 // @route   GET /api/notifications
 // @desc    Get all notifications for user
@@ -44,7 +117,8 @@ router.get(
       } = req.query;
 
       const offset = (parseInt(page) - 1) * parseInt(limit);
-      const whereClause = { userId: req.user.id };
+      const userId = getUserId(req);
+      const whereClause = { userId };
 
       // Apply filters
       if (type) {
@@ -64,7 +138,7 @@ router.get(
         order: [['createdAt', 'DESC']],
       });
 
-      const unreadCount = await notificationService.getUnreadCount(req.user.id);
+      const unreadCount = await notificationService.getUnreadCount(userId);
 
       res.status(200).json({
         status: 'success',
@@ -96,7 +170,7 @@ router.get(
 // @access  Private
 router.get('/unread/count', authMiddleware, async (req, res) => {
   try {
-    const count = await notificationService.getUnreadCount(req.user.id);
+    const count = await notificationService.getUnreadCount(getUserId(req));
 
     res.status(200).json({
       status: 'success',
@@ -119,7 +193,7 @@ router.get('/types/low_stock', authMiddleware, manufacturerOnly, async (req, res
   try {
     const notifications = await Notification.findAll({
       where: {
-        userId: req.user.id,
+        userId: getUserId(req),
         type: 'low_stock_alert',
       },
       order: [['createdAt', 'DESC']],
@@ -148,7 +222,7 @@ router.patch('/:id/read', authMiddleware, async (req, res) => {
     const notification = await Notification.findOne({
       where: {
         id: req.params.id,
-        userId: req.user.id,
+        userId: getUserId(req),
       },
     });
 
@@ -187,7 +261,7 @@ router.patch('/:id/read', authMiddleware, async (req, res) => {
 // @access  Private
 router.post('/read-all', authMiddleware, async (req, res) => {
   try {
-    await notificationService.markAllAsRead(req.user.id);
+    await notificationService.markAllAsRead(getUserId(req));
 
     res.status(200).json({
       status: 'success',
@@ -211,7 +285,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     const notification = await Notification.findOne({
       where: {
         id: req.params.id,
-        userId: req.user.id,
+        userId: getUserId(req),
       },
     });
 

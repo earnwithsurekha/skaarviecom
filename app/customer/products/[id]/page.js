@@ -8,11 +8,9 @@ import {
   Package, 
   Truck, 
   Shield, 
-  TrendingUp,
   Loader2,
   ShoppingCart,
-  Star,
-  Info
+  Star
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ProductSaveButton from '@/components/product/ProductSaveButton';
@@ -35,8 +33,7 @@ export default function CustomerProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { totalItems, items: cartItems } = useSelector((state) => state.cart);
+  const { items: cartItems } = useSelector((state) => state.cart);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,13 +95,9 @@ export default function CustomerProductDetailPage() {
           })),
           catalog_url: getImageUrl(productData.catalog_url),
           brand: productData.brand_name || productData.brand || null,
-          costPrice: parseFloat(productData.cost_price) || 0,
-          skaarviMargin: parseFloat(productData.skaarvi_margin) || 0,
-          resellerProfit: parseFloat(productData.reseller_margin) || parseFloat(productData.reseller_profit) || 0,
           sellingPrice: parseFloat(productData.selling_price) || 0,
           price: parseFloat(productData.selling_price) || 0,
           stock: productData.stock_quantity || 0,
-          resellerProfit: parseFloat(productData.reseller_profit) || 0,
         });
       }
     } catch (error) {
@@ -215,9 +208,6 @@ export default function CustomerProductDetailPage() {
   }
 
   const images = getVariantGalleryImages(product.images || [], selectedSize, selectedColor);
-  const discount = product.mrp && product.mrp > (product.sellingPrice || product.price)
-    ? Math.round(((product.mrp - (product.sellingPrice || product.price)) / product.mrp) * 100)
-    : 0;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-background))' }}>
@@ -399,78 +389,13 @@ export default function CustomerProductDetailPage() {
               <span style={{ color: 'rgb(var(--color-text-secondary))' }}>(4.5)</span>
             </div>
 
-            {/* Pricing with Transparent Breakdown */}
-            <div className="rounded-lg p-6 space-y-4" style={{ backgroundColor: 'rgb(var(--color-surface))', border: '2px solid rgb(var(--color-border))' }}>
+            {/* Pricing */}
+            <div className="rounded-lg p-6" style={{ backgroundColor: 'rgb(var(--color-surface))', border: '2px solid rgb(var(--color-border))' }}>
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold" style={{ color: 'rgb(var(--color-primary))' }}>
                   {formatPrice(product.sellingPrice || product.price)}
                 </span>
               </div>
-
-              {/* Price Breakdown */}
-              <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: 'rgba(var(--color-primary), 0.05)', border: '1px solid rgba(var(--color-primary), 0.2)' }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Info className="h-4 w-4" style={{ color: 'rgb(var(--color-primary))' }} />
-                  <span className="text-sm font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
-                    Transparent Pricing Breakdown
-                  </span>
-                </div>
-                
-                <div className="space-y-1.5 text-sm">
-                  {product.costPrice && (
-                    <div className="flex justify-between items-center">
-                      <span style={{ color: 'rgb(var(--color-text-secondary))' }}>Manufacturer Cost:</span>
-                      <span className="font-medium" style={{ color: 'rgb(var(--color-text))' }}>
-                        {formatPrice(product.costPrice)}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {product.skaarviMargin > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span style={{ color: 'rgb(var(--color-text-secondary))' }}>Skaarvi Margin:</span>
-                      <span className="font-medium text-blue-600">
-                        +{formatPrice(product.skaarviMargin)}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {product.resellerProfit > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span style={{ color: 'rgb(var(--color-text-secondary))' }}>Reseller Margin:</span>
-                      <span className="font-medium text-green-600">
-                        +{formatPrice(product.resellerProfit)}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: 'rgb(var(--color-text-secondary))' }}>Platform Fee (Fixed):</span>
-                    <span className="font-medium text-purple-600">
-                      +{formatPrice(5)}
-                    </span>
-                  </div>
-                  
-                  <div className="pt-2 border-t flex justify-between items-center" style={{ borderColor: 'rgba(var(--color-border), 0.5)' }}>
-                    <span className="font-semibold" style={{ color: 'rgb(var(--color-text))' }}>Your Price:</span>
-                    <span className="text-lg font-bold" style={{ color: 'rgb(var(--color-primary))' }}>
-                      {formatPrice(product.sellingPrice || product.price)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Reseller Profit Highlight */}
-              {product.resellerProfit && (
-                <div className="flex items-center gap-2 p-3 rounded-lg font-semibold" style={{ 
-                  backgroundColor: 'rgba(var(--color-success), 0.1)',
-                  border: '1px solid rgb(var(--color-success))',
-                  color: 'rgb(var(--color-success))'
-                }}>
-                  <TrendingUp className="h-5 w-5" />
-                  <span>You earn {formatPrice(product.resellerProfit)} profit per sale!</span>
-                </div>
-              )}
             </div>
 
             <ProductVariantSelector

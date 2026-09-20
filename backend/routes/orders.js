@@ -5,7 +5,7 @@ const { Order, OrderItem, OrderStatusHistory } = require('../models/order');
 const { ORDER_STATUS } = require('../config/constants');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
-const { sendOrderLifecycleEmail } = require('../services/orderEmailService');
+const { sendOrderLifecycleNotifications } = require('../services/orderLifecycleNotificationService');
 
 const ORDER_STATUS_EMAIL_EVENTS = {
   accepted: 'processing',
@@ -200,7 +200,7 @@ router.patch('/:id/status', authMiddleware, manufacturerOnly, async (req, res) =
 
     const emailEvent = ORDER_STATUS_EMAIL_EVENTS[status];
     if (emailEvent) {
-      await sendOrderLifecycleEmail({
+      await sendOrderLifecycleNotifications({
         sequelize,
         orderId: order.id,
         event: emailEvent,
@@ -264,7 +264,7 @@ router.post('/:id/accept', authMiddleware, manufacturerOnly, async (req, res) =>
       notes: 'Order accepted by manufacturer'
     });
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId: order.id,
       event: 'processing',
@@ -339,7 +339,7 @@ router.post('/:id/ship', authMiddleware, manufacturerOnly, async (req, res) => {
       notes: notes || `Shipped via ${courierPartner}, Tracking: ${trackingNumber}`
     });
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId: order.id,
       event: 'shipped',
@@ -406,7 +406,7 @@ router.post('/:id/deliver', authMiddleware, manufacturerOnly, async (req, res) =
       notes: notes || 'Order delivered successfully'
     });
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId: order.id,
       event: 'delivered',

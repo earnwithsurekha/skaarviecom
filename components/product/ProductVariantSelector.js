@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 const uniqueBy = (items, getKey) => (
   items.filter((item, index) => items.findIndex((candidate) => getKey(candidate) === getKey(item)) === index)
 );
@@ -11,8 +13,6 @@ export default function ProductVariantSelector({
   onSelectSize,
   onSelectColor,
 }) {
-  if (variants.length === 0) return null;
-
   const sizeOptions = uniqueBy(
     variants.filter((variant) => variant.sizeLabel),
     (variant) => variant.sizeLabel
@@ -27,6 +27,19 @@ export default function ProductVariantSelector({
     && (!colorName || variant.colorName === colorName)
     && (Number.parseInt(variant.stockQuantity, 10) || 0) > 0
   ));
+  const firstAvailableColor = colorOptions.find((variant) => (
+    hasAvailableVariant(null, variant.colorName)
+  ))?.colorName;
+  const selectedColorIsAvailable = !selectedColor || hasAvailableVariant(null, selectedColor);
+
+  useEffect(() => {
+    if (firstAvailableColor && (!selectedColor || !selectedColorIsAvailable)) {
+      onSelectColor(firstAvailableColor);
+    }
+  }, [firstAvailableColor, onSelectColor, selectedColor, selectedColorIsAvailable]);
+
+  if (variants.length === 0) return null;
+
   const selectedVariant = variants.find((variant) => (
     (!sizeOptions.length || variant.sizeLabel === selectedSize)
     && (!colorOptions.length || variant.colorName === selectedColor)
@@ -39,7 +52,7 @@ export default function ProductVariantSelector({
           <legend className="mb-2 font-medium" style={{ color: 'rgb(var(--color-text))' }}>
             Select color
           </legend>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {colorOptions.map((variant) => {
               const isSelected = variant.colorName === selectedColor;
               const isAvailable = hasAvailableVariant(null, variant.colorName);
@@ -56,19 +69,15 @@ export default function ProductVariantSelector({
                   }}
                   disabled={!isAvailable}
                   aria-pressed={isSelected}
-                  className="flex min-h-11 items-center gap-2 border px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label={`${variant.colorName}${isSelected ? ', selected' : ''}`}
+                  title={variant.colorName}
+                  className="h-8 w-8 rounded-full transition-[opacity,border-color] disabled:cursor-not-allowed disabled:opacity-35"
                   style={{
-                    backgroundColor: isSelected ? 'rgb(var(--color-primary))' : 'rgb(var(--color-background))',
-                    borderColor: isSelected ? 'rgb(var(--color-primary))' : 'rgb(var(--color-border))',
-                    color: isSelected ? '#ffffff' : 'rgb(var(--color-text))',
+                    backgroundColor: variant.colorHex || '#d1d5db',
+                    border: isSelected ? '3px solid #2563eb' : '1px solid rgba(0, 0, 0, 0.2)',
                   }}
                 >
-                  <span
-                    className="h-5 w-5 rounded-full border border-black/20"
-                    style={{ backgroundColor: variant.colorHex || '#d1d5db' }}
-                    aria-hidden="true"
-                  />
-                  {variant.colorName}
+                  <span className="sr-only">{variant.colorName}</span>
                 </button>
               );
             })}

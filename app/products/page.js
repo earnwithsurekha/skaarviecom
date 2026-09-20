@@ -91,8 +91,7 @@ export default function ProductsPage() {
             imageUrl: getImageUrl(product.primary_image),
             sellingPrice: parseFloat(product.selling_price) || 0,
             price: parseFloat(product.selling_price) || 0,
-            stock: product.stock_quantity || 0,
-            resellerProfit: product.reseller_profit || 0
+            stock: product.stock_quantity || 0
           }));
           console.log('[Products Page] Transformed products count:', transformedProducts.length);
           console.log('[Products Page] First product:', transformedProducts[0]);

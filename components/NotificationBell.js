@@ -2,6 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Bell } from 'lucide-react';
+
+const getAuthHeaders = () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const getNotificationData = (notification) => {
+  if (!notification?.data) return {};
+  if (typeof notification.data === 'object') return notification.data;
+  try {
+    return JSON.parse(notification.data);
+  } catch {
+    return {};
+  }
+};
 
 export default function NotificationBell() {
   const router = useRouter();
@@ -13,14 +29,23 @@ export default function NotificationBell() {
   useEffect(() => {
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30s
-    return () => clearInterval(interval);
+    const handlePushNotification = () => {
+      fetchUnreadCount();
+      fetchNotifications();
+    };
+    window.addEventListener('skaarvi:push-notification', handlePushNotification);
+    window.addEventListener('focus', fetchUnreadCount);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('skaarvi:push-notification', handlePushNotification);
+      window.removeEventListener('focus', fetchUnreadCount);
+    };
   }, []);
 
   const fetchUnreadCount = async () => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const response = await fetch('/api/notifications/unread/count', {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        headers: getAuthHeaders(),
       });
       const data = await response.json();
       if (data.status === 'success') {
@@ -34,7 +59,9 @@ export default function NotificationBell() {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/notifications?limit=10&is_read=false');
+      const response = await fetch('/api/notifications?limit=10&is_read=false', {
+        headers: getAuthHeaders(),
+      });
       const data = await response.json();
       if (data.status === 'success') {
         setNotifications(data.data.notifications);
@@ -47,6 +74,7 @@ export default function NotificationBell() {
   };
 
   const handleToggleDropdown = () => {
+    window.dispatchEvent(new Event('skaarvi:enable-push'));
     if (!showDropdown) {
       fetchNotifications();
     }
@@ -57,6 +85,7 @@ export default function NotificationBell() {
     try {
       await fetch(`/api/notifications/${id}`, {
         method: 'PATCH',
+        headers: getAuthHeaders(),
       });
       setNotifications(notifications.filter(n => n.id !== id));
       setUnreadCount(Math.max(0, unreadCount - 1));
@@ -69,6 +98,7 @@ export default function NotificationBell() {
     try {
       await fetch('/api/notifications/read-all', {
         method: 'POST',
+        headers: getAuthHeaders(),
       });
       setNotifications([]);
       setUnreadCount(0);
@@ -148,6 +178,13 @@ export default function NotificationBell() {
 
   const handleNotificationClick = (notification) => {
     markAsRead(notification.id);
+    const notificationData = getNotificationData(notification);
+
+    if (notificationData.url) {
+      router.push(notificationData.url);
+      setShowDropdown(false);
+      return;
+    }
     
     // Navigate based on notification type
     switch (notification.type) {
@@ -160,8 +197,8 @@ export default function NotificationBell() {
         break;
       case 'new_order':
       case 'order_shipped':
-        if (notification.data?.orderId) {
-          router.push(`/manufacturer/orders/${notification.data.orderId}`);
+        if (notificationData.orderId) {
+          router.push(`/manufacturer/orders/${notificationData.orderId}`);
         } else {
           router.push('/manufacturer/orders');
         }
@@ -201,20 +238,10 @@ export default function NotificationBell() {
       <button
         onClick={handleToggleDropdown}
         className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        aria-label="Notifications"
+        title="Notifications"
       >
-        <svg
-          className="w-6 h-6 text-gray-600 dark:text-gray-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
-        </svg>
+        <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -232,7 +259,7 @@ export default function NotificationBell() {
           />
           
           {/* Dropdown Content */}
-          <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-20 border border-gray-200 dark:border-gray-700">
+          <div className="absolute right-0 mt-2 w-[min(24rem,calc(100vw-2rem))] bg-white dark:bg-gray-800 rounded-lg shadow-xl z-20 border border-gray-200 dark:border-gray-700">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -294,13 +321,13 @@ export default function NotificationBell() {
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             {notification.message}
                           </p>
-                          {notification.data && (
+                          {notification.type === 'low_stock_alert' && (
                             <div className="text-xs text-gray-500 dark:text-gray-500 mb-1">
-                              Current Stock: {notification.data.currentStock} / Threshold: {notification.data.threshold}
+                              Current Stock: {getNotificationData(notification).currentStock} / Threshold: {getNotificationData(notification).threshold}
                             </div>
                           )}
                           <span className="text-xs text-gray-500 dark:text-gray-500">
-                            {formatDate(notification.created_at)}
+                            {formatDate(notification.createdAt || notification.created_at)}
                           </span>
                         </div>
                       </div>

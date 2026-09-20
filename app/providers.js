@@ -7,6 +7,7 @@ import { store, persistor } from '@/store';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SessionProvider } from '@/contexts/SessionContext';
 import TawkToChat from '@/components/TawkToChat';
+import PushNotificationManager from '@/components/PushNotificationManager';
 
 export function Providers({ children }) {
   return (
@@ -15,6 +16,7 @@ export function Providers({ children }) {
         <ThemeProvider>
           <SessionProvider>
             {children}
+            <PushNotificationManager />
             <Toaster
               position="top-right"
               toastOptions={{

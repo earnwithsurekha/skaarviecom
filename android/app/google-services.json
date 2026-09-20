@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "124881052542",
+    "project_id": "skaarvi",
+    "storage_bucket": "skaarvi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:124881052542:android:fe399c446dd40460d2c92f",
+        "android_client_info": {
+          "package_name": "com.skaarvi.marketplace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9MSe7qBhpWUxn0vOo8kVZFjVhySvLn5c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

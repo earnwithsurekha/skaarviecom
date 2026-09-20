@@ -13,6 +13,11 @@ skaarvi-reseller/out/
 .env*.local
 *.env.local
 
+# Firebase Admin private credentials
+/skaarvi-*.json
+**/firebase-admin*.json
+**/*service-account*.json
+
 # Database
 *.sqlite
 *.db

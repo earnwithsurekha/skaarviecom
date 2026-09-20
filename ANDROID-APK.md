@@ -44,3 +44,15 @@ from the file manager when Android prompts for permission.
 This APK uses Android's debug signing key and is intended for direct testing.
 A Play Store release requires a private release keystore and an Android App
 Bundle (`.aab`).
+
+## Firebase Push Notifications
+
+1. In Firebase Console, add an Android app to the same Firebase project used by
+	the website. The Android package name must be `com.skaarvi.marketplace`.
+2. Download that Android app's `google-services.json` and place it at
+	`android/app/google-services.json`.
+3. Run `npm run android:sync`, then rebuild with `npm run android:apk`.
+
+The Gradle Google Services plugin and Capacitor Push Notifications plugin are
+already configured. Do not substitute the web Firebase config for
+`google-services.json`; the Android app has its own Firebase app identifier.

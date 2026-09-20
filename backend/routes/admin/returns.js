@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { QueryTypes } = require('sequelize');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
-const { sendOrderLifecycleEmail } = require('../../services/orderEmailService');
+const { sendOrderLifecycleNotifications } = require('../../services/orderLifecycleNotificationService');
 
 // @route   GET /api/admin/returns
 // @desc    Get all return requests (with optional filtering)
@@ -391,38 +391,11 @@ router.post('/:id/approve', authMiddleware, adminOnly, async (req, res) => {
       }
     }
 
-    // Create notification for customer
-    const [customer] = await sequelize.query(
-      'SELECT user_id FROM customers WHERE id = ?',
-      {
-        replacements: [order.customer_id],
-        type: QueryTypes.SELECT,
-        transaction
-      }
-    );
-
-    if (customer && customer.user_id) {
-      await sequelize.query(
-        `INSERT INTO notifications 
-         (user_id, type, title, message, reference_id, reference_type, created_at)
-         VALUES (?, 'return_approved', 'Return Request Approved', ?, ?, 'order', NOW())`,
-        {
-          replacements: [
-            customer.user_id,
-            `Your return request for order ${order.order_number} has been approved. Refund will be processed within 5-7 business days.`,
-            id
-          ],
-          type: QueryTypes.INSERT,
-          transaction
-        }
-      );
-    }
-
     await transaction.commit();
 
     console.log('[Admin Returns] Return approved successfully:', order.order_number);
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId: order.id,
       event: 'return_approved',
@@ -536,38 +509,11 @@ router.post('/:id/reject', authMiddleware, adminOnly, async (req, res) => {
       }
     );
 
-    // Create notification for customer
-    const [customer] = await sequelize.query(
-      'SELECT user_id FROM customers WHERE id = ?',
-      {
-        replacements: [order.customer_id],
-        type: QueryTypes.SELECT,
-        transaction
-      }
-    );
-
-    if (customer && customer.user_id) {
-      await sequelize.query(
-        `INSERT INTO notifications 
-         (user_id, type, title, message, reference_id, reference_type, created_at)
-         VALUES (?, 'return_rejected', 'Return Request Rejected', ?, ?, 'order', NOW())`,
-        {
-          replacements: [
-            customer.user_id,
-            `Your return request for order ${order.order_number} has been rejected. Reason: ${adminNotes}`,
-            id
-          ],
-          type: QueryTypes.INSERT,
-          transaction
-        }
-      );
-    }
-
     await transaction.commit();
 
     console.log('[Admin Returns] Return rejected:', order.order_number);
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId: order.id,
       event: 'return_rejected',

@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "test": "jest --coverage",
     "migrate": "node scripts/migrate.js",
+    "migrate:fcm": "node run-fcm-migration.js",
     "migrate:product-variants": "node run-product-variant-migration.js",
     "seed:categories": "node seeds/seedCategories.js"
   },
@@ -29,6 +30,7 @@
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
+    "firebase-admin": "^13.10.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
