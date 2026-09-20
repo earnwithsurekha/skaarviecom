@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -12,7 +13,7 @@ export async function GET(request) {
       );
     }
 
-    const response = await fetch('http://localhost:5000/api/admin/settings', {
+    const response = await fetchBackend('/api/admin/settings', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -44,7 +45,7 @@ export async function PUT(request) {
 
     const body = await request.json();
 
-    const response = await fetch('http://localhost:5000/api/admin/settings', {
+    const response = await fetchBackend('/api/admin/settings', {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,

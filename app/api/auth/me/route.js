@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
 // @route   GET /api/auth/me
@@ -8,8 +9,7 @@ export async function GET(request) {
     const token = request.headers.get('authorization');
 
     // Forward request to backend
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-    const response = await fetch(`${backendUrl}/api/auth/me`, {
+    const response = await fetchBackend(`/api/auth/me`, {
       method: 'GET',
       headers: {
         'Authorization': token || '',

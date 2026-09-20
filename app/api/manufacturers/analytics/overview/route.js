@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // GET - Get analytics overview for all manufacturer's products
 export async function GET(request) {
@@ -10,9 +10,9 @@ export async function GET(request) {
     
     // Build query string from search params (startDate, endDate, sortBy, limit)
     const queryString = searchParams.toString();
-    const url = `${BACKEND_URL}/api/manufacturers/analytics/overview${queryString ? `?${queryString}` : ''}`;
+    const url = `/api/manufacturers/analytics/overview${queryString ? `?${queryString}` : ''}`;
 
-    const response = await fetch(url, {
+    const response = await fetchBackend(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
 // @route   GET /api/manufacturers/dashboard
@@ -15,7 +16,7 @@ export async function GET(request) {
     }
 
     // Forward the request to the backend
-    const backendResponse = await fetch('http://localhost:5000/api/manufacturers/dashboard', {
+    const backendResponse = await fetchBackend('/api/manufacturers/dashboard', {
       headers: {
         'Authorization': authHeader,
       },

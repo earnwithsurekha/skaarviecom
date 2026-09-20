@@ -1,11 +1,11 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const VALID_EVENTS = new Set(['view', 'click']);
 
 export async function GET() {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/public/banners`, {
+    const response = await fetchBackend(`/api/public/banners`, {
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store',
     });
@@ -32,8 +32,8 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const response = await fetch(
-      `${BACKEND_URL}/api/public/banners/${encodeURIComponent(bannerId)}/${event}`,
+    const response = await fetchBackend(
+      `/api/public/banners/${encodeURIComponent(bannerId)}/${event}`,
       { method: 'POST' }
     );
     const data = await response.json();

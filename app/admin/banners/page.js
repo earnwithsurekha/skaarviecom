@@ -480,7 +480,7 @@ export default function BannersPage() {
                       <div className="flex items-center gap-3">
                         <div className="relative h-16 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                           <Image
-                            src={banner.image_url.startsWith('http') ? banner.image_url : `http://localhost:5000${banner.image_url}`}
+                            src={banner.image_url}
                             alt={banner.title}
                             fill
                             className="object-cover"

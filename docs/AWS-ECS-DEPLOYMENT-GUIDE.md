@@ -682,10 +682,10 @@ NODE_ENV=production
    
    | Key | Value |
    |-----|-------|
-   | NEXT_PUBLIC_API_URL | http://your-alb-dns/api |
+   | BACKEND_URL | https://skaarvi.shop |
    | NODE_ENV | production |
    
-   **Note**: Update `NEXT_PUBLIC_API_URL` with your actual ALB DNS after load balancer is created.
+   **Note**: `BACKEND_URL` is server-only. Set it to the public origin whose `/api/*` paths route to the backend target group.
 
 4. **Logging**
    - Log configuration: **awslogs**
@@ -1007,8 +1007,8 @@ After deployment, update the frontend API URL:
    - Select latest revision
    - Click **"Create new revision"**
 3. **Update environment variable**:
-   - Find `NEXT_PUBLIC_API_URL`
-   - Change value to: `http://skaarvi-alb-123456789.ap-south-1.elb.amazonaws.com/api` (use your actual ALB DNS)
+   - Find `BACKEND_URL`
+   - Change value to: `https://skaarvi.shop`
 4. **Create revision**
 5. **Update ECS Service**:
    - Go to **Cluster** → `skaarvi-cluster` → **Services** → `skaarvi-frontend-service`

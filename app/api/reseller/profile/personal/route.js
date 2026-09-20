@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function PUT(request) {
@@ -10,8 +11,8 @@ export async function PUT(request) {
   try {
     const body = await request.json();
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/profile/personal`,
+    const response = await fetchBackend(
+      `/api/reseller/profile/personal`,
       {
         method: 'PUT',
         headers: {

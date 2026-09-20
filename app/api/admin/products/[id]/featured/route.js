@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -18,7 +19,7 @@ export async function PATCH(request, context) {
 
     console.log('[Featured] Making request for product:', id, 'with featured:', body.isFeatured);
 
-    const response = await fetch(`http://localhost:5000/api/admin/products/${id}/featured`, {
+    const response = await fetchBackend(`/api/admin/products/${id}/featured`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,

@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -15,8 +16,8 @@ export async function PATCH(request, { params }) {
     const { productId } = params;
     const body = await request.json();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/inventory/${productId}/threshold`,
+    const response = await fetchBackend(
+      `/api/inventory/${productId}/threshold`,
       {
         method: 'PATCH',
         headers: {

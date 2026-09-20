@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -14,8 +15,8 @@ export async function PATCH(request, { params }) {
 
     const { id } = params;
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/notifications/${id}/read`,
+    const response = await fetchBackend(
+      `/api/notifications/${id}/read`,
       {
         method: 'PATCH',
         headers: {
@@ -50,8 +51,8 @@ export async function DELETE(request, { params }) {
 
     const { id } = params;
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/notifications/${id}`,
+    const response = await fetchBackend(
+      `/api/notifications/${id}`,
       {
         method: 'DELETE',
         headers: {

@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -15,7 +16,7 @@ export async function PATCH(request, context) {
       );
     }
 
-    const response = await fetch(`http://localhost:5000/api/admin/banners/${id}/toggle-status`, {
+    const response = await fetchBackend(`/api/admin/banners/${id}/toggle-status`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,

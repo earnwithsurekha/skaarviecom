@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function POST(request) {
   try {
@@ -17,7 +17,7 @@ export async function POST(request) {
       );
     }
 
-    const response = await fetch(`${API_URL}/api/customer/change-password`, {
+    const response = await fetchBackend(`/api/customer/change-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

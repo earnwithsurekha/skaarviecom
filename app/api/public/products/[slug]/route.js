@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function GET(request, { params }) {
   try {
@@ -8,7 +8,7 @@ export async function GET(request, { params }) {
     
     console.log('[Public Product Detail Proxy] Fetching product:', slug);
     
-    const backendResponse = await fetch(`${BACKEND_URL}/api/public/products/${slug}`, {
+    const backendResponse = await fetchBackend(`/api/public/products/${slug}`, {
       method: 'GET',
       cache: 'no-store',
       headers: {

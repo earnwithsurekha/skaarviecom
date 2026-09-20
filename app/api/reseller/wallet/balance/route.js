@@ -1,7 +1,7 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
 export async function GET(request, { params }) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request, { params }) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/reseller/wallet/balance`, {
+    const response = await fetchBackend(`/api/reseller/wallet/balance`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

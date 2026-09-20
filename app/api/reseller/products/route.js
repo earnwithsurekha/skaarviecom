@@ -1,7 +1,7 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
 export async function GET(request) {
   try {
@@ -17,8 +17,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-    const response = await fetch(
-      `${BACKEND_URL}/api/reseller/products${queryString ? `?${queryString}` : ''}`,
+    const response = await fetchBackend(
+      `/api/reseller/products${queryString ? `?${queryString}` : ''}`,
       {
         method: 'GET',
         headers: {

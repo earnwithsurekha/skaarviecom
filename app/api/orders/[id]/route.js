@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // @route   GET /api/orders/[id]
 // @desc    Get single order details
@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/orders/${id}`, {
+    const response = await fetchBackend(`/api/orders/${id}`, {
       method: 'GET',
       headers: {
         'Authorization': authorization,

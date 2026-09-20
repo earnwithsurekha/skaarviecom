@@ -27,7 +27,7 @@ import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVa
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
-  if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
+  if (imagePath.startsWith('/')) return imagePath;
   return null;
 };
 
@@ -353,7 +353,7 @@ export default function CustomerProductDetailPage() {
                   </div>
                   <div className="flex gap-3">
                     <a
-                      href={`http://localhost:5000${product.catalog_url}`}
+                      href={product.catalog_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 btn btn-primary text-center"
@@ -361,7 +361,7 @@ export default function CustomerProductDetailPage() {
                       View Catalog
                     </a>
                     <a
-                      href={`http://localhost:5000${product.catalog_url}`}
+                      href={product.catalog_url}
                       download
                       className="flex-1 btn btn-outline text-center"
                     >

@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -14,8 +15,8 @@ export async function GET(request, context) {
 
     const { id } = await context.params;
 
-    const response = await fetch(
-      `http://localhost:5000/api/admin/referrals/tree/${id}`,
+    const response = await fetchBackend(
+      `/api/admin/referrals/tree/${id}`,
       {
         method: 'GET',
         headers: {

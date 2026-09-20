@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function GET(request) {
   try {
@@ -16,7 +16,7 @@ export async function GET(request) {
       );
     }
 
-    const response = await fetch(`${API_URL}/api/customer/profile`, {
+    const response = await fetchBackend(`/api/customer/profile`, {
       method: 'GET',
       headers: {
         'Authorization': authorization,
@@ -54,7 +54,7 @@ export async function PUT(request) {
       );
     }
 
-    const response = await fetch(`${API_URL}/api/customer/profile`, {
+    const response = await fetchBackend(`/api/customer/profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

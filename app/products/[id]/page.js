@@ -29,7 +29,7 @@ import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVa
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
-  if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
+  if (imagePath.startsWith('/')) return imagePath;
   return null;
 };
 
@@ -372,7 +372,7 @@ export default function ProductDetailPage() {
                   </div>
                   <div className="flex gap-3">
                     <a
-                      href={`http://localhost:5000${product.catalog_url}`}
+                      href={product.catalog_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center"
@@ -380,7 +380,7 @@ export default function ProductDetailPage() {
                       View Catalog
                     </a>
                     <a
-                      href={`http://localhost:5000${product.catalog_url}`}
+                      href={product.catalog_url}
                       download
                       className="flex-1 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-4 py-2 rounded-lg font-medium transition-colors text-center"
                     >

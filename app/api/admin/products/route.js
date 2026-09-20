@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -14,9 +15,9 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
-    const url = `http://localhost:5000/api/admin/products${queryString ? `?${queryString}` : ''}`;
+    const url = `/api/admin/products${queryString ? `?${queryString}` : ''}`;
 
-    const response = await fetch(url, {
+    const response = await fetchBackend(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

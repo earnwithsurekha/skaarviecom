@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -15,7 +16,7 @@ export async function GET(request, context) {
       );
     }
 
-    const response = await fetch(`http://localhost:5000/api/admin/banners/${id}`, {
+    const response = await fetchBackend(`/api/admin/banners/${id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -50,7 +51,7 @@ export async function PUT(request, context) {
 
     const formData = await request.formData();
 
-    const response = await fetch(`http://localhost:5000/api/admin/banners/${id}`, {
+    const response = await fetchBackend(`/api/admin/banners/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -84,7 +85,7 @@ export async function DELETE(request, context) {
       );
     }
 
-    const response = await fetch(`http://localhost:5000/api/admin/banners/${id}`, {
+    const response = await fetchBackend(`/api/admin/banners/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

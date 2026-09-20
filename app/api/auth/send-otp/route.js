@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
 // @route   POST /api/auth/send-otp
@@ -8,8 +9,7 @@ export async function POST(request) {
     const body = await request.json();
     
     // Forward request to backend
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-    const response = await fetch(`${backendUrl}/api/auth/send-otp`, {
+    const response = await fetchBackend(`/api/auth/send-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

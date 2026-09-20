@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function POST(request) {
@@ -10,8 +11,8 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/withdrawals/request`,
+    const response = await fetchBackend(
+      `/api/reseller/withdrawals/request`,
       {
         method: 'POST',
         headers: {
@@ -41,8 +42,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/withdrawals${queryString ? `?${queryString}` : ''}`,
+    const response = await fetchBackend(
+      `/api/reseller/withdrawals${queryString ? `?${queryString}` : ''}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,

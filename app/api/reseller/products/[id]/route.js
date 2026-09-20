@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function GET(request, { params }) {
@@ -9,8 +10,8 @@ export async function GET(request, { params }) {
 
   try {
     const { id } = params;
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/products/${id}`,
+    const response = await fetchBackend(
+      `/api/reseller/products/${id}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,

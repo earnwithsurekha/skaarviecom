@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function POST(request, { params }) {
@@ -10,8 +11,8 @@ export async function POST(request, { params }) {
   try {
     const productId = params.id;
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/products/${productId}/save`,
+    const response = await fetchBackend(
+      `/api/reseller/products/${productId}/save`,
       {
         method: 'POST',
         headers: {
@@ -38,8 +39,8 @@ export async function DELETE(request, { params }) {
   try {
     const productId = params.id;
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/products/${productId}/save`,
+    const response = await fetchBackend(
+      `/api/reseller/products/${productId}/save`,
       {
         method: 'DELETE',
         headers: {

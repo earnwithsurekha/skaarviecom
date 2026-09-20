@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -14,7 +15,7 @@ export async function GET(request, { params }) {
 
     const { id } = params;
 
-    const response = await fetch(`http://localhost:5000/api/settlements/${id}`, {
+    const response = await fetchBackend(`/api/settlements/${id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

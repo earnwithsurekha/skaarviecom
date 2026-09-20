@@ -1,7 +1,7 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // @route   GET /api/products
 // @desc    Get all products for manufacturer
@@ -21,8 +21,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-    const response = await fetch(
-      `${BACKEND_URL}/api/products${queryString ? `?${queryString}` : ''}`,
+    const response = await fetchBackend(
+      `/api/products${queryString ? `?${queryString}` : ''}`,
       {
         method: 'GET',
         headers: {
@@ -64,7 +64,7 @@ export async function POST(request) {
     const formData = await request.formData();
 
     // Forward the FormData to the backend
-    const response = await fetch(`${BACKEND_URL}/api/products`, {
+    const response = await fetchBackend(`/api/products`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

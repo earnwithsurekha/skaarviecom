@@ -15,7 +15,7 @@ const getImageUrl = (imagePath) => {
   }
   // Legacy local path
   if (imagePath.startsWith('/')) {
-    return `http://localhost:5000${imagePath}`;
+    return imagePath;
   }
   return null;
 };

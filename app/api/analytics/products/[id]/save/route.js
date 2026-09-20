@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // POST - Save product to wishlist
 export async function POST(request, { params }) {
@@ -9,7 +9,7 @@ export async function POST(request, { params }) {
     const token = request.headers.get('authorization');
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/analytics/products/${id}/save`, {
+    const response = await fetchBackend(`/api/analytics/products/${id}/save`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ export async function DELETE(request, { params }) {
     const { id } = params;
     const token = request.headers.get('authorization');
 
-    const response = await fetch(`${BACKEND_URL}/api/analytics/products/${id}/save`, {
+    const response = await fetchBackend(`/api/analytics/products/${id}/save`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

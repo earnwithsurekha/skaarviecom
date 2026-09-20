@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // POST - Track product share
 export async function POST(request, { params }) {
@@ -9,7 +9,7 @@ export async function POST(request, { params }) {
     const token = request.headers.get('authorization');
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/analytics/products/${id}/share`, {
+    const response = await fetchBackend(`/api/analytics/products/${id}/share`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
