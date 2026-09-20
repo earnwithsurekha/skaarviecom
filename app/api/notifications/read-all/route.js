@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -12,8 +13,8 @@ export async function POST(request) {
       );
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/notifications/read-all`,
+    const response = await fetchBackend(
+      `/api/notifications/read-all`,
       {
         method: 'POST',
         headers: {

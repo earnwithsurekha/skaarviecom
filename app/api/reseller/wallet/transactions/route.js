@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function GET(request) {
@@ -11,8 +12,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/wallet/transactions${queryString ? `?${queryString}` : ''}`,
+    const response = await fetchBackend(
+      `/api/reseller/wallet/transactions${queryString ? `?${queryString}` : ''}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,

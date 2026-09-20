@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -14,8 +15,8 @@ export async function PUT(request) {
 
     const body = await request.json();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reseller/profile/address`,
+    const response = await fetchBackend(
+      `/api/reseller/profile/address`,
       {
         method: 'PUT',
         headers: {

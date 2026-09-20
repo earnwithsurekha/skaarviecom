@@ -1,7 +1,7 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // @route   GET /api/products/:id
 // @desc    Get single product
@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/products/${params.id}`, {
+    const response = await fetchBackend(`/api/products/${params.id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -57,7 +57,7 @@ export async function PUT(request, { params }) {
     const formData = await request.formData();
 
     // Forward the FormData to the backend
-    const response = await fetch(`${BACKEND_URL}/api/products/${params.id}`, {
+    const response = await fetchBackend(`/api/products/${params.id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -93,7 +93,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/products/${params.id}`, {
+    const response = await fetchBackend(`/api/products/${params.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

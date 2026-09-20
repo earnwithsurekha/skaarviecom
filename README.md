@@ -86,6 +86,7 @@ cp .env.local.example .env.local
 ```
 
 Update the following in `.env.local`:
+- Backend server URL (`BACKEND_URL`, for example `http://localhost:5000` locally)
 - Database credentials (PostgreSQL)
 - JWT secret key
 - AWS S3 credentials

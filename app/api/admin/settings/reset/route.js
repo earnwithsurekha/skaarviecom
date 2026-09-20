@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -12,7 +13,7 @@ export async function POST(request) {
       );
     }
 
-    const response = await fetch('http://localhost:5000/api/admin/settings/reset', {
+    const response = await fetchBackend('/api/admin/settings/reset', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

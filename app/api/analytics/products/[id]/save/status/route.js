@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // GET - Check if product is saved by current user
 export async function GET(request, { params }) {
@@ -8,7 +8,7 @@ export async function GET(request, { params }) {
     const { id } = params;
     const token = request.headers.get('authorization');
 
-    const response = await fetch(`${BACKEND_URL}/api/analytics/products/${id}/save/status`, {
+    const response = await fetchBackend(`/api/analytics/products/${id}/save/status`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

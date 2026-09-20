@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function GET(request) {
@@ -16,8 +17,8 @@ export async function GET(request) {
     const queryParams = new URLSearchParams({ page, limit });
     if (status) queryParams.append('status', status);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/withdrawals?${queryParams}`,
+    const response = await fetchBackend(
+      `/api/reseller/withdrawals?${queryParams}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,

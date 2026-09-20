@@ -32,15 +32,12 @@ const nextConfig = {
       },
     ],
   },
-  env: {
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
-  },
   // Proxy /uploads requests to backend server
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const apiUrl = process.env.BACKEND_URL
+      || process.env.NEXT_PUBLIC_BACKEND_URL
+      || process.env.NEXT_PUBLIC_API_URL
+      || 'http://localhost:5000';
     return [
       // Admin dashboard endpoints (direct to backend with auth header)
       {

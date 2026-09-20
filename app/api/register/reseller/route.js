@@ -1,6 +1,4 @@
-import { buildBackendApiUrl } from '@/lib/serverBackendUrl';
-
-const RESELLER_REGISTRATION_URL = buildBackendApiUrl('auth', 'register', 'reseller');
+import { fetchBackend } from '@/lib/serverBackendUrl';
 
 export async function POST(request) {
   try {
@@ -8,8 +6,8 @@ export async function POST(request) {
 
     console.log('[Reseller Registration API] Forwarding to backend:', RESELLER_REGISTRATION_URL);
     
-    const response = await fetch(
-      RESELLER_REGISTRATION_URL,
+    const response = await fetchBackend(
+      '/api/auth/register/reseller',
       {
         method: 'POST',
         body: formData,

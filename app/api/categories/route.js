@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
+import { fetchBackend } from '@/lib/serverBackendUrl';
 
-export async function GET(request) {
+export async function GET() {
   try {
-    const response = await fetch('http://localhost:5000/api/categories', {
+    const response = await fetchBackend('/api/categories', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
     });
 
     const data = await response.json();

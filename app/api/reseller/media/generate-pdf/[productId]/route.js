@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function POST(request, { params }) {
@@ -9,8 +10,8 @@ export async function POST(request, { params }) {
 
   try {
     const { productId } = params;
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/media/generate-pdf/${productId}`,
+    const response = await fetchBackend(
+      `/api/reseller/media/generate-pdf/${productId}`,
       {
         method: 'POST',
         headers: {

@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -15,8 +16,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-    const response = await fetch(
-      `http://localhost:5000/api/admin/banners${queryString ? `?${queryString}` : ''}`,
+    const response = await fetchBackend(
+      `/api/admin/banners${queryString ? `?${queryString}` : ''}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -50,7 +51,7 @@ export async function POST(request) {
 
     const formData = await request.formData();
 
-    const response = await fetch('http://localhost:5000/api/admin/banners', {
+    const response = await fetchBackend('/api/admin/banners', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

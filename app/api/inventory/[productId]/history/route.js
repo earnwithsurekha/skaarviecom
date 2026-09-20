@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -16,8 +17,8 @@ export async function GET(request, { params }) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/inventory/${productId}/history${queryString ? `?${queryString}` : ''}`,
+    const response = await fetchBackend(
+      `/api/inventory/${productId}/history${queryString ? `?${queryString}` : ''}`,
       {
         method: 'GET',
         headers: {

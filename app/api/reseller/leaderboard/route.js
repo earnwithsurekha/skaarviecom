@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -16,8 +17,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'all';
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reseller/leaderboard?period=${period}`,
+    const response = await fetchBackend(
+      `/api/reseller/leaderboard?period=${period}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // @route   PATCH /api/orders/[id]/status
 // @desc    Update order status
@@ -21,7 +21,7 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/orders/${id}/status`, {
+    const response = await fetchBackend(`/api/orders/${id}/status`, {
       method: 'PATCH',
       headers: {
         'Authorization': authorization,

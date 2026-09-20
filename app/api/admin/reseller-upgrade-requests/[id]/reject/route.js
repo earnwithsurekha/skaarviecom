@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 export async function POST(request, { params }) {
   try {
@@ -8,7 +8,7 @@ export async function POST(request, { params }) {
     const token = request.headers.get('authorization');
     const { id } = params;
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/reseller-upgrade-requests/${id}/reject`, {
+    const response = await fetchBackend(`/api/admin/reseller-upgrade-requests/${id}/reject`, {
       method: 'POST',
       headers: {
         'Authorization': token || '',

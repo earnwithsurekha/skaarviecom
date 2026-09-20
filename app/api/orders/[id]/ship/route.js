@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // @route   POST /api/orders/[id]/ship
 // @desc    Mark order as shipped with tracking
@@ -21,7 +21,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/orders/${id}/ship`, {
+    const response = await fetchBackend(`/api/orders/${id}/ship`, {
       method: 'POST',
       headers: {
         'Authorization': authorization,

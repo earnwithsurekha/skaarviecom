@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -13,7 +14,7 @@ export async function DELETE(request, context) {
     }
 
     const { id } = await context.params;
-    const response = await fetch(`http://localhost:5000/api/admin/products/${id}`, {
+    const response = await fetchBackend(`/api/admin/products/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

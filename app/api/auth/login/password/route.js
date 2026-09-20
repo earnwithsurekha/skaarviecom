@@ -1,15 +1,12 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function POST(request) {
   try {
     const body = await request.json();
     
-    console.log('[Password Login Proxy] Forwarding request to backend:', BACKEND_URL);
-    
     // Forward the request to the backend
-    const backendResponse = await fetch(`${BACKEND_URL}/api/auth/login/password`, {
+    const backendResponse = await fetchBackend(`/api/auth/login/password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

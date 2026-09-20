@@ -1,9 +1,10 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 export async function POST(request) {
   try {
     const body = await request.json();
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/track/referral-click`,
+    const response = await fetchBackend(
+      `/api/track/referral-click`,
       {
         method: 'POST',
         headers: {

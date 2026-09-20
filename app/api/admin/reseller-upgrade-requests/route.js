@@ -1,6 +1,6 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 export async function GET(request) {
   try {
@@ -12,7 +12,7 @@ export async function GET(request) {
       params.append(key, value);
     });
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/reseller-upgrade-requests?${params}`, {
+    const response = await fetchBackend(`/api/admin/reseller-upgrade-requests?${params}`, {
       method: 'GET',
       headers: {
         'Authorization': token || '',

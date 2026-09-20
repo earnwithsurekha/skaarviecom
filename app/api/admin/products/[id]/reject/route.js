@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/getAuthToken';
 
@@ -15,7 +16,7 @@ export async function PATCH(request, context) {
     const { id } = await context.params;
     const body = await request.json();
 
-    const response = await fetch(`http://localhost:5000/api/admin/products/${id}/reject`, {
+    const response = await fetchBackend(`/api/admin/products/${id}/reject`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,

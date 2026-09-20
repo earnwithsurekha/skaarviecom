@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function GET(request) {
@@ -8,8 +9,8 @@ export async function GET(request) {
   }
 
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/my-store`,
+    const response = await fetchBackend(
+      `/api/reseller/my-store`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -35,8 +36,8 @@ export async function PUT(request) {
   try {
     const body = await request.json();
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reseller/my-store`,
+    const response = await fetchBackend(
+      `/api/reseller/my-store`,
       {
         method: 'PUT',
         headers: {

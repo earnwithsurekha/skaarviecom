@@ -1,10 +1,11 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 export async function POST(request, { params }) {
   try {
     const { username } = params;
     const body = await request.json();
     
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/store/visit/${username}`,
+    const response = await fetchBackend(
+      `/api/store/visit/${username}`,
       {
         method: 'POST',
         headers: {

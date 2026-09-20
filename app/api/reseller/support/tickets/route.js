@@ -1,3 +1,4 @@
+import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { NextResponse } from 'next/server';
 
@@ -22,8 +23,8 @@ export async function GET(request) {
     queryParams.append('page', page);
     queryParams.append('limit', limit);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reseller/support/tickets?${queryParams.toString()}`,
+    const response = await fetchBackend(
+      `/api/reseller/support/tickets?${queryParams.toString()}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -57,8 +58,8 @@ export async function POST(request) {
 
     const body = await request.json();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reseller/support/tickets`,
+    const response = await fetchBackend(
+      `/api/reseller/support/tickets`,
       {
         method: 'POST',
         headers: {
