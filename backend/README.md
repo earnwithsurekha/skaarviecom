@@ -78,6 +78,12 @@ npm run migrate:product-variants
 Run this command once in each environment before deploying backend code that
 uses product variants. The migration is idempotent and can be run again safely.
 
+Apply the FCM device registration schema before enabling push notifications:
+
+```bash
+npm run migrate:fcm
+```
+
 Product images can be assigned to all variants, one color, one size, or multiple
 exact size/color combinations. For example, one Red image can cover all Red
 sizes or only Red/M, Red/L, Red/XL, and Red/XXL. Buyer galleries prefer exact
@@ -141,6 +147,8 @@ Visit `http://localhost:5000/health` to check if the server is running.
 
 ### Notifications
 - `GET /api/notifications` - Get notifications
+- `POST /api/notifications/devices` - Register or refresh an FCM device token
+- `DELETE /api/notifications/devices` - Deactivate an FCM device token
 - `PATCH /api/notifications/:id/read` - Mark as read
 - `POST /api/notifications/read-all` - Mark all as read
 

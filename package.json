@@ -17,6 +17,7 @@
   "dependencies": {
     "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
+    "@capacitor/push-notifications": "^8.1.2",
     "@hookform/resolvers": "^3.3.3",
     "@reduxjs/toolkit": "^2.0.1",
     "aws-sdk": "^2.1515.0",
@@ -24,6 +25,7 @@
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",
     "date-fns": "^3.0.6",
+    "firebase": "^12.4.0",
     "framer-motion": "^10.16.16",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.303.0",

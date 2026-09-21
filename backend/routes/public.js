@@ -95,9 +95,6 @@ router.get('/products/:slug', async (req, res) => {
         p.name,
         p.slug,
         p.description,
-        p.cost_price,
-        p.skaarvi_margin,
-        p.reseller_margin,
         p.selling_price,
         p.stock_quantity,
         p.specifications,
@@ -181,7 +178,6 @@ router.get('/products/:slug', async (req, res) => {
         p.name,
         p.slug,
         p.selling_price,
-        p.reseller_margin,
         (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) as primary_image
       FROM products p
       WHERE p.category_id = :categoryId
@@ -203,7 +199,6 @@ router.get('/products/:slug', async (req, res) => {
       data: {
         product: {
           ...product,
-          reseller_profit: parseFloat(product.reseller_margin) || 0,
           hasVariants: variants.length > 0,
           variants: variants.map((variant) => ({
             ...variant,
@@ -260,7 +255,6 @@ router.get('/products', async (req, res) => {
         p.name,
         p.slug,
         p.selling_price,
-        p.reseller_margin,
         p.stock_quantity,
         p.category_id,
         p.created_at,
@@ -300,10 +294,7 @@ router.get('/products', async (req, res) => {
     res.json({
       status: 'success',
       data: {
-        products: products.map(p => ({
-          ...p,
-          reseller_profit: parseFloat(p.reseller_margin) || 0
-        })),
+        products,
         pagination: {
           currentPage: parseInt(page),
           totalPages: Math.ceil(countResult.total / parseInt(limit)),

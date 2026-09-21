@@ -66,8 +66,7 @@ export default function Home() {
           imageUrl: getImageUrl(product.primary_image),
           sellingPrice: Number.parseFloat(product.selling_price) || 0,
           price: Number.parseFloat(product.selling_price) || 0,
-          stock: product.stock_quantity || 0,
-          resellerProfit: product.reseller_profit || 0
+          stock: product.stock_quantity || 0
         }));
         setProducts(transformedProducts);
       } catch (error) {

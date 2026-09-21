@@ -189,6 +189,9 @@ npm start
 
 **See [AUTHENTICATION.md](./AUTHENTICATION.md) for complete documentation.**
 
+Firebase web and Android notification setup is documented in
+[FIREBASE-NOTIFICATIONS.md](./FIREBASE-NOTIFICATIONS.md).
+
 ## 🎯 Key Features
 
 ### Reseller Demand Analytics (Unique)

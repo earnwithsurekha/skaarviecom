@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   Store, User, MapPin, Phone, Mail, MessageCircle,
-  Package, ShoppingCart, Eye, TrendingUp, Calendar,
+  Package, ShoppingCart, Eye, Calendar,
   Share2, ExternalLink
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -159,7 +159,7 @@ export default function PublicStorePage() {
               </div>
 
               {/* Store Stats */}
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div 
                   className="p-4 rounded-lg text-center"
                   style={{ backgroundColor: 'rgb(var(--color-background))' }}
@@ -186,18 +186,6 @@ export default function PublicStorePage() {
                   </p>
                 </div>
 
-                <div 
-                  className="p-4 rounded-lg text-center"
-                  style={{ backgroundColor: 'rgb(var(--color-background))' }}
-                >
-                  <TrendingUp className="w-6 h-6 mx-auto mb-2" style={{ color: 'rgb(var(--color-primary))' }} />
-                  <p className="text-2xl font-bold mb-1" style={{ color: 'rgb(var(--color-text))' }}>
-                    ₹{Number.parseFloat(store.analytics.total_earnings || 0).toLocaleString()}
-                  </p>
-                  <p className="text-xs" style={{ color: 'rgb(var(--color-text) / 0.7)' }}>
-                    Earnings
-                  </p>
-                </div>
               </div>
 
               {/* Contact Button */}

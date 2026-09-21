@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { Package } from 'lucide-react';
@@ -25,8 +25,9 @@ export default function ProductCard({ product, source = 'product_listing' }) {
       );
       
       // Route based on authentication status
-      if (isAuthenticated && (user?.role === 'customer' || user?.role === 'reseller')) {
-        // Logged in users go to customer dashboard product details
+      if (isAuthenticated && (user?.role === 'reseller' || user?.resellerId)) {
+        router.push(`/reseller/products/${product.id}`);
+      } else if (isAuthenticated && user?.role === 'customer') {
         router.push(`/customer/products/${product.id}`);
       } else {
         // Not logged in or other roles go to public product page

@@ -1,6 +1,7 @@
 const Notification = require('../models/notification');
 const { Product } = require('../models');
 const { Op } = require('sequelize');
+const firebaseMessagingService = require('./firebaseMessagingService');
 
 class NotificationService {
   /**
@@ -50,7 +51,7 @@ class NotificationService {
       }
 
       // Create new notification
-      const notification = await Notification.create({
+      const notification = await this.createNotification({
         userId,
         type: 'low_stock_alert',
         title: 'Low Stock Alert',
@@ -199,6 +200,18 @@ class NotificationService {
         isRead: false,
       });
 
+      await firebaseMessagingService.sendToUser(userId, {
+        title,
+        body: message,
+        data: {
+          notificationId: notification.id,
+          type,
+          ...data,
+        },
+      }).catch((error) => {
+        console.error('[FCM] Notification delivery failed:', error.message);
+      });
+
       return notification;
     } catch (error) {
       console.error('Create notification error:', error);
@@ -271,14 +284,14 @@ class NotificationService {
    */
   async notifyNewOrder(userId, orderData) {
     try {
-      const { orderId, orderNumber, itemsCount, totalAmount } = orderData;
+      const { orderId, orderNumber, itemsCount, totalAmount, url } = orderData;
 
       const notification = await this.createNotification({
         userId,
         type: 'new_order',
         title: 'New Order Received',
         message: `You have a new order ${orderNumber} with ${itemsCount} item(s) worth ₹${totalAmount}`,
-        data: { orderId, orderNumber, itemsCount, totalAmount },
+        data: { orderId, orderNumber, itemsCount, totalAmount, url },
         priority: 'high',
       });
 

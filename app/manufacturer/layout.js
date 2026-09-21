@@ -21,6 +21,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useTheme } from '@/contexts/ThemeContext';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import NotificationBell from '@/components/NotificationBell';
 
 export default function ManufacturerLayout({ children }) {
   const router = useRouter();
@@ -201,7 +202,10 @@ export default function ManufacturerLayout({ children }) {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <ThemeSwitcher />
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <ThemeSwitcher />
+            </div>
           </div>
         </header>
 

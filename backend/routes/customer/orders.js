@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { QueryTypes } = require('sequelize');
 const { calculateCommission, creditPendingCommission } = require('../../services/commissionService');
-const { sendOrderLifecycleEmail } = require('../../services/orderEmailService');
+const { sendOrderLifecycleNotifications } = require('../../services/orderLifecycleNotificationService');
 const { resolveVariantSelection } = require('../../utils/productVariants');
 
 // @route   POST /api/customer/orders
@@ -400,7 +400,7 @@ router.post('/orders', async (req, res) => {
 
     console.log('[Customer Order] Order created successfully:', orderNumber);
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId,
       event: 'placed',
@@ -856,7 +856,7 @@ router.post('/orders/:id/cancel', async (req, res) => {
 
     console.log('[Customer Order] Order cancelled successfully:', order.order_number);
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId,
       event: 'cancelled',
@@ -1062,7 +1062,7 @@ router.post('/orders/:id/return', async (req, res) => {
 
     console.log('[Customer Order] Return request submitted successfully:', order.order_number);
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId,
       event: 'return_requested',

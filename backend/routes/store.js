@@ -43,8 +43,7 @@ router.get('/:username', async (req, res) => {
       SELECT 
         COALESCE((SELECT COUNT(*) FROM store_visits WHERE reseller_id = :resellerId), 0) as total_visitors,
         COALESCE((SELECT COUNT(DISTINCT visitor_ip) FROM store_visits WHERE reseller_id = :resellerId), 0) as unique_visitors,
-        COALESCE((SELECT COUNT(*) FROM orders WHERE reseller_id = :resellerId AND order_status != 'cancelled'), 0) as total_orders,
-        COALESCE((SELECT SUM(reseller_commission) FROM orders WHERE reseller_id = :resellerId AND order_status != 'cancelled'), 0) as total_earnings
+        COALESCE((SELECT COUNT(*) FROM orders WHERE reseller_id = :resellerId AND order_status != 'cancelled'), 0) as total_orders
     `, {
       replacements: { resellerId: reseller.id },
       type: sequelize.QueryTypes.SELECT
@@ -58,7 +57,6 @@ router.get('/:username', async (req, res) => {
         p.slug,
         p.description,
         p.selling_price,
-        p.reseller_margin,
         p.stock_quantity,
         c.name as category_name,
         (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) as primary_image,
@@ -90,10 +88,7 @@ router.get('/:username', async (req, res) => {
           ...reseller,
           analytics
         },
-        products: products.map(p => ({
-          ...p,
-          reseller_profit: parseFloat(p.reseller_margin) || 0
-        }))
+        products
       }
     });
 

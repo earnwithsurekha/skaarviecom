@@ -8,9 +8,6 @@ import {
   Package, 
   Truck, 
   Shield, 
-  TrendingUp,
-  Share2,
-  Heart,
   Loader2,
   ShoppingCart,
   Star
@@ -22,7 +19,6 @@ import ProductVariantSelector from '@/components/product/ProductVariantSelector'
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { addToCart, getCartItemId } from '@/store/slices/cartSlice';
 import { getReferralCodeFromURL, saveReferralCodeToCookie, getReferralCodeFromStorage } from '@/lib/cartUtils';
-import { trackProductViewWithReferral } from '@/lib/referralTracking';
 import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVariantMedia';
 
 // Helper functions to handle both S3 and local URLs
@@ -102,7 +98,6 @@ export default function ProductDetailPage() {
             sellingPrice: parseFloat(productData.selling_price) || 0,
             price: parseFloat(productData.selling_price) || 0,
             stock: productData.stock_quantity || 0,
-            resellerProfit: parseFloat(productData.reseller_profit) || 0,
           });
         } else {
           toast.error('Product not found');
@@ -436,13 +431,6 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Reseller Profit */}
-              {product.resellerProfit && (
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold">
-                  <TrendingUp className="h-5 w-5" />
-                  <span>Earn {formatPrice(product.resellerProfit)} per sale</span>
-                </div>
-              )}
             </div>
 
             <ProductVariantSelector

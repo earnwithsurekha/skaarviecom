@@ -3,7 +3,7 @@ const router = express.Router();
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 const { sequelize } = require('../../models');
 const { QueryTypes } = require('sequelize');
-const { sendOrderLifecycleEmail } = require('../../services/orderEmailService');
+const { sendOrderLifecycleNotifications } = require('../../services/orderLifecycleNotificationService');
 
 const ORDER_STATUS_EMAIL_EVENTS = {
   processing: 'processing',
@@ -279,7 +279,7 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
 
     const emailEvent = ORDER_STATUS_EMAIL_EVENTS[status];
     if (emailEvent) {
-      await sendOrderLifecycleEmail({
+      await sendOrderLifecycleNotifications({
         sequelize,
         orderId: id,
         event: emailEvent,
@@ -341,7 +341,7 @@ router.put('/:id/cancel', authMiddleware, adminOnly, async (req, res) => {
       type: QueryTypes.INSERT
     });
 
-    await sendOrderLifecycleEmail({
+    await sendOrderLifecycleNotifications({
       sequelize,
       orderId: id,
       event: 'cancelled',
