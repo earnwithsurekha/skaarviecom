@@ -4,7 +4,7 @@ const { body, param, query, validationResult } = require('express-validator');
 const { authMiddleware, manufacturerOnly, adminOrManufacturer } = require('../middleware/auth');
 const { uploadMiddleware, uploadProductFile, deleteFromS3, validateImageQuality } = require('../middleware/upload');
 const { Product, ProductImage, ProductVideo, ProductVariant, Category } = require('../models');
-const { PAGINATION, PRODUCT_STATUS, PLATFORM } = require('../config/constants');
+const { PAGINATION, PRODUCT_STATUS, PLATFORM, UPLOAD_LIMITS } = require('../config/constants');
 const sequelize = require('../config/database');
 const {
   categoryRequiresSizes,
@@ -748,6 +748,14 @@ router.put('/:id',
         retainedImageCount = 0;
       } else {
         retainedImageCount = await ProductImage.count({ where: { productId: product.id }, transaction });
+      }
+
+      if (retainedImageCount + imageFiles.length > UPLOAD_LIMITS.MAX_IMAGES_PER_PRODUCT) {
+        await transaction.rollback();
+        return res.status(400).json({
+          status: 'error',
+          message: `A product cannot have more than ${UPLOAD_LIMITS.MAX_IMAGES_PER_PRODUCT} images`,
+        });
       }
 
       if (imageFiles.length > 0) {

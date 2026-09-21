@@ -1,6 +1,6 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 const { v4: uuidv4 } = require('uuid');
 const { s3, bucket } = require('../config/aws');
 const { UPLOAD_LIMITS } = require('../config/constants');
@@ -8,6 +8,42 @@ const { validateImageBatch } = require('../utils/imageValidation');
 
 // Memory storage for multer (used for both S3 and local)
 const storage = multer.memoryStorage();
+const uploadsRoot = path.resolve(__dirname, '..', 'uploads');
+
+const getStorageDriver = () => (
+  process.env.STORAGE_DRIVER || (process.env.NODE_ENV === 'production' ? 's3' : 'local')
+).toLowerCase();
+
+const storeFile = async ({ key, file, errorPrefix }) => {
+  const storageDriver = getStorageDriver();
+  if (storageDriver === 'local') {
+    const filePath = path.resolve(uploadsRoot, ...key.split('/'));
+    if (!filePath.startsWith(`${uploadsRoot}${path.sep}`)) {
+      throw new Error(`${errorPrefix}: Invalid upload path`);
+    }
+    await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.promises.writeFile(filePath, file.buffer);
+    return `/uploads/${key}`;
+  }
+  if (storageDriver !== 's3') {
+    throw new Error(`${errorPrefix}: Unsupported storage driver "${storageDriver}"`);
+  }
+  if (!bucket) {
+    throw new Error(`${errorPrefix}: AWS_S3_BUCKET is not configured`);
+  }
+
+  try {
+    const result = await s3.upload({
+      Bucket: bucket,
+      Key: key,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    }).promise();
+    return result.Location;
+  } catch (error) {
+    throw new Error(`${errorPrefix}: ${error.message}`);
+  }
+};
 
 // File filter
 const fileFilter = (req, file, cb) => {
@@ -61,20 +97,7 @@ const uploadLocally = async (file, userId, email, subfolder = 'documents') => {
   // Create S3 folder structure: documents/{userId}/{email}/{subfolder}
   const s3Key = `documents/${userId}/${email}/${subfolder}/${fileName}`;
   
-  const params = {
-    Bucket: bucket,
-    Key: s3Key,
-    Body: file.buffer,
-    ContentType: file.mimetype
-  };
-  
-  try {
-    const result = await s3.upload(params).promise();
-    // Return S3 URL
-    return result.Location;
-  } catch (error) {
-    throw new Error(`Failed to upload file to S3: ${error.message}`);
-  }
+  return storeFile({ key: s3Key, file, errorPrefix: 'Failed to upload file' });
 };
 
 // Upload product file to S3 with unique structure
@@ -88,25 +111,13 @@ const uploadProductFile = async (file, userId, productName, subfolder = 'images'
   const sanitizedProductName = productName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with dashes
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing dashes
+    .replace(/^-/, '')
+    .replace(/-$/, '') // Remove leading/trailing dashes
     .substring(0, 50); // Limit length
   
   const s3Key = `products/${userId}/${sanitizedProductName}/${subfolder}/${fileName}`;
   
-  const params = {
-    Bucket: bucket,
-    Key: s3Key,
-    Body: file.buffer,
-    ContentType: file.mimetype
-  };
-  
-  try {
-    const result = await s3.upload(params).promise();
-    // Return S3 URL
-    return result.Location;
-  } catch (error) {
-    throw new Error(`Failed to upload product file to S3: ${error.message}`);
-  }
+  return storeFile({ key: s3Key, file, errorPrefix: 'Failed to upload product file' });
 };
 
 // Upload file to S3
@@ -114,29 +125,32 @@ const uploadToS3 = async (file, folder = 'products') => {
   const fileExtension = path.extname(file.originalname);
   const fileName = `${folder}/${uuidv4()}${fileExtension}`;
 
-  const params = {
-    Bucket: bucket,
-    Key: fileName,
-    Body: file.buffer,
-    ContentType: file.mimetype
-  };
-
-  try {
-    const result = await s3.upload(params).promise();
-    return result.Location;
-  } catch (error) {
-    throw new Error(`Failed to upload file to S3: ${error.message}`);
-  }
+  return storeFile({ key: fileName, file, errorPrefix: 'Failed to upload file' });
 };
 
-// Delete file from S3
+// Delete file from its configured storage provider
 const deleteFromS3 = async (fileUrl) => {
+  if (!fileUrl) return true;
+
   try {
-    const key = fileUrl.split('.com/')[1];
+    const parsedUrl = fileUrl.startsWith('http') ? new URL(fileUrl) : null;
+    const pathname = parsedUrl?.pathname || fileUrl;
+    if (pathname.startsWith('/uploads/')) {
+      const relativePath = decodeURIComponent(pathname.slice('/uploads/'.length));
+      const filePath = path.resolve(uploadsRoot, ...relativePath.split('/'));
+      if (!filePath.startsWith(`${uploadsRoot}${path.sep}`)) {
+        throw new Error('Invalid upload path');
+      }
+      await fs.promises.rm(filePath, { force: true });
+      return true;
+    }
+
+    const key = decodeURIComponent(parsedUrl?.pathname.replace(/^\//, '') || '');
+    if (!key) throw new Error('Invalid S3 file URL');
     await s3.deleteObject({ Bucket: bucket, Key: key }).promise();
     return true;
   } catch (error) {
-    throw new Error(`Failed to delete file from S3: ${error.message}`);
+    throw new Error(`Failed to delete file: ${error.message}`);
   }
 };
 
@@ -175,7 +189,7 @@ const validateImageQuality = async (req, res, next) => {
         const images = req.files.filter(file => file.mimetype.startsWith('image/'));
         imageFiles.push(...images);
       }
-    } else if (req.file && req.file.mimetype.startsWith('image/')) {
+    } else if (req.file?.mimetype.startsWith('image/')) {
       // For single file upload
       imageFiles.push(req.file);
     }

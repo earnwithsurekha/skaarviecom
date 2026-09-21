@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { 
-  ShoppingCart, Heart, Share2, Star, Package, Truck,
-  ChevronLeft, ChevronRight, Check, AlertCircle
+  ShoppingCart, Heart, Package, Truck,
+  Check, AlertCircle
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ProductImageCarousel from '@/components/product/ProductImageCarousel';
 import ProductVariantSelector from '@/components/product/ProductVariantSelector';
 import { addToCart } from '@/store/slices/cartSlice';
 import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVariantMedia';
@@ -24,7 +25,6 @@ export default function PublicProductPage() {
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
@@ -134,14 +134,6 @@ export default function PublicProductPage() {
     setTimeout(() => setAddedToCart(false), 3000);
   };
 
-  const nextImage = () => {
-    setSelectedImageIndex((prev) => (prev + 1) % galleryImages.length);
-  };
-
-  const prevImage = () => {
-    setSelectedImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -188,74 +180,11 @@ export default function PublicProductPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Left Column - Images */}
-          <div>
-            {/* Main Image */}
-            <div 
-              className="relative rounded-lg overflow-hidden mb-4"
-              style={{ 
-                backgroundColor: 'rgb(var(--color-surface))',
-                height: '500px'
-              }}
-            >
-              {galleryImages.length > 0 ? (
-                <>
-                  <img
-                    src={galleryImages[selectedImageIndex]?.url}
-                    alt={product.name}
-                    className="w-full h-full object-contain"
-                  />
-                  
-                  {galleryImages.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full"
-                        style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', color: 'white' }}
-                      >
-                        <ChevronLeft className="w-6 h-6" />
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full"
-                        style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', color: 'white' }}
-                      >
-                        <ChevronRight className="w-6 h-6" />
-                      </button>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Package className="w-20 h-20" style={{ color: 'rgb(var(--color-text) / 0.3)' }} />
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail Gallery */}
-            {galleryImages.length > 1 && (
-              <div className="grid grid-cols-5 gap-2">
-                {galleryImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className="aspect-square rounded-lg overflow-hidden border-2 transition-all"
-                    style={{
-                      borderColor: index === selectedImageIndex 
-                        ? 'rgb(var(--color-primary))' 
-                        : 'rgb(var(--color-border))',
-                      backgroundColor: 'rgb(var(--color-surface))'
-                    }}
-                  >
-                    <img
-                      src={image.url}
-                      alt={`View ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductImageCarousel
+            images={galleryImages}
+            productName={product.name}
+            resetKey={`${selectedSize}|${selectedColor}`}
+          />
 
           {/* Right Column - Product Info & Purchase */}
           <div>
@@ -329,12 +258,10 @@ export default function PublicProductPage() {
                 onSelectSize={(size) => {
                   setSelectedSize(size);
                   setQuantity(1);
-                  setSelectedImageIndex(0);
                 }}
                 onSelectColor={(color) => {
                   setSelectedColor(color);
                   setQuantity(1);
-                  setSelectedImageIndex(0);
                 }}
               />
 

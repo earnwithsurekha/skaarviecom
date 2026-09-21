@@ -10,6 +10,8 @@
     "migrate": "node scripts/migrate.js",
     "migrate:fcm": "node run-fcm-migration.js",
     "migrate:product-variants": "node run-product-variant-migration.js",
+    "backfill:manufacturer-passwords": "node scripts/update-default-passwords.js",
+    "backfill:color-images": "node scripts/normalize-color-image-assignments.js",
     "seed:categories": "node seeds/seedCategories.js"
   },
   "keywords": [

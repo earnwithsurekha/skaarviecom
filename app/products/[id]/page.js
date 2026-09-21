@@ -15,6 +15,7 @@ import {
 import { toast } from 'react-hot-toast';
 import ProductSaveButton from '@/components/product/ProductSaveButton';
 import ProductShareButton from '@/components/product/ProductShareButton';
+import ProductImageCarousel from '@/components/product/ProductImageCarousel';
 import ProductVariantSelector from '@/components/product/ProductVariantSelector';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { addToCart, getCartItemId } from '@/store/slices/cartSlice';
@@ -38,11 +39,9 @@ export default function ProductDetailPage() {
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const [imageError, setImageError] = useState(false);
 
   const variants = product?.variants || [];
   const productUsesSizes = variants.some((variant) => variant.sizeLabel);
@@ -266,22 +265,12 @@ export default function ProductDetailPage() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
-            {/* Main Image */}
-            <div className="relative aspect-square bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-              {images[selectedImage] && !imageError ? (
-                <img
-                  src={images[selectedImage].url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Package className="h-24 w-24 text-gray-300 dark:text-gray-600" />
-                </div>
-              )}
-              
-              {/* Stock Badge */}
+            <ProductImageCarousel
+              images={images}
+              productName={product.name}
+              resetKey={`${selectedSize}|${selectedColor}`}
+              imageFit="cover"
+            >
               {product.stock <= 10 && product.stock > 0 && (
                 <div className="absolute top-4 left-4 bg-yellow-500 text-white text-sm font-bold px-3 py-1 rounded">
                   Only {product.stock} left
@@ -295,30 +284,7 @@ export default function ProductDetailPage() {
                   </span>
                 </div>
               )}
-            </div>
-
-            {/* Thumbnail Images */}
-            {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`relative aspect-square bg-white dark:bg-gray-800 rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index
-                        ? 'border-blue-600'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'
-                    }`}
-                  >
-                    <img
-                      src={image.url}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+            </ProductImageCarousel>
 
             {/* Product Videos */}
             {product.videos && product.videos.length > 0 && (
@@ -440,14 +406,10 @@ export default function ProductDetailPage() {
               onSelectSize={(size) => {
                 setSelectedSize(size);
                 setQuantity(1);
-                setSelectedImage(0);
-                setImageError(false);
               }}
               onSelectColor={(color) => {
                 setSelectedColor(color);
                 setQuantity(1);
-                setSelectedImage(0);
-                setImageError(false);
               }}
             />
 

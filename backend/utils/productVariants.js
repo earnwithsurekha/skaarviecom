@@ -105,6 +105,15 @@ const parseJsonArray = (rawValue, fieldName) => {
   }
 };
 
+const parseOptionalSortOrder = (assignment) => {
+  if (assignment?.sortOrder === undefined) return {};
+  const sortOrder = Number(assignment.sortOrder);
+  if (!Number.isInteger(sortOrder) || sortOrder < 0) {
+    throw new Error('Image sort order must be a non-negative whole number');
+  }
+  return { sortOrder };
+};
+
 const resolveMediaAssignment = (assignment, variants) => {
   const requestedKey = normalizePart(assignment?.variantKey);
   if (!requestedKey) {
@@ -170,7 +179,10 @@ const parseNewImageAssignments = (rawAssignments, imageCount, variants) => {
     throw new Error('Each uploaded image must have one image assignment');
   }
 
-  return assignments.map((assignment) => resolveMediaAssignments(assignment, variants));
+  return assignments.map((assignment) => ({
+    ...resolveMediaAssignments(assignment, variants),
+    ...parseOptionalSortOrder(assignment),
+  }));
 };
 
 const parseExistingImageAssignments = (rawAssignments, variants) => {
@@ -178,13 +190,19 @@ const parseExistingImageAssignments = (rawAssignments, variants) => {
   if (assignments === undefined) return undefined;
 
   const seenIds = new Set();
-  return assignments.map((assignment, sortOrder) => {
+  return assignments.map((assignment, defaultSortOrder) => {
     const id = normalizePart(assignment?.id);
     if (!id || seenIds.has(id)) {
       throw new Error('Existing image assignments contain an invalid or duplicate image ID');
     }
     seenIds.add(id);
-    return { id, sortOrder, ...resolveMediaAssignments(assignment, variants) };
+    return {
+      id,
+      sortOrder: assignment.sortOrder === undefined
+        ? defaultSortOrder
+        : parseOptionalSortOrder(assignment).sortOrder,
+      ...resolveMediaAssignments(assignment, variants),
+    };
   });
 };
 

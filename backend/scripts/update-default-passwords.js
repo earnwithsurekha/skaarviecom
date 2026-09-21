@@ -1,9 +1,9 @@
 /**
- * Script to update existing manufacturers and resellers with default password
+ * Script to update existing manufacturers with a default password
  * Password: Welcome@1
  * 
- * Run this script once to add passwords to existing users who don't have one
- * Usage: node update-default-passwords.js
+ * Run this script once to add passwords to existing manufacturers who don't have one
+ * Usage: node scripts/update-default-passwords.js
  */
 
 const bcrypt = require('bcryptjs');
@@ -28,21 +28,21 @@ async function updateDefaultPasswords() {
     console.log('✅ Password hashed successfully');
     console.log('');
 
-    // Find users without passwords (manufacturers and resellers)
-    console.log('🔍 Finding users without passwords...');
+    // Find manufacturers without passwords
+    console.log('🔍 Finding manufacturers without passwords...');
     const usersWithoutPassword = await sequelize.query(
       `SELECT id, email, mobile, role, full_name 
        FROM users 
-       WHERE (role = 'manufacturer' OR role = 'reseller') 
+       WHERE role = 'manufacturer'
        AND (password IS NULL OR password = '')`,
       { type: QueryTypes.SELECT }
     );
 
-    console.log(`📊 Found ${usersWithoutPassword.length} users without passwords`);
+    console.log(`📊 Found ${usersWithoutPassword.length} manufacturers without passwords`);
     console.log('');
 
     if (usersWithoutPassword.length === 0) {
-      console.log('✅ All manufacturers and resellers already have passwords!');
+      console.log('✅ All manufacturers already have passwords!');
       console.log('No updates needed.');
       return;
     }
@@ -65,10 +65,10 @@ async function updateDefaultPasswords() {
 
     // Update passwords
     console.log('🔄 Updating passwords...');
-    const [affectedRows] = await sequelize.query(
+    const [, affectedRows] = await sequelize.query(
       `UPDATE users 
        SET password = ?, updated_at = NOW() 
-       WHERE (role = 'manufacturer' OR role = 'reseller') 
+       WHERE role = 'manufacturer'
        AND (password IS NULL OR password = '')`,
       {
         replacements: [hashedPassword],
@@ -84,7 +84,7 @@ async function updateDefaultPasswords() {
     const remainingUsers = await sequelize.query(
       `SELECT COUNT(*) as count 
        FROM users 
-       WHERE (role = 'manufacturer' OR role = 'reseller') 
+       WHERE role = 'manufacturer'
        AND (password IS NULL OR password = '')`,
       { type: QueryTypes.SELECT }
     );

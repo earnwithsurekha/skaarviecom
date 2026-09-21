@@ -6,6 +6,34 @@ import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 
 const DEVICE_ID_KEY = 'skaarviPushDeviceId';
+const FIREBASE_SERVICE_WORKER_PATH = '/firebase-messaging-sw.js';
+
+const isPushServiceError = (error) => (
+  error?.code === 'messaging/token-subscribe-failed'
+  || /push service error|token-subscribe-failed/i.test(error?.message || '')
+);
+
+const getPushErrorMessage = (error) => {
+  if (isPushServiceError(error)) {
+    return 'Browser push service is unavailable. Allow notifications in browser and Windows settings, then restart the browser and try again.';
+  }
+  return error?.message || 'Failed to enable notifications.';
+};
+
+const resetWebPushRegistration = async () => {
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  const firebaseRegistrations = registrations.filter((registration) => (
+    registration.active?.scriptURL.includes(FIREBASE_SERVICE_WORKER_PATH)
+    || registration.installing?.scriptURL.includes(FIREBASE_SERVICE_WORKER_PATH)
+    || registration.waiting?.scriptURL.includes(FIREBASE_SERVICE_WORKER_PATH)
+  ));
+
+  await Promise.all(firebaseRegistrations.map(async (registration) => {
+    const subscription = await registration.pushManager.getSubscription();
+    if (subscription) await subscription.unsubscribe();
+    await registration.unregister();
+  }));
+};
 
 const getDeviceId = () => {
   let deviceId = localStorage.getItem(DEVICE_ID_KEY);
@@ -97,7 +125,7 @@ export default function PushNotificationManager() {
       return true;
     };
 
-    const setupWebPush = async (requestPermission) => {
+    const setupWebPush = async (requestPermission, allowRecovery = true) => {
       if (!('Notification' in window) || !('serviceWorker' in navigator)) {
         throw new Error('This browser does not support push notifications.');
       }
@@ -126,40 +154,54 @@ export default function PushNotificationManager() {
       if (!(await isSupported())) throw new Error('Firebase Messaging is not supported by this browser.');
       if (disposed) return false;
 
-      const serviceWorkerRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const serviceWorkerRegistration = await navigator.serviceWorker.register(
+        FIREBASE_SERVICE_WORKER_PATH,
+        { updateViaCache: 'none' }
+      );
+      await serviceWorkerRegistration.update();
       await navigator.serviceWorker.ready;
       const app = getApps()[0] || initializeApp(config.firebaseConfig);
       const messaging = getMessaging(app);
-      const token = await getToken(messaging, {
-        vapidKey: config.vapidKey,
-        serviceWorkerRegistration,
-      });
+      let token;
+      try {
+        token = await getToken(messaging, {
+          vapidKey: config.vapidKey,
+          serviceWorkerRegistration,
+        });
+      } catch (error) {
+        if (!allowRecovery || !isPushServiceError(error)) throw error;
+        await resetWebPushRegistration();
+        return setupWebPush(requestPermission, false);
+      }
       await registerDeviceToken({ token, platform: 'web' });
       const unsubscribe = onMessage(messaging, announceNotification);
       cleanupCallbacks.push(unsubscribe);
       return true;
     };
 
-    const enableWebPush = () => {
+    const enableWebPush = ({ showFeedback = true } = {}) => {
       if (webRegistrationPromise) return;
       webRegistrationPromise = setupWebPush(true)
         .then((registered) => {
-          if (registered) toast.success('Notifications enabled');
+          if (registered && showFeedback) toast.success('Notifications enabled');
           return registered;
         })
         .catch((error) => {
           webRegistrationPromise = undefined;
           console.error('[Push] Web registration failed:', error);
-          toast.error(error.message || 'Failed to enable notifications.');
+          if (showFeedback) toast.error(getPushErrorMessage(error));
           return false;
         });
     };
-    window.addEventListener('skaarvi:enable-push', enableWebPush);
-    cleanupCallbacks.push(() => window.removeEventListener('skaarvi:enable-push', enableWebPush));
+    const handleEnableWebPush = () => enableWebPush({ showFeedback: true });
+    window.addEventListener('skaarvi:enable-push', handleEnableWebPush);
+    cleanupCallbacks.push(() => window.removeEventListener('skaarvi:enable-push', handleEnableWebPush));
 
     setupNativePush()
       .then((isNative) => {
-        if (!isNative && Notification.permission === 'granted') enableWebPush();
+        if (!isNative && Notification.permission === 'granted') {
+          enableWebPush({ showFeedback: false });
+        }
       })
       .catch((error) => console.error('[Push] Native setup failed:', error));
 
