@@ -16,17 +16,15 @@ import {
   LogOut, 
   Menu, 
   X,
-  Share2,
   Download,
   Store,
   ArrowDownCircle,
   Trophy,
   HelpCircle
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { useTheme } from '@/contexts/ThemeContext';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import NotificationBell from '@/components/NotificationBell';
 
@@ -36,7 +34,7 @@ export default function ResellerLayout({ children }) {
   const dispatch = useDispatch();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isChecking, setIsChecking] = useState(true);
-  const { theme } = useTheme();
+  const sidebarRef = useRef(null);
   const { user } = useSelector(state => state.auth);
 
   useEffect(() => {
@@ -65,6 +63,23 @@ export default function ResellerLayout({ children }) {
       router.push('/unauthorized');
     }
   }, [user, router, isChecking]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+
+    const closeSidebarOnOutsideClick = (event) => {
+      if (!sidebarRef.current || sidebarRef.current.contains(event.target)) return;
+
+      const clickedElement = event.target instanceof Element ? event.target : null;
+      const isInteractive = clickedElement?.closest(
+        'a, button, input, select, textarea, label, [role="button"], [role="link"]'
+      );
+      if (!isInteractive) setSidebarOpen(false);
+    };
+
+    document.addEventListener('click', closeSidebarOnOutsideClick);
+    return () => document.removeEventListener('click', closeSidebarOnOutsideClick);
+  }, [sidebarOpen]);
 
   // Show loading while checking auth
   if (isChecking) {
@@ -123,8 +138,16 @@ export default function ResellerLayout({ children }) {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+      {sidebarOpen && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[45] bg-black/30 lg:bg-transparent"
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar */}
       <aside
+        ref={sidebarRef}
         className={`fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } w-64 shadow-xl`}

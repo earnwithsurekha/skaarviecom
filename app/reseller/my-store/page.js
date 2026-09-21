@@ -1,16 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { 
   Store, Copy, Check, Eye, ShoppingCart, TrendingUp,
-  ExternalLink, Users, BarChart3, Calendar, Edit2,
+  ExternalLink, Users, Edit2,
   Save, X, Globe
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function MyStorePage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [store, setStore] = useState(null);
@@ -37,12 +35,19 @@ export default function MyStorePage() {
       const result = await response.json();
 
       if (result.status === 'success') {
-        setStore(result.data.store);
+        const storeData = result.data.store;
+        const storePath = storeData.store_path || `/store/${encodeURIComponent(storeData.reseller_code)}`;
+        const normalizedStore = {
+          ...storeData,
+          store_path: storePath,
+          store_url: new URL(storePath, window.location.origin).toString(),
+        };
+        setStore(normalizedStore);
         setAnalytics(result.data.analytics);
         setRecentVisitors(result.data.recentVisitors);
         setFormData({
-          store_name: result.data.store.store_name || '',
-          store_description: result.data.store.store_description || ''
+          store_name: normalizedStore.store_name || '',
+          store_description: normalizedStore.store_description || ''
         });
       }
     } catch (error) {

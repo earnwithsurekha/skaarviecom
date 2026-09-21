@@ -42,7 +42,7 @@ export default function SavedProductsPage() {
         return;
       }
 
-      const response = await fetch('/api/reseller/products/saved/list', {
+      const response = await fetch('/api/reseller/products/saved', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 

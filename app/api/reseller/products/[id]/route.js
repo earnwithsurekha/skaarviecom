@@ -2,14 +2,17 @@ import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function GET(request, { params }) {
-    const token = getAuthToken(request);
+  const token = getAuthToken(request);
 
   if (!token) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json(
+      { status: 'error', message: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await fetchBackend(
       `/api/reseller/products/${id}`,
       {

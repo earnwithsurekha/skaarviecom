@@ -202,7 +202,7 @@ export default function AdminProductsPage() {
         setConfirmModal({ ...confirmModal, isOpen: false });
         
         try {
-          const response = await apiClient.delete(`/api/admin/products/${productId}/delete`);
+          const response = await apiClient.delete(`/api/admin/products/${productId}`);
           const data = response.data;
           if (data.status === 'success') {
             fetchProducts();

@@ -152,7 +152,9 @@ router.get('/:id', async (req, res) => {
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN manufacturers m ON p.manufacturer_id = m.id
-      WHERE p.id = :productId AND p.deleted_at IS NULL
+      WHERE p.id = :productId
+        AND p.deleted_at IS NULL
+        AND p.status = 'approved'
     `, {
       replacements: { productId: id, resellerId },
       type: sequelize.QueryTypes.SELECT
@@ -167,7 +169,15 @@ router.get('/:id', async (req, res) => {
 
     // Get product images
     const images = await sequelize.query(`
-      SELECT image_url, sort_order, alt_text
+      SELECT
+        id,
+        image_url,
+        sort_order,
+        alt_text,
+        variant_keys,
+        variant_key,
+        size_label,
+        color_name
       FROM product_images
       WHERE product_id = :productId
       ORDER BY sort_order
@@ -187,6 +197,16 @@ router.get('/:id', async (req, res) => {
       type: sequelize.QueryTypes.SELECT
     });
 
+    const variants = await sequelize.query(`
+      SELECT id, variant_key, size_label, color_name, color_hex, stock_quantity, sort_order
+      FROM product_variants
+      WHERE product_id = :productId
+      ORDER BY sort_order
+    `, {
+      replacements: { productId: id },
+      type: sequelize.QueryTypes.SELECT
+    });
+
     res.json({
       status: 'success',
       data: {
@@ -196,7 +216,8 @@ router.get('/:id', async (req, res) => {
           reseller_profit: parseFloat(product.reseller_margin) || 0
         },
         images,
-        videos
+        videos,
+        variants
       }
     });
 
