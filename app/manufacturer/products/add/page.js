@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
-import { ChevronDown, ChevronUp, Plus, X, FileText, Video, Image as ImageIcon } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Plus, X, FileText, Video, Image as ImageIcon } from 'lucide-react';
 import {
   getProductSizeConfig,
   getVariantInventoryKey,
@@ -29,6 +29,29 @@ const Section = ({ title, name, isOpen, onToggle, children }) => (
     )}
   </div>
 );
+
+const normalizeImageVariantKeys = (image) => {
+  let variantKeys = [];
+  if (Array.isArray(image.variantKeys)) {
+    variantKeys = image.variantKeys;
+  } else if (image.variantKey) {
+    variantKeys = [image.variantKey];
+  }
+
+  if (variantKeys.length === 0) return [];
+  const assignedColors = variantKeys.map((variantKey) => {
+    const normalizedKey = String(variantKey).toLocaleLowerCase('en-IN');
+    if (normalizedKey.startsWith('color:')) return normalizedKey.slice('color:'.length);
+    if (normalizedKey.startsWith('size:')) return null;
+    return normalizedKey.split('|')[1] || null;
+  });
+  const uniqueColors = new Set(assignedColors);
+
+  if (!assignedColors.includes(null) && uniqueColors.size === 1) {
+    return [`color:${assignedColors[0]}`];
+  }
+  return variantKeys;
+};
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -133,6 +156,18 @@ export default function AddProductPage() {
       label: `Exact: ${[variant.colorName, variant.sizeLabel].filter(Boolean).join(' / ')}`,
     })),
   ];
+  const imageScopeOptions = [
+    { value: '', label: 'General image (shown for every color)' },
+    ...(usesColorVariants
+      ? formData.colorVariants.map((color) => ({
+          value: `color:${color.colorName.toLocaleLowerCase('en-IN')}`,
+          label: `${color.colorName} only`,
+        }))
+      : formData.sizeVariants.map((sizeLabel) => ({
+          value: `size:${sizeLabel.toLocaleLowerCase('en-IN')}`,
+          label: `${sizeLabel} only`,
+        }))),
+  ];
 
   // Fetch categories on mount
   useEffect(() => {
@@ -227,11 +262,7 @@ export default function AddProductPage() {
           id: image.id,
           file: null,
           previewUrl: image.imageUrl,
-          variantKeys: Array.isArray(image.variantKeys)
-            ? image.variantKeys
-            : image.variantKey
-              ? [image.variantKey]
-              : [],
+          variantKeys: normalizeImageVariantKeys(image),
         })));
       }
       setMediaDirty(false);
@@ -389,7 +420,7 @@ export default function AddProductPage() {
   };
 
   // Image handling
-  const handleImageChange = (e) => {
+  const handleImageChange = (e, requestedAssignment = '') => {
     const files = Array.from(e.target.files);
     
     if (imageItems.length + files.length > 30) {
@@ -405,11 +436,17 @@ export default function AddProductPage() {
       return true;
     });
 
+    const assignmentExists = mediaAssignmentOptions.some(
+      (option) => option.value === requestedAssignment
+    );
+    const uploadVariantKeys = assignmentExists && requestedAssignment
+      ? [requestedAssignment]
+      : [];
     const newImageItems = validFiles.map((file) => ({
       id: `new-${crypto.randomUUID()}`,
       file,
       previewUrl: URL.createObjectURL(file),
-      variantKeys: [],
+      variantKeys: uploadVariantKeys,
     }));
     setImageItems((previous) => [...previous, ...newImageItems]);
     setMediaDirty(true);
@@ -427,16 +464,27 @@ export default function AddProductPage() {
     setMediaDirty(true);
   };
 
-  const toggleImageAssignment = (imageId, variantKey) => {
+  const moveImage = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= imageItems.length) return;
+
+    setImageItems((previous) => {
+      const reorderedImages = [...previous];
+      [reorderedImages[index], reorderedImages[targetIndex]] = [
+        reorderedImages[targetIndex],
+        reorderedImages[index],
+      ];
+      return reorderedImages;
+    });
+    setMediaDirty(true);
+  };
+
+  const setImageAssignment = (imageId, variantKey) => {
     setImageItems((previous) => previous.map((image) => (
       image.id === imageId
         ? {
             ...image,
-            variantKeys: variantKey === ''
-              ? []
-              : image.variantKeys.includes(variantKey)
-                ? image.variantKeys.filter((configuredKey) => configuredKey !== variantKey)
-                : [...image.variantKeys, variantKey],
+            variantKeys: variantKey ? [variantKey] : [],
           }
         : image
     )));
@@ -589,18 +637,28 @@ export default function AddProductPage() {
       if (!isAutoSave) {
         const newImages = imageItems.filter((image) => image.file);
         const existingImages = imageItems.filter((image) => !image.file);
+        const imagePositions = new Map(
+          imageItems.map((image, index) => [image.id, index])
+        );
 
         newImages.forEach((image) => {
           submitData.append('images', image.file);
         });
         submitData.append(
           'imageAssignments',
-            JSON.stringify(newImages.map((image) => ({ variantKeys: image.variantKeys })))
+          JSON.stringify(newImages.map((image) => ({
+            variantKeys: image.variantKeys,
+            sortOrder: imagePositions.get(image.id),
+          })))
         );
         if (productId) {
           submitData.append(
             'existingImageAssignments',
-            JSON.stringify(existingImages.map((image) => ({ id: image.id, variantKeys: image.variantKeys })))
+            JSON.stringify(existingImages.map((image) => ({
+              id: image.id,
+              variantKeys: image.variantKeys,
+              sortOrder: imagePositions.get(image.id),
+            })))
           );
         }
 
@@ -641,11 +699,7 @@ export default function AddProductPage() {
           id: image.id,
           file: null,
           previewUrl: image.imageUrl,
-          variantKeys: Array.isArray(image.variantKeys)
-            ? image.variantKeys
-            : image.variantKey
-              ? [image.variantKey]
-              : [],
+          variantKeys: normalizeImageVariantKeys(image),
         })));
         setMediaDirty(false);
       }
@@ -847,6 +901,57 @@ export default function AddProductPage() {
                 <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(var(--color-text))' }}>
                   Product Images (Max 30)
                 </label>
+                {usesColorVariants && formData.colorVariants.length > 0 && (
+                  <div className="mb-4">
+                    <p className="mb-2 text-sm font-medium" style={{ color: 'rgb(var(--color-text))' }}>
+                      Upload images for each existing color
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {formData.colorVariants.map((color, index) => {
+                        const colorAssignment = `color:${color.colorName.toLocaleLowerCase('en-IN')}`;
+                        const inputId = `color-image-upload-${index}`;
+                        const assignedImageCount = imageItems.filter(
+                          (image) => image.variantKeys.length === 1 && image.variantKeys[0] === colorAssignment
+                        ).length;
+
+                        return (
+                          <div key={colorAssignment} className="border p-3" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(event) => handleImageChange(event, colorAssignment)}
+                              className="hidden"
+                              id={inputId}
+                            />
+                            <label
+                              htmlFor={inputId}
+                              className="flex min-h-11 cursor-pointer items-center gap-2 border px-3 py-2 text-sm font-medium transition-colors hover:bg-black/5"
+                              style={{
+                                borderColor: 'rgb(var(--color-border))',
+                                color: 'rgb(var(--color-text))',
+                              }}
+                            >
+                              <span
+                                className="h-4 w-4 rounded-full border"
+                                style={{
+                                  backgroundColor: color.colorHex,
+                                  borderColor: 'rgb(var(--color-border))',
+                                }}
+                                aria-hidden="true"
+                              />
+                              <Plus size={16} />
+                              Select multiple {color.colorName} images
+                            </label>
+                            <p className="mt-2 text-xs" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                              {assignedImageCount} {color.colorName} image{assignedImageCount === 1 ? '' : 's'}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div className="border-2 border-dashed rounded-lg p-4" style={{ borderColor: 'rgb(var(--color-border))' }}>
                   <input
                     type="file"
@@ -862,17 +967,11 @@ export default function AddProductPage() {
                   >
                     <ImageIcon size={48} className="mb-2" style={{ color: 'rgb(var(--color-text-secondary))' }} />
                     <span className="text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
-                      Click to upload images (JPEG, PNG, WEBP, GIF)
+                      Upload general images shown for every color
                     </span>
                     <span className="text-xs mt-1" style={{ color: 'rgb(var(--color-text-secondary))' }}>Max 5MB per image</span>
                   </label>
                 </div>
-
-                {usesProductVariants && (
-                  <p className="mt-2 text-xs" style={{ color: 'rgb(var(--color-text-secondary))' }}>
-                    For one image across every Red size, select "Color: Red (all sizes)". For selected sizes only, check multiple exact options such as Red / M, Red / L, Red / XL, and Red / XXL.
-                  </p>
-                )}
 
                 {imageItems.length > 0 && (
                   <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -888,6 +987,15 @@ export default function AddProductPage() {
                       const hasRemovedAssignment = image.variantKeys.some((variantKey) => (
                         !mediaAssignmentOptions.some((option) => option.value === variantKey)
                       ));
+                      let imageScopeValue = '__existing__';
+                      if (image.variantKeys.length === 0) {
+                        imageScopeValue = '';
+                      } else if (
+                        image.variantKeys.length === 1
+                        && imageScopeOptions.some((option) => option.value === image.variantKeys[0])
+                      ) {
+                        imageScopeValue = image.variantKeys[0];
+                      }
 
                       return (
                         <div key={image.id} className="border p-3" style={{ borderColor: 'rgb(var(--color-border))' }}>
@@ -911,39 +1019,46 @@ export default function AddProductPage() {
                                 Primary
                               </span>
                             )}
+                            <div className="absolute bottom-2 right-2 flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => moveImage(index, -1)}
+                                disabled={index === 0}
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white disabled:cursor-not-allowed disabled:opacity-35"
+                                title="Move image earlier"
+                                aria-label={`Move image ${index + 1} earlier`}
+                              >
+                                <ChevronLeft size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveImage(index, 1)}
+                                disabled={index === imageItems.length - 1}
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white disabled:cursor-not-allowed disabled:opacity-35"
+                                title="Move image later"
+                                aria-label={`Move image ${index + 1} later`}
+                              >
+                                <ChevronRight size={16} />
+                              </button>
+                            </div>
                           </div>
 
-                          <details className="mt-3">
-                            <summary
-                              className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 border px-3 py-2 text-sm"
-                              style={{ borderColor: 'rgb(var(--color-border))', color: 'rgb(var(--color-text))' }}
-                            >
-                              <span className="min-w-0 truncate">{assignmentSummary}</span>
-                              <ChevronDown size={16} className="flex-none" />
-                            </summary>
-                            <div className="mt-2 max-h-64 space-y-1 overflow-y-auto border p-2" style={{ borderColor: 'rgb(var(--color-border))' }}>
-                              <label className="flex cursor-pointer items-center gap-2 p-2 text-sm" style={{ color: 'rgb(var(--color-text))' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={image.variantKeys.length === 0}
-                                  onChange={() => toggleImageAssignment(image.id, '')}
-                                  className="h-4 w-4"
-                                />
-                                <span>All variants (general image)</span>
-                              </label>
-                              {mediaAssignmentOptions.filter((option) => option.value).map((option) => (
-                                <label key={option.value} className="flex cursor-pointer items-start gap-2 p-2 text-sm" style={{ color: 'rgb(var(--color-text))' }}>
-                                  <input
-                                    type="checkbox"
-                                    checked={image.variantKeys.includes(option.value)}
-                                    onChange={() => toggleImageAssignment(image.id, option.value)}
-                                    className="mt-0.5 h-4 w-4 flex-none"
-                                  />
-                                  <span>{option.label}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </details>
+                          <label htmlFor={`image-scope-${image.id}`} className="mt-3 block text-xs font-medium" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                            Show this image for
+                          </label>
+                          <select
+                            id={`image-scope-${image.id}`}
+                            value={imageScopeValue}
+                            onChange={(event) => setImageAssignment(image.id, event.target.value)}
+                            className="input mt-1 w-full"
+                          >
+                            {imageScopeValue === '__existing__' && (
+                              <option value="__existing__" disabled>{assignmentSummary}</option>
+                            )}
+                            {imageScopeOptions.map((option) => (
+                              <option key={option.value || 'general'} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
                           {hasRemovedAssignment && (
                             <p className="mt-2 text-xs" style={{ color: 'rgb(var(--color-danger))' }}>
                               A selected size or color was removed. Update this image assignment before saving.

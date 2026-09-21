@@ -1,12 +1,23 @@
 const AWS = require('aws-sdk');
 require('dotenv').config();
 
-// Configure AWS SDK
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
-});
+const isRealCredential = (value) => (
+  Boolean(value)
+  && !value.startsWith('your_')
+  && !value.startsWith('placeholder')
+);
+
+const awsConfig = { region: process.env.AWS_REGION || 'ap-south-1' };
+if (
+  isRealCredential(process.env.AWS_ACCESS_KEY_ID)
+  && isRealCredential(process.env.AWS_SECRET_ACCESS_KEY)
+) {
+  awsConfig.accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  awsConfig.secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+}
+
+// Without explicit credentials, the SDK uses its standard chain (including ECS task roles).
+AWS.config.update(awsConfig);
 
 const s3 = new AWS.S3();
 

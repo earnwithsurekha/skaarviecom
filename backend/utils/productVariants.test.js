@@ -136,6 +136,28 @@ describe('product variants', () => {
     }]);
   });
 
+  test('preserves explicit image ordering across new and existing images', () => {
+    const variants = parseProductVariants([
+      { colorName: 'Red', colorHex: '#dc2626', stockQuantity: 4 },
+    ]);
+
+    expect(parseNewImageAssignments(JSON.stringify([{
+      variantKey: 'color:red',
+      sortOrder: 0,
+    }]), 1, variants)[0]).toMatchObject({
+      variantKeys: ['color:red'],
+      sortOrder: 0,
+    });
+    expect(parseExistingImageAssignments(JSON.stringify([{
+      id: 'existing-image',
+      variantKey: 'color:red',
+      sortOrder: 1,
+    }]), variants)[0]).toMatchObject({
+      id: 'existing-image',
+      sortOrder: 1,
+    });
+  });
+
   test('rejects invalid image assignment metadata', () => {
     const variants = parseProductVariants([
       { sizeLabel: 'M', colorName: 'Blue', stockQuantity: 1 },
@@ -149,5 +171,7 @@ describe('product variants', () => {
       { id: 'image-1', variantKey: '' },
       { id: 'image-1', variantKey: '' },
     ]), variants)).toThrow('duplicate image ID');
+    expect(() => parseNewImageAssignments('[{"sortOrder":-1}]', 1, variants))
+      .toThrow('non-negative whole number');
   });
 });
