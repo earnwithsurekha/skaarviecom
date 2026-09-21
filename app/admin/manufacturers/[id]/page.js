@@ -409,6 +409,12 @@ export default function ManufacturerDetailPage({ params }) {
             <p className="text-base mt-1" style={{ color: 'rgb(var(--color-text))' }}>{manufacturer.contactPerson}</p>
           </div>
           <div>
+            <p className="text-sm font-medium" style={{ color: 'rgb(var(--color-text-secondary))' }}>Email Address</p>
+            <p className="text-base mt-1" style={{ color: 'rgb(var(--color-text))' }}>
+              {manufacturer.user?.email || manufacturer.email || 'Not provided'}
+            </p>
+          </div>
+          <div>
             <label className="text-sm font-medium" style={{ color: 'rgb(var(--color-text-secondary))' }}>Business Type</label>
             <p className="text-base mt-1" style={{ color: 'rgb(var(--color-text))' }}>{manufacturer.businessType || 'N/A'}</p>
           </div>
