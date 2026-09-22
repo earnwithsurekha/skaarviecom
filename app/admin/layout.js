@@ -9,19 +9,17 @@ import {
   ShoppingCart, UserCheck, FolderOpen, DollarSign, BarChart3, Wallet, ArrowUpRight, Award, TrendingUp, Image
 } from 'lucide-react';
 import { useState, useTransition, useEffect } from 'react';
-import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { useTheme } from '@/contexts/ThemeContext';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import MobileRoleNavigation from '@/components/navigation/MobileRoleNavigation';
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useDispatch();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [optimisticPath, setOptimisticPath] = useState(null);
-  const { theme } = useTheme();
 
   // If on the root /admin path, render without any auth checks (let page.js handle it)
   const isRootAdminPath = pathname === '/admin';
@@ -31,6 +29,14 @@ export default function AdminLayout({ children }) {
 
   // For all other admin routes, apply full auth check
   const { user } = useAdminAuth();
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
+    const syncNavigationMode = () => setSidebarOpen(desktopQuery.matches);
+    syncNavigationMode();
+    desktopQuery.addEventListener('change', syncNavigationMode);
+    return () => desktopQuery.removeEventListener('change', syncNavigationMode);
+  }, []);
 
   // Prefetch all navigation routes on mount for instant navigation
   useEffect(() => {
@@ -96,16 +102,25 @@ export default function AdminLayout({ children }) {
     { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
+  const mobileNavigation = [
+    { name: 'Home', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+    { name: 'Products', href: '/admin/products', icon: Package },
+    { name: 'Users', href: '/admin/manufacturers', icon: Users },
+  ];
+  const currentPage = navigation.find((item) => (
+    pathname === item.href || pathname?.startsWith(`${item.href}/`)
+  ))?.name || 'Skaarvi Admin';
 
   if (!user) return null; // Wait for auth check
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+    <div className="portal-shell min-h-screen" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 pt-[env(safe-area-inset-top)] shadow-xl transition-all duration-300 ease-in-out lg:pt-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } w-64 shadow-xl`}
+        }`}
         style={{ 
           backgroundColor: 'rgb(var(--color-background))',
           borderRight: '1px solid rgb(var(--color-border))'
@@ -209,20 +224,26 @@ export default function AdminLayout({ children }) {
           backgroundColor: 'rgb(var(--color-background))',
           borderBottom: '1px solid rgb(var(--color-border))'
         }}>
-          <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex min-h-16 items-center justify-between px-4 pt-[env(safe-area-inset-top)] lg:h-16 lg:px-6 lg:pt-0">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hover:opacity-70 transition-all duration-200 hover:scale-110 active:scale-95"
+              className="flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
               style={{ color: 'rgb(var(--color-text-secondary))' }}
+              aria-label={sidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
             >
               <Menu className="w-6 h-6" />
             </button>
-            <ThemeSwitcher />
+            <p className="min-w-0 flex-1 truncate px-3 text-base font-semibold lg:hidden" style={{ color: 'rgb(var(--color-text))' }}>
+              {currentPage}
+            </p>
+            <div className="hidden sm:block">
+              <ThemeSwitcher />
+            </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-24 lg:pb-6">
           {isPending && (
             <div className="fixed top-16 left-0 right-0 z-50 h-1" style={{ backgroundColor: 'rgba(var(--color-primary), 0.1)' }}>
               <div 
@@ -239,11 +260,21 @@ export default function AdminLayout({ children }) {
 
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div
+        <button
+          type="button"
           className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
+          aria-label="Close navigation menu"
         />
       )}
+
+      <MobileRoleNavigation
+        items={mobileNavigation}
+        pathname={pathname}
+        moreOpen={sidebarOpen}
+        onMoreToggle={() => setSidebarOpen((open) => !open)}
+        onNavigate={() => setSidebarOpen(false)}
+      />
     </div>
   );
 }

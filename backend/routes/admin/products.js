@@ -433,15 +433,7 @@ router.get('/:id',
   }
 );
 
-// @route   DELETE /api/admin/products/:id
-// @desc    Delete product (admin only)
-// @access  Private (Admin only)
-router.delete('/:id',
-  authMiddleware,
-  adminOnly,
-  param('id').isUUID().withMessage('Invalid product ID'),
-  handleValidationErrors,
-  async (req, res) => {
+const deleteProduct = async (req, res) => {
     try {
       const { id } = req.params;
 
@@ -512,7 +504,18 @@ router.delete('/:id',
         message: error.message || 'Internal server error'
       });
     }
-  }
-);
+};
+
+const deleteProductMiddleware = [
+  authMiddleware,
+  adminOnly,
+  param('id').isUUID().withMessage('Invalid product ID'),
+  handleValidationErrors,
+  deleteProduct,
+];
+
+// Canonical endpoint and compatibility alias for older frontend deployments.
+router.delete('/:id', ...deleteProductMiddleware);
+router.delete('/:id/delete', ...deleteProductMiddleware);
 
 module.exports = router;

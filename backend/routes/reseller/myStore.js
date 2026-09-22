@@ -87,15 +87,21 @@ router.get('/my-store', async (req, res) => {
       type: sequelize.QueryTypes.SELECT
     });
 
-    // Get store URL
-    const baseUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
-    const storeUrl = `${baseUrl}/store/${store.reseller_code}`;
+    const storePath = `/store/${store.reseller_code}`;
+    const configuredBaseUrl = process.env.PUBLIC_URL || process.env.FRONTEND_URL;
+    const forwardedHost = req.get('x-forwarded-host');
+    const forwardedProtocol = req.get('x-forwarded-proto') || req.protocol;
+    const forwardedBaseUrl = forwardedHost ? `${forwardedProtocol}://${forwardedHost}` : null;
+    const requestBaseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = forwardedBaseUrl || configuredBaseUrl || requestBaseUrl;
+    const storeUrl = new URL(storePath, baseUrl).toString();
 
     res.json({
       status: 'success',
       data: {
         store: {
           ...store,
+          store_path: storePath,
           store_url: storeUrl
         },
         analytics,

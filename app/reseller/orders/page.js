@@ -5,10 +5,8 @@ import { useRouter } from 'next/navigation';
 import {
   Package,
   Search,
-  Filter,
   Eye,
   Calendar,
-  TrendingUp,
   Clock,
   Loader,
   Truck,
@@ -276,8 +274,8 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <table className="w-full">
+      <div className="touch-pan-x overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <table className="w-full min-w-[960px]">
           <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Order ID</th>
@@ -362,7 +360,7 @@ export default function OrdersPage() {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="portal-pagination flex items-center justify-between">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Showing {orders.length} of {pagination.total} orders
           </p>

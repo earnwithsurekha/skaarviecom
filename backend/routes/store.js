@@ -7,27 +7,29 @@ const { sequelize } = require('../models');
 // @access  Public
 router.get('/:username', async (req, res) => {
   try {
-    const { username } = req.params;
+    const { username: storeIdentifier } = req.params;
 
-    // Get reseller by username
+    // Public store links use the stable reseller code.
     const [reseller] = await sequelize.query(`
       SELECT 
         r.id,
+        r.user_id,
         r.full_name,
-        r.email,
-        r.phone_number,
+        u.email,
+        u.mobile as phone_number,
         r.city,
         r.state,
         r.reseller_code,
-        r.profile_photo,
+        r.profile_photo_url as profile_photo,
         r.store_name,
         r.store_description,
         r.created_at
       FROM resellers r
-      WHERE r.username = :username
-      AND r.status = 'active'
+      JOIN users u ON r.user_id = u.id
+      WHERE r.reseller_code = :storeIdentifier
+      AND u.is_active = TRUE
     `, {
-      replacements: { username },
+      replacements: { storeIdentifier },
       type: sequelize.QueryTypes.SELECT
     });
 
@@ -70,14 +72,14 @@ router.get('/:username', async (req, res) => {
       WHERE p.id IN (
         SELECT DISTINCT product_id 
         FROM product_saves 
-        WHERE reseller_id = :resellerId
+        WHERE user_id = :userId
       )
       AND p.deleted_at IS NULL
       AND p.status = 'approved'
       ORDER BY p.created_at DESC
       LIMIT 50
     `, {
-      replacements: { resellerId: reseller.id },
+      replacements: { userId: reseller.user_id },
       type: sequelize.QueryTypes.SELECT
     });
 
@@ -107,16 +109,19 @@ router.get('/:username', async (req, res) => {
 // @access  Public
 router.post('/visit/:username', async (req, res) => {
   try {
-    const { username } = req.params;
-    const { ipAddress, userAgent, referrer } = req.body;
+    const { username: storeIdentifier } = req.params;
+    const { ipAddress, referrer } = req.body;
+    const visitorIp = ipAddress || req.ip || null;
 
-    // Get reseller by username
+    // Resolve the same reseller code used by the public store URL.
     const [reseller] = await sequelize.query(`
-      SELECT id FROM resellers
-      WHERE username = :username
-      AND status = 'active'
+      SELECT r.id
+      FROM resellers r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.reseller_code = :storeIdentifier
+      AND u.is_active = TRUE
     `, {
-      replacements: { username },
+      replacements: { storeIdentifier },
       type: sequelize.QueryTypes.SELECT
     });
 
@@ -136,7 +141,7 @@ router.post('/visit/:username', async (req, res) => {
     `, {
       replacements: { 
         resellerId: reseller.id,
-        ipAddress
+        ipAddress: visitorIp
       },
       type: sequelize.QueryTypes.SELECT
     });
@@ -145,14 +150,13 @@ router.post('/visit/:username', async (req, res) => {
       // Insert new visit record
       await sequelize.query(`
         INSERT INTO store_visits 
-        (id, reseller_id, visitor_ip, user_agent, referrer, visited_at)
+        (id, reseller_id, visitor_ip, referrer, visited_at)
         VALUES 
-        (UUID(), :resellerId, :ipAddress, :userAgent, :referrer, NOW())
+        (UUID(), :resellerId, :ipAddress, :referrer, NOW())
       `, {
         replacements: {
           resellerId: reseller.id,
-          ipAddress: ipAddress || null,
-          userAgent: userAgent || null,
+          ipAddress: visitorIp,
           referrer: referrer || null
         }
       });

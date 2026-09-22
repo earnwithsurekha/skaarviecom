@@ -2,7 +2,7 @@ import { fetchBackend } from '@/lib/serverBackendUrl';
 import { getAuthToken } from '@/lib/getAuthToken';
 
 export async function GET(request) {
-    const token = getAuthToken(request);
+  const token = getAuthToken(request);
 
   if (!token) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -19,6 +19,15 @@ export async function GET(request) {
     );
 
     const data = await response.json();
+    if (response.ok && data.status === 'success' && data.data?.store) {
+      const store = data.data.store;
+      const storePath = store.store_path || `/store/${encodeURIComponent(store.reseller_code)}`;
+      data.data.store = {
+        ...store,
+        store_path: storePath,
+        store_url: new URL(storePath, new URL(request.url).origin).toString(),
+      };
+    }
     return Response.json(data, { status: response.status });
   } catch (error) {
     console.error('My store API error:', error);
@@ -27,7 +36,7 @@ export async function GET(request) {
 }
 
 export async function PUT(request) {
-    const token = getAuthToken(request);
+  const token = getAuthToken(request);
 
   if (!token) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
