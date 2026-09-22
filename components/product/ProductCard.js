@@ -47,18 +47,17 @@ export default function ProductCard({ product, source = 'product_listing', onSav
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden relative w-full">
+    <article className="relative w-full overflow-hidden rounded-lg border border-gray-200 bg-white transition-colors dark:border-gray-700 dark:bg-gray-800">
       {/* Product Image */}
       <div 
-        className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-700 cursor-pointer overflow-hidden group"
-        onClick={handleProductClick}
+        className="group relative aspect-square overflow-hidden bg-gray-100 sm:aspect-[4/3] dark:bg-gray-700"
       >
         {product.imageUrl && !imageError ? (
           <>
             <img
               src={product.imageUrl}
               alt={product.name}
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-110 ${
+              className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onLoad={() => setImageLoaded(true)}
@@ -80,15 +79,22 @@ export default function ProductCard({ product, source = 'product_listing', onSav
           </div>
         )}
 
+        <button
+          type="button"
+          onClick={handleProductClick}
+          className="absolute inset-0 z-[1] cursor-pointer"
+          aria-label={`View ${product.name}`}
+        />
+
         {/* Stock Badge */}
         {product.stock <= 10 && product.stock > 0 && (
-          <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded shadow-md">
+          <div className="pointer-events-none absolute left-2 top-2 z-[2] rounded bg-yellow-500 px-2 py-1 text-xs font-bold text-white shadow-md">
             Only {product.stock} left
           </div>
         )}
         
         {product.stock === 0 && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black bg-opacity-50">
             <span className="bg-red-600 text-white px-3 py-1.5 rounded-lg font-bold text-sm shadow-lg">
               Out of Stock
             </span>
@@ -114,26 +120,27 @@ export default function ProductCard({ product, source = 'product_listing', onSav
       </div>
 
       {/* Product Info */}
-      <div className="p-2 sm:p-3">
-        <h3 
-          className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white mb-1.5 line-clamp-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors min-h-[2.5rem] sm:min-h-[2rem]"
+      <div className="flex min-h-[9.25rem] flex-col p-3 sm:min-h-[9.5rem] sm:p-4">
+        <button
+          type="button"
+          className="mb-2 line-clamp-2 min-h-[2.5rem] cursor-pointer text-left text-sm font-semibold leading-5 text-gray-900 transition-colors hover:text-blue-600 sm:text-base dark:text-white dark:hover:text-blue-400"
           onClick={handleProductClick}
           title={product.name}
         >
           {product.name}
-        </h3>
+        </button>
 
         {/* Pricing */}
-        <div className="flex flex-wrap items-center gap-1 mb-2">
-          <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white whitespace-nowrap">
+        <div className="mb-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+          <span className="whitespace-nowrap text-lg font-bold text-gray-900 dark:text-white">
             {formatPrice(product.sellingPrice || product.price)}
           </span>
           {product.mrp && product.mrp > (product.sellingPrice || product.price) && (
             <>
-              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-through whitespace-nowrap">
+              <span className="whitespace-nowrap text-xs text-gray-500 line-through dark:text-gray-400">
                 {formatPrice(product.mrp)}
               </span>
-              <span className="text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400 whitespace-nowrap">
+              <span className="whitespace-nowrap text-xs font-semibold text-green-600 dark:text-green-400">
                 {Math.round(((product.mrp - (product.sellingPrice || product.price)) / product.mrp) * 100)}% off
               </span>
             </>
@@ -144,15 +151,15 @@ export default function ProductCard({ product, source = 'product_listing', onSav
         <button
           onClick={handleProductClick}
           disabled={product.stock === 0}
-          className={`w-full py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+          className={`mt-auto min-h-11 w-full rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
             product.stock === 0
               ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
         >
-          {product.stock === 0 ? 'Out of Stock' : 'View Details'}
+          {product.stock === 0 ? 'Out of Stock' : 'View Product'}
         </button>
       </div>
-    </div>
+    </article>
   );
 }

@@ -10,6 +10,7 @@ export default function ProductImageCarousel({
   productName,
   resetKey = '',
   imageFit = 'contain',
+  aspectClassName = 'aspect-square',
   children,
 }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -52,7 +53,7 @@ export default function ProductImageCarousel({
   return (
     <div className="space-y-3">
       <section
-        className="relative aspect-square overflow-hidden border"
+        className={`relative overflow-hidden border ${aspectClassName}`}
         style={{
           backgroundColor: 'rgb(var(--color-surface))',
           borderColor: 'rgb(var(--color-border))',

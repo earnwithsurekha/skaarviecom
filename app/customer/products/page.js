@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 import { Search, Loader2, Package, Filter, X } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 
@@ -25,6 +25,7 @@ export default function CustomerProductsPage() {
   const [sortBy, setSortBy] = useState('newest');
   const [priceRange, setPriceRange] = useState('all');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   const priceRanges = [
     { id: 'all', name: 'All Prices' },
@@ -37,12 +38,11 @@ export default function CustomerProductsPage() {
 
   useEffect(() => {
     fetchCategories();
-    fetchProducts();
   }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, deferredSearchQuery]);
 
   const fetchCategories = async () => {
     try {
@@ -67,12 +67,7 @@ export default function CustomerProductsPage() {
       const params = new URLSearchParams({
         limit: '100',
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
-        ...(searchQuery && { search: searchQuery })
-      });
-      console.log('[Customer Products] Fetching with params:', {
-        selectedCategory,
-        searchQuery,
-        paramsString: params.toString()
+        ...(deferredSearchQuery && { search: deferredSearchQuery })
       });
       const response = await fetch(`/api/public/products?${params}`);
       
@@ -83,8 +78,8 @@ export default function CustomerProductsPage() {
           const transformedProducts = (result.data.products || []).map(product => ({
             ...product,
             imageUrl: getImageUrl(product.primary_image),
-            sellingPrice: parseFloat(product.selling_price) || 0,
-            price: parseFloat(product.selling_price) || 0,
+            sellingPrice: Number.parseFloat(product.selling_price) || 0,
+            price: Number.parseFloat(product.selling_price) || 0,
             stock: product.stock_quantity || 0
           }));
           setProducts(transformedProducts);
@@ -139,7 +134,7 @@ export default function CustomerProductsPage() {
   });
 
   return (
-    <div className="h-[calc(100vh-5rem)] flex flex-col lg:flex-row">
+    <div className="min-h-[calc(100vh-5rem)] lg:flex lg:h-[calc(100vh-5rem)]">
       {/* Left Sidebar - Categories and Filters (Desktop) */}
       <aside className="hidden lg:block w-64 border-r overflow-y-auto" style={{ backgroundColor: 'rgb(var(--color-background))', borderColor: 'rgb(var(--color-border))' }}>
         <div className="p-6 space-y-6">
@@ -215,40 +210,75 @@ export default function CustomerProductsPage() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-        {/* Search Bar */}
-        <div className="mb-6">
+      <main className="min-w-0 flex-1 lg:overflow-y-auto lg:p-8">
+        <div
+          className="sticky top-16 z-20 border-b px-3 py-3 lg:static lg:mb-6 lg:border-0 lg:bg-transparent lg:p-0"
+          style={{
+            backgroundColor: 'rgb(var(--color-background))',
+            borderColor: 'rgb(var(--color-border))',
+          }}
+        >
           <div className="relative max-w-2xl">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Search products and brands"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 shadow-sm"
+              className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-4 text-sm text-gray-900 focus:border-blue-500 focus:bg-white focus:outline-none sm:h-12 sm:text-base dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400"
             />
+          </div>
+
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+            {categories.map((category) => (
+              <button
+                type="button"
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`min-h-10 flex-none rounded-full border px-4 text-sm font-medium transition-colors ${
+                  selectedCategory === category.id
+                    ? 'border-blue-600 bg-blue-600 text-white'
+                    : 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Products Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-end justify-between gap-3 px-3 pb-3 pt-4 lg:mb-6 lg:px-0 lg:pb-0 lg:pt-0">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-lg font-bold text-gray-900 sm:text-2xl dark:text-white">
               {selectedCategory === 'all' ? 'All Products' : categories.find(c => c.id === selectedCategory)?.name}
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="mt-0.5 text-xs text-gray-600 sm:mt-1 sm:text-sm dark:text-gray-400">
               {filteredProducts.length} products found
             </p>
           </div>
 
-          {/* Mobile Filter Button */}
-          <button
-            onClick={() => setShowMobileFilters(true)}
-            className="lg:hidden flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-          >
-            <Filter className="h-5 w-5" />
-            <span className="font-medium">Filters</span>
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="h-10 max-w-28 rounded-lg border border-gray-300 bg-white px-2 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+              aria-label="Sort products"
+            >
+              <option value="newest">Newest</option>
+              <option value="price_low">Price: Low</option>
+              <option value="price_high">Price: High</option>
+              <option value="popular">Popular</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => setShowMobileFilters(true)}
+              className="relative flex h-10 items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+            >
+              <Filter className="h-4 w-4" />
+              Filter
+              {priceRange !== 'all' && <span className="h-2 w-2 rounded-full bg-blue-600" />}
+            </button>
+          </div>
         </div>
 
         {/* Loading State */}
@@ -260,7 +290,7 @@ export default function CustomerProductsPage() {
 
         {/* Empty State */}
         {!loading && sortedProducts.length === 0 && (
-          <div className="text-center py-20">
+          <div className="px-4 py-20 text-center">
             <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               No products found
@@ -273,7 +303,7 @@ export default function CustomerProductsPage() {
 
         {/* Products Grid */}
         {!loading && sortedProducts.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 px-2 pb-4 sm:gap-4 sm:px-4 lg:grid-cols-2 lg:gap-6 lg:px-0 xl:grid-cols-3 2xl:grid-cols-4">
             {sortedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -293,7 +323,7 @@ export default function CustomerProductsPage() {
           />
           
           {/* Drawer */}
-          <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white dark:bg-gray-800 shadow-2xl z-50 lg:hidden overflow-y-auto">
+          <section className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-lg bg-white dark:bg-gray-800 lg:hidden">
             {/* Header */}
             <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">Filters</h2>
@@ -308,34 +338,7 @@ export default function CustomerProductsPage() {
             </div>
 
             {/* Filter Content */}
-            <div className="p-6 space-y-6">
-              {/* Categories Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Filter className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h3 className="font-bold text-gray-900 dark:text-white">Categories</h3>
-                </div>
-                <ul className="space-y-2">
-                  {categories.map((cat) => (
-                    <li key={cat.id}>
-                      <button
-                        onClick={() => {
-                          setSelectedCategory(cat.id);
-                          setShowMobileFilters(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                          selectedCategory === cat.id
-                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
+            <div className="space-y-6 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
               {/* Price Range Section */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -346,10 +349,7 @@ export default function CustomerProductsPage() {
                   {priceRanges.map((range) => (
                     <li key={range.id}>
                       <button
-                        onClick={() => {
-                          setPriceRange(range.id);
-                          setShowMobileFilters(false);
-                        }}
+                        onClick={() => setPriceRange(range.id)}
                         className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                           priceRange === range.id
                             ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold'
@@ -368,10 +368,7 @@ export default function CustomerProductsPage() {
                 <h3 className="font-bold text-gray-900 dark:text-white mb-4">Sort By</h3>
                 <select
                   value={sortBy}
-                  onChange={(e) => {
-                    setSortBy(e.target.value);
-                    setShowMobileFilters(false);
-                  }}
+                  onChange={(e) => setSortBy(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
                 >
                   <option value="newest">Newest First</option>
@@ -389,7 +386,7 @@ export default function CustomerProductsPage() {
                 Apply Filters
               </button>
             </div>
-          </div>
+          </section>
         </>
       )}
     </div>

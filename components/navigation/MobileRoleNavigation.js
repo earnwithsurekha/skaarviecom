@@ -16,7 +16,7 @@ export default function MobileRoleNavigation({
 }) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid border-t pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg lg:hidden dark:bg-gray-900/95"
       style={{
         backgroundColor: 'rgb(var(--color-background))',
         borderColor: 'rgb(var(--color-border))',
@@ -40,6 +40,9 @@ export default function MobileRoleNavigation({
             }}
             aria-current={active ? 'page' : undefined}
           >
+            {active && (
+              <span className="absolute inset-x-1/2 top-0 h-0.5 w-8 -translate-x-1/2 rounded-full bg-blue-600" />
+            )}
             <span className="relative">
               <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
               {item.badge > 0 && (

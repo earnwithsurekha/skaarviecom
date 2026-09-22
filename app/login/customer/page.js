@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { ShoppingCart, Mail, ArrowRight, Loader2, AlertCircle, ArrowLeft, UserPlus, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { setCredentials } from '@/store/slices/authSlice';
+import { persistor } from '@/store';
 
 function CustomerLoginForm() {
   const router = useRouter();
@@ -96,6 +97,7 @@ function CustomerLoginForm() {
 
       // Update Redux store
       dispatch(setCredentials({ user, token, refreshToken }));
+      await persistor.flush();
 
       toast.success('Login successful!');
       

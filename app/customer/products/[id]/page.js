@@ -211,7 +211,7 @@ export default function CustomerProductDetailPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-background))' }}>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between sm:mb-6">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -224,7 +224,7 @@ export default function CustomerProductDetailPage() {
 
       {/* Product Details */}
       <main>
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid gap-5 md:grid-cols-2 md:gap-8">
           {/* Product Images */}
           <div className="space-y-4">
             <ProductImageCarousel
@@ -232,6 +232,7 @@ export default function CustomerProductDetailPage() {
               productName={product.name}
               resetKey={`${selectedSize}|${selectedColor}`}
               imageFit="cover"
+              aspectClassName="aspect-[4/3] sm:aspect-square"
             >
               {product.stock <= 10 && product.stock > 0 && (
                 <div className="absolute top-4 left-4 text-sm font-bold px-3 py-1 rounded" style={{
@@ -325,9 +326,9 @@ export default function CustomerProductDetailPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+              <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
                 {product.name}
               </h1>
               {product.brand && (
@@ -351,9 +352,9 @@ export default function CustomerProductDetailPage() {
             </div>
 
             {/* Pricing */}
-            <div className="rounded-lg p-6" style={{ backgroundColor: 'rgb(var(--color-surface))', border: '2px solid rgb(var(--color-border))' }}>
+            <div className="min-w-0 rounded-lg p-4 sm:p-6" style={{ backgroundColor: 'rgb(var(--color-surface))', border: '2px solid rgb(var(--color-border))' }}>
               <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold" style={{ color: 'rgb(var(--color-primary))' }}>
+                <span className="break-all text-3xl font-bold sm:text-4xl" style={{ color: 'rgb(var(--color-primary))' }}>
                   {formatPrice(product.sellingPrice || product.price)}
                 </span>
               </div>
@@ -374,7 +375,7 @@ export default function CustomerProductDetailPage() {
             />
 
             {/* Quantity Selector */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between gap-4 sm:justify-start">
               <span className="font-medium" style={{ color: 'rgb(var(--color-text))' }}>Quantity:</span>
               <div className="flex items-center gap-2">
                 <button
@@ -424,6 +425,7 @@ export default function CustomerProductDetailPage() {
                 <ProductSaveButton 
                   productId={product.id}
                   source="customer_product_detail"
+                  showLabel
                 />
               </div>
               <div className="flex-1">
@@ -433,6 +435,7 @@ export default function CustomerProductDetailPage() {
                   productImage={product.imageUrl}
                   productUrl={`/customer/products/${product.id}`}
                   source="customer_product_detail"
+                  showLabel
                 />
               </div>
             </div>
@@ -457,7 +460,7 @@ export default function CustomerProductDetailPage() {
         </div>
 
         {/* Product Description & Details */}
-        <div className="mt-12 grid md:grid-cols-2 gap-8">
+        <div className="mt-8 grid gap-5 sm:mt-12 md:grid-cols-2 md:gap-8">
           {/* Description */}
           <div className="rounded-lg p-6 border" style={{ 
             backgroundColor: 'rgb(var(--color-surface))',

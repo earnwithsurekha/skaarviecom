@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useDispatch } from 'react-redux';
+import { Capacitor } from '@capacitor/core';
 import { logout as logoutAction } from '@/store/slices/authSlice';
 import toast from 'react-hot-toast';
 
@@ -19,6 +20,7 @@ export const SessionProvider = ({ children }) => {
   const [showWarning, setShowWarning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(IDLE_TIMEOUT);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const enforceIdleTimeout = !Capacitor.isNativePlatform();
   
   const idleTimerRef = useRef(null);
   const warningTimerRef = useRef(null);
@@ -51,6 +53,8 @@ export const SessionProvider = ({ children }) => {
     // Hide warning if it's showing
     setShowWarning(false);
     setRemainingTime(IDLE_TIMEOUT);
+
+    if (!enforceIdleTimeout) return;
     
     // Set warning timer (30 seconds before logout)
     warningTimerRef.current = setTimeout(() => {
@@ -61,7 +65,7 @@ export const SessionProvider = ({ children }) => {
     idleTimerRef.current = setTimeout(() => {
       handleLogout('Your session has expired due to inactivity.');
     }, IDLE_TIMEOUT);
-  }, [isAuthenticated, isPublicPage]);
+  }, [enforceIdleTimeout, isAuthenticated, isPublicPage]);
 
   // Handle logout
   const handleLogout = useCallback(async (message) => {
@@ -101,7 +105,7 @@ export const SessionProvider = ({ children }) => {
 
   // Update remaining time display
   useEffect(() => {
-    if (!isAuthenticated || isPublicPage || !showWarning) return;
+    if (!enforceIdleTimeout || !isAuthenticated || isPublicPage || !showWarning) return;
 
     checkTimerRef.current = setInterval(() => {
       const now = Date.now();
@@ -118,11 +122,11 @@ export const SessionProvider = ({ children }) => {
     return () => {
       if (checkTimerRef.current) clearInterval(checkTimerRef.current);
     };
-  }, [isAuthenticated, isPublicPage, showWarning]);
+  }, [enforceIdleTimeout, isAuthenticated, isPublicPage, showWarning]);
 
   // Track user activity
   useEffect(() => {
-    if (!isAuthenticated || isPublicPage) return;
+    if (!enforceIdleTimeout || !isAuthenticated || isPublicPage) return;
 
     // Activity events to track
     const events = [
@@ -164,11 +168,11 @@ export const SessionProvider = ({ children }) => {
       if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
       if (checkTimerRef.current) clearInterval(checkTimerRef.current);
     };
-  }, [isAuthenticated, isPublicPage, resetTimers]);
+  }, [enforceIdleTimeout, isAuthenticated, isPublicPage, resetTimers]);
 
   // Check for activity in other tabs/windows
   useEffect(() => {
-    if (!isAuthenticated || isPublicPage) return;
+    if (!enforceIdleTimeout || !isAuthenticated || isPublicPage) return;
 
     const checkOtherTabActivity = () => {
       const storedActivity = localStorage.getItem('lastActivity');
@@ -186,7 +190,7 @@ export const SessionProvider = ({ children }) => {
 
     const interval = setInterval(checkOtherTabActivity, 2000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, isPublicPage, resetTimers]);
+  }, [enforceIdleTimeout, isAuthenticated, isPublicPage, resetTimers]);
 
   const contextValue = {
     continueSession,
@@ -198,7 +202,7 @@ export const SessionProvider = ({ children }) => {
   return (
     <SessionContext.Provider value={contextValue}>
       {children}
-      {showWarning && isAuthenticated && !isPublicPage && (
+      {enforceIdleTimeout && showWarning && isAuthenticated && !isPublicPage && (
         <IdleWarningModal
           remainingTime={remainingTime}
           onContinue={continueSession}
