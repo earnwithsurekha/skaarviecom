@@ -12,7 +12,6 @@ import {
   Menu,
   X,
   ShoppingCart,
-  Bell,
   Heart,
   Truck,
   Store
@@ -22,6 +21,7 @@ import toast from 'react-hot-toast';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import NotificationBell from '@/components/NotificationBell';
 import PageLoader from '@/components/PageLoader';
+import MobileRoleNavigation from '@/components/navigation/MobileRoleNavigation';
 
 export default function CustomerLayout({ children }) {
   const router = useRouter();
@@ -197,6 +197,12 @@ export default function CustomerLayout({ children }) {
       icon: User,
     },
   ];
+  const mobileNavigation = [
+    { name: 'Home', href: '/customer', icon: LayoutDashboard, exact: true },
+    { name: 'Products', href: '/customer/products', icon: Package },
+    { name: 'Cart', href: '/customer/cart', icon: ShoppingCart, badge: totalItems },
+    { name: 'Orders', href: '/customer/orders', icon: Truck },
+  ];
 
   const isActive = (item) => {
     if (item.exact) {
@@ -204,6 +210,7 @@ export default function CustomerLayout({ children }) {
     }
     return pathname.startsWith(item.href);
   };
+  const currentPage = navigationItems.find(isActive)?.name || 'Skaarvi';
 
   if (loading || !mounted || checkingAccess) {
     return <PageLoader />;
@@ -214,12 +221,14 @@ export default function CustomerLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+    <div className="portal-shell min-h-screen" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div
+        <button
+          type="button"
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
+          aria-label="Close navigation menu"
         />
       )}
 
@@ -230,7 +239,7 @@ export default function CustomerLayout({ children }) {
           desktopSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
         } ${
           sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
-        } lg:translate-x-0`}
+        } pt-[env(safe-area-inset-top)] lg:translate-x-0 lg:pt-0`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -354,22 +363,26 @@ export default function CustomerLayout({ children }) {
       }`}>
         {/* Header */}
         <header className="sticky top-0 z-30 shadow-sm" style={{ backgroundColor: 'rgb(var(--color-background))' }}>
-          <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex min-h-16 items-center justify-between px-4 pt-[env(safe-area-inset-top)] lg:py-4 lg:pt-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-lg transition-colors lg:hidden"
               style={{ color: 'rgb(var(--color-text-secondary))' }}
+              aria-label="Open navigation menu"
             >
               <Menu className="h-6 w-6" />
             </button>
 
-            <div className="flex-1 lg:ml-0" />
+            <p className="min-w-0 flex-1 truncate px-3 text-base font-semibold lg:hidden" style={{ color: 'rgb(var(--color-text))' }}>
+              {currentPage}
+            </p>
+            <div className="hidden flex-1 lg:block" />
 
             <div className="flex items-center gap-4">
               {/* Cart Badge */}
               <Link
-                href="/cart"
-                className="relative p-2 transition-colors"
+                href="/customer/cart"
+                className="relative hidden p-2 transition-colors sm:block"
                 style={{ color: 'rgb(var(--color-text-secondary))' }}
               >
                 <ShoppingCart className="h-6 w-6" />
@@ -384,16 +397,28 @@ export default function CustomerLayout({ children }) {
               <NotificationBell />
 
               {/* Theme Switcher */}
-              <ThemeSwitcher />
+              <div className="hidden sm:block">
+                <ThemeSwitcher />
+              </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className={pathname === '/customer/products' ? '' : 'p-4 lg:p-8'}>
+        <main className={pathname === '/customer/products'
+          ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0'
+          : 'p-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:p-8'}>
           {children}
         </main>
       </div>
+
+      <MobileRoleNavigation
+        items={mobileNavigation}
+        pathname={pathname}
+        moreOpen={sidebarOpen}
+        onMoreToggle={() => setSidebarOpen((open) => !open)}
+        onNavigate={() => setSidebarOpen(false)}
+      />
     </div>
   );
 }

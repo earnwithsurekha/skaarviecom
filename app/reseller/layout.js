@@ -27,12 +27,14 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import NotificationBell from '@/components/NotificationBell';
+import MobileRoleNavigation from '@/components/navigation/MobileRoleNavigation';
 
 export default function ResellerLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useDispatch();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const sidebarRef = useRef(null);
   const { user } = useSelector(state => state.auth);
@@ -44,6 +46,18 @@ export default function ResellerLayout({ children }) {
     }, 100);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
+    const syncNavigationMode = () => {
+      setIsDesktop(desktopQuery.matches);
+      setSidebarOpen(desktopQuery.matches);
+    };
+
+    syncNavigationMode();
+    desktopQuery.addEventListener('change', syncNavigationMode);
+    return () => desktopQuery.removeEventListener('change', syncNavigationMode);
   }, []);
 
   useEffect(() => {
@@ -133,11 +147,20 @@ export default function ResellerLayout({ children }) {
     { name: 'Support', href: '/reseller/support', icon: HelpCircle },
     { name: 'Profile', href: '/reseller/profile', icon: User },
   ];
+  const mobileNavigation = [
+    { name: 'Home', href: '/reseller/dashboard', icon: LayoutDashboard },
+    { name: 'Products', href: '/reseller/products', icon: Package },
+    { name: 'Saved', href: '/reseller/saved-products', icon: BookmarkIcon },
+    { name: 'Orders', href: '/reseller/orders', icon: ShoppingCart },
+  ];
+  const currentPage = navigation.find((item) => (
+    pathname === item.href || pathname?.startsWith(`${item.href}/`)
+  ))?.name || 'Skaarvi Resell';
 
   if (!user) return null;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+    <div className="portal-shell min-h-screen" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
       {sidebarOpen && (
         <div
           className="pointer-events-none fixed inset-0 z-[45] bg-black/30 lg:bg-transparent"
@@ -148,9 +171,9 @@ export default function ResellerLayout({ children }) {
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 pt-[env(safe-area-inset-top)] shadow-xl transition-all duration-300 ease-in-out lg:pt-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } w-64 shadow-xl`}
+        }`}
         style={{ 
           backgroundColor: 'rgb(var(--color-background))',
           borderRight: '1px solid rgb(var(--color-border))'
@@ -198,6 +221,9 @@ export default function ResellerLayout({ children }) {
                       e.currentTarget.style.transform = 'translateX(0)';
                     }
                   }}
+                  onClick={() => {
+                    if (!isDesktop) setSidebarOpen(false);
+                  }}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
@@ -239,7 +265,7 @@ export default function ResellerLayout({ children }) {
       <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
         {/* Top Bar */}
         <header 
-          className="sticky top-0 z-40 h-16 flex items-center justify-between px-6 shadow-sm"
+          className="sticky top-0 z-40 flex min-h-16 items-center justify-between px-4 pt-[env(safe-area-inset-top)] shadow-sm lg:h-16 lg:px-6 lg:pt-0"
           style={{ 
             backgroundColor: 'rgb(var(--color-background))',
             borderBottom: '1px solid rgb(var(--color-border))'
@@ -247,23 +273,38 @@ export default function ResellerLayout({ children }) {
         >
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:opacity-70 transition-opacity"
+            className="flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
             style={{ color: 'rgb(var(--color-text))' }}
+            aria-label={sidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
+          <p className="min-w-0 flex-1 truncate px-3 text-base font-semibold lg:hidden" style={{ color: 'rgb(var(--color-text))' }}>
+            {currentPage}
+          </p>
+
           <div className="flex items-center gap-4">
             <NotificationBell />
-            <ThemeSwitcher />
+            <div className="hidden sm:block">
+              <ThemeSwitcher />
+            </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-24 lg:pb-6">
           {children}
         </main>
       </div>
+
+      <MobileRoleNavigation
+        items={mobileNavigation}
+        pathname={pathname}
+        moreOpen={sidebarOpen}
+        onMoreToggle={() => setSidebarOpen((open) => !open)}
+        onNavigate={() => setSidebarOpen(false)}
+      />
     </div>
   );
 }

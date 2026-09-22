@@ -457,6 +457,77 @@
     linear-gradient(90deg, rgba(129, 140, 248, 0.06) 1px, transparent 1px);
 }
 
+@media (max-width: 1023px) {
+  .portal-shell main {
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .portal-shell main :where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+    min-height: 44px;
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .portal-shell main :where(button, a)[class*='px-'][class*='py-'] {
+    min-height: 44px;
+  }
+
+  .portal-shell main .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    min-width: 0;
+    touch-action: pan-x;
+    overscroll-behavior-inline: contain;
+  }
+
+  .portal-shell main .overflow-x-auto > table:not([class*='min-w-']) {
+    min-width: max(100%, 640px);
+  }
+
+  .portal-shell main :where(.flex)[class*='gap-'][class*='overflow-x-auto'] {
+    scrollbar-width: none;
+  }
+
+  .portal-shell main :where(.flex)[class*='gap-'][class*='overflow-x-auto']::-webkit-scrollbar {
+    display: none;
+  }
+
+  .portal-shell main table th,
+  .portal-shell main table td {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .portal-shell .portal-pagination {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .portal-shell .portal-pagination > :last-child {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+
+  .portal-shell .portal-pagination > :last-child > * {
+    min-width: 0;
+    text-align: center;
+  }
+}
+
+@media (min-width: 640px) {
+  .portal-shell .portal-pagination {
+    align-items: center;
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
 .registration-step-content {
   animation: registration-step-in 240ms ease-out both;
 }

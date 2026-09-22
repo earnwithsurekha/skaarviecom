@@ -273,7 +273,7 @@ export default function CustomerProductsPage() {
 
         {/* Products Grid */}
         {!loading && sortedProducts.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {sortedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -285,9 +285,11 @@ export default function CustomerProductsPage() {
       {showMobileFilters && (
         <>
           {/* Backdrop */}
-          <div 
+          <button
+            type="button"
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={() => setShowMobileFilters(false)}
+            aria-label="Close product filters"
           />
           
           {/* Drawer */}
@@ -296,8 +298,10 @@ export default function CustomerProductsPage() {
             <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">Filters</h2>
               <button
+                type="button"
                 onClick={() => setShowMobileFilters(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                aria-label="Close product filters"
               >
                 <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>

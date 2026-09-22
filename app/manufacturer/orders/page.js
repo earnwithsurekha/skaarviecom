@@ -146,7 +146,7 @@ export default function OrdersPage() {
               {/* Pagination */}
               {pagination.totalPages > 1 && (
                 <div className="border-t px-6 py-4" style={{ borderColor: 'rgb(var(--color-border))' }}>
-                  <div className="flex items-center justify-between">
+                  <div className="portal-pagination flex items-center justify-between">
                     <p className="text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
                       Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
                       {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}

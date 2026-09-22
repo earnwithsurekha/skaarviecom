@@ -483,7 +483,7 @@ export default function AdminProductsPage() {
 
         {/* Pagination */}
         {!loading && pagination.totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="portal-pagination flex items-center justify-between border-t border-gray-200 px-6 py-4">
             <div className="text-sm text-gray-600">
               Showing {products.length} of {pagination.totalItems} products
             </div>

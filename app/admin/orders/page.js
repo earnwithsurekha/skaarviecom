@@ -547,7 +547,7 @@ export default function OrdersManagementPage() {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="portal-pagination flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Showing page {pagination.page} of {pagination.totalPages}
             </div>
@@ -685,8 +685,8 @@ export default function OrdersManagementPage() {
               {/* Order Items */}
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Order Items</h3>
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                  <table className="w-full">
+                <div className="touch-pan-x overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="w-full min-w-[760px]">
                     <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">

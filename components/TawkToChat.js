@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSelector } from 'react-redux';
 
 /**
@@ -12,6 +13,7 @@ import { useSelector } from 'react-redux';
 
 const TawkToChat = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const pathname = usePathname();
 
   useEffect(() => {
     // Load for all visitors (authenticated or not)
@@ -21,16 +23,40 @@ const TawkToChat = () => {
     // ============================================
     const PROPERTY_ID = '6a4938a4cd7c231d442e003f';
     const WIDGET_ID = '1jsn0ah9m';
+    const compactPortalPrefixes = ['/admin', '/manufacturer', '/customer', '/reseller'];
+    const isPortalScreen = compactPortalPrefixes.some((prefix) => pathname?.startsWith(prefix));
+    const isPublicPortalScreen = pathname === '/admin' || pathname === '/manufacturer/register';
+    const hideOnCompactPortalScreen = isPortalScreen
+      && !isPublicPortalScreen
+      && window.matchMedia('(max-width: 1023px)').matches;
+    const syncInjectedWidgetVisibility = () => {
+      document.querySelectorAll('iframe[title="Chat widget"]').forEach((frame) => {
+        if (hideOnCompactPortalScreen) {
+          frame.dataset.skaarviMobileHidden = 'true';
+          frame.style.setProperty('display', 'none', 'important');
+        } else if (frame.dataset.skaarviMobileHidden) {
+          frame.style.removeProperty('display');
+          delete frame.dataset.skaarviMobileHidden;
+        }
+      });
+    };
+    const widgetObserver = new MutationObserver(syncInjectedWidgetVisibility);
+    widgetObserver.observe(document.body, { childList: true, subtree: true });
+    syncInjectedWidgetVisibility();
+
+    globalThis.Tawk_API = globalThis.Tawk_API || {};
+    globalThis.Tawk_API.customStyle = { zIndex: 30 };
 
     // Check if Tawk.to is already loaded
-    if (globalThis.Tawk_API) {
+    if (typeof globalThis.Tawk_API.showWidget === 'function') {
       // Update user attributes if user is logged in
       if (isAuthenticated && user) {
         updateTawkAttributes();
       }
-      // Use optional chaining in case showWidget isn't loaded yet
-      globalThis.Tawk_API.showWidget?.();
-      return;
+      if (hideOnCompactPortalScreen) globalThis.Tawk_API.hideWidget?.();
+      else globalThis.Tawk_API.showWidget();
+      syncInjectedWidgetVisibility();
+      return () => widgetObserver.disconnect();
     }
 
     // Load Tawk.to script
@@ -40,7 +66,6 @@ const TawkToChat = () => {
     script.setAttribute('crossorigin', '*');
 
     // Initialize Tawk.to API
-    globalThis.Tawk_API = globalThis.Tawk_API || {};
     globalThis.Tawk_LoadStart = new Date();
 
     // Set user attributes when widget loads
@@ -49,16 +74,8 @@ const TawkToChat = () => {
       if (isAuthenticated && user) {
         updateTawkAttributes();
       }
-      
-      // Customize widget appearance - Set to blue
-      globalThis.Tawk_API.setAttributes({
-        backgroundColor: '#0066cc', // Blue color
-        bubbleColor: '#0066cc',
-      }, function(error) {
-        if (error) {
-          console.error('Error setting Tawk.to colors:', error);
-        }
-      });
+      if (hideOnCompactPortalScreen) globalThis.Tawk_API.hideWidget?.();
+      syncInjectedWidgetVisibility();
       
       console.log('✅ Tawk.to Chat loaded successfully');
     };
@@ -74,10 +91,11 @@ const TawkToChat = () => {
 
     // Cleanup function
     return () => {
+      widgetObserver.disconnect();
       // Hide widget when component unmounts
       globalThis.Tawk_API?.hideWidget?.();
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, pathname, user]);
 
   /**
    * Update Tawk.to user attributes with customer information
@@ -88,7 +106,10 @@ const TawkToChat = () => {
 
     try {
       // Set visitor name
-      if (user.name || user.businessName) {
+      if (
+        (user.name || user.businessName)
+        && typeof globalThis.Tawk_API.setAttributes === 'function'
+      ) {
         globalThis.Tawk_API.setAttributes({
           name: user.name || user.businessName,
           email: user.email || '',
@@ -101,40 +122,44 @@ const TawkToChat = () => {
       }
 
       // Add custom attributes for better support
-      globalThis.Tawk_API.addTags([
-        user.role || 'customer',
-        user.status || 'active',
-      ], function(error) {
-        if (error) {
-          console.error('Error adding Tawk.to tags:', error);
-        }
-      });
+      if (typeof globalThis.Tawk_API.addTags === 'function') {
+        globalThis.Tawk_API.addTags([
+          user.role || 'customer',
+          user.status || 'active',
+        ], function(error) {
+          if (error) {
+            console.error('Error adding Tawk.to tags:', error);
+          }
+        });
+      }
 
       // Set additional visitor data
       const visitorData = {
-        'User ID': user.id || 'N/A',
-        'Role': user.role || 'customer',
-        'Business Name': user.businessName || 'N/A',
-        'Phone': user.phone || 'N/A',
-        'Status': user.status || 'N/A',
+        'user-id': user.id || 'N/A',
+        'role': user.role || 'customer',
+        'business-name': user.businessName || 'N/A',
+        'phone': user.phone || 'N/A',
+        'status': user.status || 'N/A',
       };
 
       // Add reseller-specific data
       if (user.role === 'reseller' && user.resellerCode) {
-        visitorData['Reseller Code'] = user.resellerCode;
+        visitorData['reseller-code'] = user.resellerCode;
       }
 
       // Add manufacturer-specific data
       if (user.role === 'manufacturer' && user.companyName) {
-        visitorData['Company Name'] = user.companyName;
+        visitorData['company-name'] = user.companyName;
       }
 
       // Set custom attributes
-      globalThis.Tawk_API.addEvent('user-login', visitorData, function(error) {
-        if (error) {
-          console.error('Error adding Tawk.to event:', error);
-        }
-      });
+      if (typeof globalThis.Tawk_API.addEvent === 'function') {
+        globalThis.Tawk_API.addEvent('user-login', visitorData, function(error) {
+          if (error) {
+            console.error('Error adding Tawk.to event:', error);
+          }
+        });
+      }
 
     } catch (error) {
       console.error('Error updating Tawk.to attributes:', error);
@@ -144,7 +169,6 @@ const TawkToChat = () => {
   // This component doesn't render anything visible
   // The Tawk.to widget appears as a floating button
   return (
-    <>
       <style jsx global>{`
         /* Customize Tawk.to widget colors */
         #tawk-bubble {
@@ -165,7 +189,6 @@ const TawkToChat = () => {
           background: #0066cc !important;
         }
       `}</style>
-    </>
   );
 };
 
