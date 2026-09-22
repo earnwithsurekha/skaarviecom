@@ -57,7 +57,12 @@ function CustomerLoginForm() {
         if (errorData.code === 'USER_NOT_FOUND') {
           toast.error('Account not found. Please register first.');
           setTimeout(() => {
-            router.push('/register/customer');
+            const registrationParams = new URLSearchParams();
+            const redirectUrl = searchParams.get('redirect');
+            const referralCode = searchParams.get('ref') || searchParams.get('referral');
+            if (redirectUrl) registrationParams.set('redirect', redirectUrl);
+            if (referralCode) registrationParams.set('ref', referralCode);
+            router.push(`/register/customer${registrationParams.size ? `?${registrationParams.toString()}` : ''}`);
           }, 2000);
           return;
         }
@@ -235,7 +240,10 @@ function CustomerLoginForm() {
             <p className="text-sm text-gray-600">
               New customer?{' '}
               <button
-                onClick={() => router.push('/register/customer')}
+                onClick={() => {
+                  const queryString = searchParams.toString();
+                  router.push(`/register/customer${queryString ? `?${queryString}` : ''}`);
+                }}
                 className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
               >
                 Create Account

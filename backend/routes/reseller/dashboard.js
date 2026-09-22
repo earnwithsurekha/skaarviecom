@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../../models');
+const { resolveResellerId } = require('../../utils/resellerIdentity');
 
 // @route   GET /api/reseller/dashboard/stats
 // @desc    Get dashboard statistics for reseller
 // @access  Private (Reseller only)
 router.get('/stats', async (req, res) => {
   try {
-    const resellerId = req.user.id;
+    const resellerId = await resolveResellerId(req, sequelize);
+    if (!resellerId) {
+      return res.status(404).json({ status: 'error', message: 'Reseller profile not found' });
+    }
 
     // Get wallet balance
     const [walletResult] = await sequelize.query(`
@@ -78,6 +82,7 @@ router.get('/stats', async (req, res) => {
       FROM wallet_transactions
       WHERE reseller_id = :resellerId
       AND transaction_type = 'credit'
+      AND status IN ('pending', 'completed')
       AND DATE(created_at) = CURDATE()
     `, {
       replacements: { resellerId },
@@ -90,6 +95,7 @@ router.get('/stats', async (req, res) => {
       FROM wallet_transactions
       WHERE reseller_id = :resellerId
       AND transaction_type = 'credit'
+      AND status IN ('pending', 'completed')
       AND MONTH(created_at) = MONTH(CURDATE())
       AND YEAR(created_at) = YEAR(CURDATE())
     `, {
@@ -142,6 +148,7 @@ router.get('/stats', async (req, res) => {
       FROM wallet_transactions
       WHERE reseller_id = :resellerId
       AND transaction_type = 'credit'
+      AND status IN ('pending', 'completed')
       AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
       GROUP BY DATE(created_at)
       ORDER BY date ASC

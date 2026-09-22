@@ -4,6 +4,7 @@ const { authMiddleware, adminOnly } = require('../../middleware/auth');
 const { sequelize } = require('../../models');
 const { QueryTypes } = require('sequelize');
 const { sendOrderLifecycleNotifications } = require('../../services/orderLifecycleNotificationService');
+const { releaseCommission, cancelCommission } = require('../../services/commissionService');
 
 const ORDER_STATUS_EMAIL_EVENTS = {
   processing: 'processing',
@@ -277,6 +278,12 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
       type: QueryTypes.INSERT
     });
 
+    if (status === 'delivered') {
+      await releaseCommission(id, sequelize);
+    } else if (status === 'cancelled') {
+      await cancelCommission(id, sequelize);
+    }
+
     const emailEvent = ORDER_STATUS_EMAIL_EVENTS[status];
     if (emailEvent) {
       await sendOrderLifecycleNotifications({
@@ -340,6 +347,8 @@ router.put('/:id/cancel', authMiddleware, adminOnly, async (req, res) => {
       replacements: { id, reason, adminId: req.user.id },
       type: QueryTypes.INSERT
     });
+
+    await cancelCommission(id, sequelize);
 
     await sendOrderLifecycleNotifications({
       sequelize,

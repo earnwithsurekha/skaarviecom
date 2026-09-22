@@ -1,9 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1790013157361" clover="3.2.0">
-  <project timestamp="1790013157361" name="All files">
-    <metrics statements="266" coveredstatements="242" conditionals="238" coveredconditionals="172" methods="62" coveredmethods="59" elements="566" coveredelements="473" complexity="0" loc="266" ncloc="266" packages="2" files="4" classes="4"/>
+<coverage generated="1790066414222" clover="3.2.0">
+  <project timestamp="1790066414222" name="All files">
+    <metrics statements="356" coveredstatements="296" conditionals="303" coveredconditionals="205" methods="67" coveredmethods="63" elements="726" coveredelements="564" complexity="0" loc="356" ncloc="356" packages="2" files="6" classes="6"/>
     <package name="services">
-      <metrics statements="146" coveredstatements="136" conditionals="132" coveredconditionals="85" methods="31" coveredmethods="30"/>
+      <metrics statements="228" coveredstatements="182" conditionals="188" coveredconditionals="112" methods="35" coveredmethods="33"/>
+      <file name="commissionService.js" path="D:\SKAARVI\skaarvi-reseller\backend\services\commissionService.js">
+        <metrics statements="82" coveredstatements="46" conditionals="56" coveredconditionals="27" methods="4" coveredmethods="3"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="31" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="42" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="83" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="85" count="0" type="stmt"/>
+        <line num="88" count="2" type="stmt"/>
+        <line num="89" count="2" type="stmt"/>
+        <line num="102" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="104" count="1" type="stmt"/>
+        <line num="116" count="1" type="stmt"/>
+        <line num="127" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="129" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="130" count="1" type="stmt"/>
+        <line num="132" count="1" type="stmt"/>
+        <line num="146" count="1" type="stmt"/>
+        <line num="167" count="1" type="stmt"/>
+        <line num="170" count="0" type="stmt"/>
+        <line num="171" count="0" type="stmt"/>
+        <line num="182" count="1" type="stmt"/>
+        <line num="183" count="1" type="cond" truecount="2" falsecount="0"/>
+        <line num="185" count="1" type="stmt"/>
+        <line num="187" count="1" type="stmt"/>
+        <line num="201" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="202" count="0" type="stmt"/>
+        <line num="203" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="204" count="0" type="stmt"/>
+        <line num="208" count="1" type="stmt"/>
+        <line num="225" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="226" count="0" type="stmt"/>
+        <line num="227" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="228" count="0" type="stmt"/>
+        <line num="231" count="1" type="stmt"/>
+        <line num="233" count="1" type="stmt"/>
+        <line num="244" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="246" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="247" count="1" type="stmt"/>
+        <line num="250" count="1" type="stmt"/>
+        <line num="265" count="1" type="stmt"/>
+        <line num="278" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="279" count="1" type="stmt"/>
+        <line num="282" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="283" count="0" type="stmt"/>
+        <line num="284" count="0" type="stmt"/>
+        <line num="294" count="1" type="stmt"/>
+        <line num="295" count="1" type="cond" truecount="2" falsecount="0"/>
+        <line num="297" count="1" type="stmt"/>
+        <line num="299" count="1" type="stmt"/>
+        <line num="312" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="313" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="314" count="0" type="stmt"/>
+        <line num="318" count="1" type="stmt"/>
+        <line num="335" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="336" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="337" count="0" type="stmt"/>
+        <line num="340" count="1" type="stmt"/>
+        <line num="342" count="1" type="stmt"/>
+        <line num="353" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="355" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="356" count="1" type="stmt"/>
+        <line num="359" count="1" type="stmt"/>
+        <line num="374" count="1" type="stmt"/>
+        <line num="387" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="388" count="1" type="stmt"/>
+        <line num="391" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="392" count="0" type="stmt"/>
+        <line num="393" count="0" type="stmt"/>
+        <line num="397" count="1" type="stmt"/>
+      </file>
       <file name="manufacturerOrderEmailService.js" path="D:\SKAARVI\skaarvi-reseller\backend\services\manufacturerOrderEmailService.js">
         <metrics statements="33" coveredstatements="33" conditionals="25" coveredconditionals="14" methods="8" coveredmethods="8"/>
         <line num="1" count="1" type="stmt"/>
@@ -161,7 +246,7 @@
       </file>
     </package>
     <package name="utils">
-      <metrics statements="120" coveredstatements="106" conditionals="106" coveredconditionals="87" methods="31" coveredmethods="29"/>
+      <metrics statements="128" coveredstatements="114" conditionals="115" coveredconditionals="93" methods="32" coveredmethods="30"/>
       <file name="productVariants.js" path="D:\SKAARVI\skaarvi-reseller\backend\utils\productVariants.js">
         <metrics statements="120" coveredstatements="106" conditionals="106" coveredconditionals="87" methods="31" coveredmethods="29"/>
         <line num="1" count="1" type="stmt"/>
@@ -284,6 +369,17 @@
         <line num="213" count="0" type="stmt"/>
         <line num="214" count="0" type="stmt"/>
         <line num="220" count="1" type="stmt"/>
+      </file>
+      <file name="resellerIdentity.js" path="D:\SKAARVI\skaarvi-reseller\backend\utils\resellerIdentity.js">
+        <metrics statements="8" coveredstatements="8" conditionals="9" coveredconditionals="6" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="3" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="4" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="6" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="7" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="17" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="20" count="1" type="stmt"/>
       </file>
     </package>
   </project>

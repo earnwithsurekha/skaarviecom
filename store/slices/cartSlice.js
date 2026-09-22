@@ -69,6 +69,10 @@ const cartSlice = createSlice({
     addToCart: (state, action) => {
       const { productId, name, price, image, stock, quantity = 1, referralCode, selectedSize, selectedColor } = action.payload;
       const cartItemId = getCartItemId(productId, selectedSize, selectedColor);
+
+      if (referralCode) {
+        state.referralCode = referralCode;
+      }
       
       console.log('[Cart Slice] Received:', { productId, name, price, image, stock, quantity, referralCode });
       
