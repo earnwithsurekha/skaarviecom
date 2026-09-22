@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { ShoppingCart, User, Mail, Phone, Lock, MapPin, ArrowRight, Loader2, AlertCircle, Tag, Eye, EyeOff, ShieldCheck, PackageCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { setCredentials } from '@/store/slices/authSlice';
+import { persistor } from '@/store';
 import RegistrationWorkspace from '@/components/RegistrationWorkspace';
 
 const CUSTOMER_REQUIRED_FIELDS = ['name', 'email', 'phone', 'password', 'confirmPassword'];
@@ -149,6 +150,7 @@ export default function CustomerRegistrationPage() {
 
       // Update Redux store
       dispatch(setCredentials({ user, token, refreshToken }));
+      await persistor.flush();
 
       toast.success('Registration successful! Welcome to our store!');
 

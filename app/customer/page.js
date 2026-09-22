@@ -13,7 +13,6 @@ import {
   XCircle,
   Truck,
   Store,
-  Sparkles,
   ArrowRight
 } from 'lucide-react';
 import { formatPrice } from '@/lib/cartUtils';
@@ -54,9 +53,8 @@ export default function CustomerDashboard() {
         const data = await response.json();
         setUpgradeRequest(data.data);
       }
-    } catch (error) {
-      // No upgrade request found or error - that's okay
-      console.log('No upgrade request found');
+    } catch {
+      console.info('No reseller upgrade request found');
     }
   };
 
@@ -85,7 +83,7 @@ export default function CustomerDashboard() {
         ).length;
         const totalSpent = orders
           .filter(o => o.order_status !== 'cancelled')
-          .reduce((sum, o) => sum + parseFloat(o.final_amount || 0), 0);
+          .reduce((sum, o) => sum + Number.parseFloat(o.final_amount || 0), 0);
 
         setStats({
           totalOrders,
@@ -165,7 +163,7 @@ export default function CustomerDashboard() {
       title: 'Browse Products',
       description: 'Explore our latest collection',
       icon: ShoppingCart,
-      href: '/products',
+      href: '/customer/products',
       color: 'from-blue-600 to-indigo-700',
     },
     {
@@ -183,6 +181,11 @@ export default function CustomerDashboard() {
       color: 'from-pink-600 to-rose-600',
     },
   ];
+  const upgradeStatusClasses = {
+    pending: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+    approved: 'bg-gradient-to-r from-green-500 to-emerald-600',
+    rejected: 'bg-gradient-to-r from-red-500 to-rose-600',
+  };
 
   if (loading) {
     return (
@@ -193,24 +196,27 @@ export default function CustomerDashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 rounded-2xl shadow-xl p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">
+      <div className="rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 p-5 text-white sm:p-8">
+        <h1 className="mb-1 text-xl font-bold sm:mb-2 sm:text-3xl">
           Welcome back, {user?.name || user?.full_name || 'Customer'}! 👋
         </h1>
-        <p className="text-blue-100">
-          Track your orders, manage your profile, and discover amazing products.
+        <p className="text-sm text-blue-100 sm:text-base">
+          Find your next favorite product and track every order in one place.
         </p>
+        <Link
+          href="/customer/products"
+          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-blue-700"
+        >
+          Start shopping
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
 
       {/* Upgrade Request Status - Only show for customers */}
       {user?.role === 'customer' && upgradeRequest && (
-        <div className={`rounded-2xl shadow-xl p-8 ${
-          upgradeRequest.status === 'pending' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-          upgradeRequest.status === 'approved' ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-          'bg-gradient-to-r from-red-500 to-rose-600'
-        } text-white`}>
+        <div className={`rounded-2xl p-8 ${upgradeStatusClasses[upgradeRequest.status] || upgradeStatusClasses.rejected} text-white`}>
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
@@ -283,25 +289,25 @@ export default function CustomerDashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
               key={stat.title}
-              className="card hover:shadow-lg transition-shadow"
+              className="card p-4 transition-colors sm:p-6"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm mb-1" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                  <p className="mb-1 text-xs sm:text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
                     {stat.title}
                   </p>
-                  <p className="text-2xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>
+                  <p className="text-lg font-bold sm:text-2xl" style={{ color: 'rgb(var(--color-text))' }}>
                     {stat.value}
                   </p>
                 </div>
-                <div className={`${stat.iconBg} rounded-lg p-3`}>
-                  <Icon className={`h-6 w-6 ${stat.iconColor}`} />
+                <div className={`${stat.iconBg} rounded-lg p-2 sm:p-3`}>
+                  <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.iconColor}`} />
                 </div>
               </div>
             </div>
@@ -311,25 +317,25 @@ export default function CustomerDashboard() {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(var(--color-text))' }}>
+        <h2 className="mb-3 text-lg font-bold sm:mb-4 sm:text-xl" style={{ color: 'rgb(var(--color-text))' }}>
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
               <Link
                 key={action.title}
                 href={action.href}
-                className="card hover:shadow-xl transition-all group"
+                className="card group p-3 text-center transition-colors sm:p-5 sm:text-left"
               >
-                <div className={`bg-gradient-to-r ${action.color} rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform`}>
-                  <Icon className="h-6 w-6 text-white" />
+                <div className={`mx-auto mb-2 w-fit rounded-lg bg-gradient-to-r p-2.5 sm:mx-0 sm:mb-4 sm:p-3 ${action.color}`}>
+                  <Icon className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-1" style={{ color: 'rgb(var(--color-text))' }}>
+                <h3 className="text-xs font-bold leading-4 sm:mb-1 sm:text-lg" style={{ color: 'rgb(var(--color-text))' }}>
                   {action.title}
                 </h3>
-                <p className="text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                <p className="hidden text-sm sm:block" style={{ color: 'rgb(var(--color-text-secondary))' }}>
                   {action.description}
                 </p>
               </Link>
@@ -356,7 +362,7 @@ export default function CustomerDashboard() {
         </div>
 
         {recentOrders.length === 0 ? (
-          <div className="card p-12 text-center">
+          <div className="card p-8 text-center sm:p-12">
             <Package className="h-16 w-16 mx-auto mb-4" style={{ color: 'rgb(var(--color-text-secondary))' }} />
             <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
               No orders yet
@@ -365,7 +371,7 @@ export default function CustomerDashboard() {
               Start shopping and place your first order!
             </p>
             <Link
-              href="/products"
+              href="/customer/products"
               className="btn btn-primary inline-flex items-center gap-2"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -373,8 +379,41 @@ export default function CustomerDashboard() {
             </Link>
           </div>
         ) : (
-          <div className="card overflow-hidden p-0">
-            <div className="overflow-x-auto">
+          <>
+            <div className="space-y-3 md:hidden">
+              {recentOrders.map((order) => (
+                <Link
+                  key={order.id}
+                  href={`/customer/orders/${order.id}`}
+                  className="block rounded-lg border bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        {order.order_number}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(order.created_at).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })} · {order.item_count} {order.item_count === 1 ? 'item' : 'items'}
+                      </p>
+                    </div>
+                    {getOrderStatusBadge(order.order_status)}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t pt-3 dark:border-gray-700">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Order total</span>
+                    <span className="font-bold text-gray-900 dark:text-white">
+                      {formatPrice(order.final_amount)}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="card hidden overflow-hidden p-0 md:block">
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -439,8 +478,9 @@ export default function CustomerDashboard() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

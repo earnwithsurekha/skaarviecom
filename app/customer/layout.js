@@ -155,7 +155,7 @@ export default function CustomerLayout({ children }) {
 
   const navigationItems = [
     {
-      name: 'Dashboard',
+      name: 'Home',
       href: '/customer',
       icon: LayoutDashboard,
       exact: true,
@@ -378,11 +378,12 @@ export default function CustomerLayout({ children }) {
             </p>
             <div className="hidden flex-1 lg:block" />
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 sm:gap-4">
               {/* Cart Badge */}
               <Link
                 href="/customer/cart"
-                className="relative hidden p-2 transition-colors sm:block"
+                className="relative flex h-11 w-11 items-center justify-center transition-colors"
+                aria-label="Open shopping cart"
                 style={{ color: 'rgb(var(--color-text-secondary))' }}
               >
                 <ShoppingCart className="h-6 w-6" />

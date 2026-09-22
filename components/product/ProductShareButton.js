@@ -23,7 +23,8 @@ export default function ProductShareButton({
   productName,
   productImage,
   productUrl,
-  source = 'product_page'
+  source = 'product_page',
+  showLabel = false,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -158,13 +159,16 @@ export default function ProductShareButton({
           e.stopPropagation();
           setShowMenu(!showMenu);
         }}
-        className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all"
+        className={showLabel
+          ? 'flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 py-3 font-medium text-blue-600 transition-colors hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
+          : 'p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all'}
         title="Share product"
         aria-label="Share product"
         aria-haspopup="menu"
         aria-expanded={showMenu}
       >
         <Share2 className="h-4 w-4" />
+        {showLabel && <span>Share</span>}
       </button>
 
       {showMenu && typeof document !== 'undefined' && createPortal(

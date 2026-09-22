@@ -83,7 +83,7 @@ const nextConfig = {
       },
       // Customer API routes (direct to backend with auth header)
       {
-        source: '/api/customer/:path*',
+        source: '/api/customer/:path((?!wishlist(?:/|$)).*)',
         destination: `${apiUrl}/api/customer/:path*`,
       },
       // Public API routes (direct to backend)
