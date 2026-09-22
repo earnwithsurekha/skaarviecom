@@ -8,7 +8,8 @@ export default function ProductSaveButton({
   productId, 
   initialSaved = false,
   source = 'product_page',
-  onSaveChange 
+  onSaveChange,
+  showLabel = false,
 }) {
   const [isSaved, setIsSaved] = useState(initialSaved);
   const [loading, setLoading] = useState(false);
@@ -111,9 +112,12 @@ export default function ProductSaveButton({
       <button
         disabled
         onClick={(e) => e.stopPropagation()}
-        className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-700"
+        className={showLabel
+          ? 'w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700'
+          : 'p-1.5 rounded-full bg-gray-100 dark:bg-gray-700'}
       >
         <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+        {showLabel && <span>Checking Wishlist</span>}
       </button>
     );
   }
@@ -122,10 +126,12 @@ export default function ProductSaveButton({
     <button
       onClick={handleToggleSave}
       disabled={loading}
-      className={`p-1.5 rounded-full transition-all ${
+      className={`${showLabel
+        ? 'w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 border transition-colors'
+        : 'p-1.5 rounded-full transition-all'} ${
         isSaved
-          ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
-          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+          ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-800'
+          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'
       }`}
       title={isSaved ? 'Remove from wishlist' : 'Save to wishlist'}
     >
@@ -136,6 +142,7 @@ export default function ProductSaveButton({
           className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`}
         />
       )}
+      {showLabel && <span>{isSaved ? 'Saved to Wishlist' : 'Add to Wishlist'}</span>}
     </button>
   );
 }

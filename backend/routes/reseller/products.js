@@ -134,6 +134,80 @@ router.get('/', async (req, res) => {
   }
 });
 
+const getSavedProducts = async (req, res) => {
+  try {
+    const resellerId = req.user.id;
+    const { page = 1, limit = 20 } = req.query;
+    const parsedPage = Number.parseInt(page, 10);
+    const parsedLimit = Number.parseInt(limit, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const savedProducts = await sequelize.query(`
+      SELECT 
+        p.id,
+        p.name,
+        p.description,
+        p.selling_price,
+        p.reseller_margin,
+        p.stock_quantity,
+        c.name as category_name,
+        ps.created_at as saved_at,
+        (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) as primary_image
+      FROM product_saves ps
+      JOIN products p ON ps.product_id = p.id
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE ps.user_id = :resellerId
+        AND p.deleted_at IS NULL
+        AND p.status = 'approved'
+      ORDER BY ps.created_at DESC
+      LIMIT :limit OFFSET :offset
+    `, {
+      replacements: { resellerId, limit: parsedLimit, offset },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    const [countResult] = await sequelize.query(`
+      SELECT COUNT(*) as total
+      FROM product_saves ps
+      JOIN products p ON ps.product_id = p.id
+      WHERE ps.user_id = :resellerId
+        AND p.deleted_at IS NULL
+        AND p.status = 'approved'
+    `, {
+      replacements: { resellerId },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    const total = Number.parseInt(countResult?.total || 0, 10);
+    res.json({
+      status: 'success',
+      data: {
+        products: savedProducts.map((product) => ({
+          ...product,
+          reseller_profit: Number.parseFloat(product.reseller_margin) || 0
+        })),
+        pagination: {
+          page: parsedPage,
+          limit: parsedLimit,
+          total,
+          totalPages: Math.ceil(total / parsedLimit)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Saved products error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch saved products',
+      error: error.message
+    });
+  }
+};
+
+// Keep both paths for direct backend routing and Next.js proxy compatibility.
+router.get('/saved', getSavedProducts);
+router.get('/saved/list', getSavedProducts);
+
 // @route   GET /api/reseller/products/:id
 // @desc    Get product details for reseller
 // @access  Private (Reseller only)
@@ -303,77 +377,6 @@ router.delete('/:id/save', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Failed to remove saved product',
-      error: error.message
-    });
-  }
-});
-
-// @route   GET /api/reseller/products/saved/list
-// @desc    Get all saved products for reseller
-// @access  Private (Reseller only)
-router.get('/saved/list', async (req, res) => {
-  try {
-    const resellerId = req.user.id;
-    const { page = 1, limit = 20 } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-
-    const savedProducts = await sequelize.query(`
-      SELECT 
-        p.id,
-        p.name,
-        p.description,
-        p.selling_price,
-        p.reseller_margin,
-        p.stock_quantity,
-        c.name as category_name,
-        ps.created_at as saved_at,
-        (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) as primary_image
-      FROM product_saves ps
-      JOIN products p ON ps.product_id = p.id
-      LEFT JOIN categories c ON p.category_id = c.id
-      WHERE ps.user_id = :resellerId AND p.deleted_at IS NULL
-      ORDER BY ps.created_at DESC
-      LIMIT :limit OFFSET :offset
-    `, {
-      replacements: { resellerId, limit: parseInt(limit), offset },
-      type: sequelize.QueryTypes.SELECT
-    });
-
-    // Get total count
-    const [countResult] = await sequelize.query(`
-      SELECT COUNT(*) as total
-      FROM product_saves ps
-      JOIN products p ON ps.product_id = p.id
-      WHERE ps.user_id = :resellerId AND p.deleted_at IS NULL
-    `, {
-      replacements: { resellerId },
-      type: sequelize.QueryTypes.SELECT
-    });
-
-    const total = parseInt(countResult.total);
-    const totalPages = Math.ceil(total / parseInt(limit));
-
-    res.json({
-      status: 'success',
-      data: {
-        products: savedProducts.map(p => ({
-          ...p,
-          reseller_profit: parseFloat(p.reseller_margin) || 0
-        })),
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          totalPages
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Saved products error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch saved products',
       error: error.message
     });
   }

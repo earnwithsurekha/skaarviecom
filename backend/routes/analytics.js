@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
-const { ProductSave, ProductShare, ProductClick, Product } = require('../models');
+const { ProductSave, ProductShare, ProductClick, Product, ProductImage } = require('../models');
+
+// @route   GET /api/analytics/wishlist
+// @desc    Get the current user's saved products
+// @access  Private
+router.get('/wishlist', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    const savedProducts = await ProductSave.findAll({
+      where: { userId },
+      include: [{
+        model: Product,
+        as: 'product',
+        required: true,
+        where: { status: 'approved' },
+        include: [{
+          model: ProductImage,
+          as: 'images',
+          attributes: ['imageUrl', 'sortOrder', 'isPrimary'],
+        }],
+      }],
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        products: savedProducts.map((savedProduct) => ({
+          ...savedProduct.product.toJSON(),
+          savedAt: savedProduct.createdAt,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('Fetch wishlist error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch wishlist',
+    });
+  }
+});
 
 // @route   POST /api/analytics/products/:id/save
 // @desc    Save product to reseller's wishlist

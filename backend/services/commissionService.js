@@ -86,29 +86,75 @@ async function creditPendingCommission(orderId, orderNumber, resellerId, commiss
   }
 
   try {
-    // Update wallet pending balance
+    const [existingTransaction] = await sequelize.query(
+      `SELECT id
+       FROM wallet_transactions
+       WHERE order_id = ?
+         AND reseller_id = ?
+         AND transaction_type = 'credit'
+       LIMIT 1`,
+      {
+        replacements: [orderId, resellerId],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    if (existingTransaction) return;
+
+    await sequelize.query(
+      `INSERT INTO wallets
+       (id, reseller_id, current_balance, pending_balance, total_earned, total_withdrawn, created_at, updated_at)
+       VALUES (UUID(), ?, 0, 0, 0, 0, NOW(), NOW())
+       ON DUPLICATE KEY UPDATE reseller_id = VALUES(reseller_id)`,
+      {
+        replacements: [resellerId],
+        type: QueryTypes.INSERT,
+        transaction
+      }
+    );
+
+    const [wallet] = await sequelize.query(
+      `SELECT id, pending_balance
+       FROM wallets
+       WHERE reseller_id = ?
+       FOR UPDATE`,
+      {
+        replacements: [resellerId],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    if (!wallet) throw new Error('Unable to initialize reseller wallet');
+
+    const balanceBefore = Number.parseFloat(wallet.pending_balance) || 0;
+    const balanceAfter = balanceBefore + commissionAmount;
+
     await sequelize.query(
       `UPDATE wallets 
-       SET pending_balance = pending_balance + ?,
+       SET pending_balance = ?,
            total_earned = total_earned + ?,
+           last_transaction_at = NOW(),
            updated_at = NOW()
        WHERE reseller_id = ?`,
       {
-        replacements: [commissionAmount, commissionAmount, resellerId],
+        replacements: [balanceAfter, commissionAmount, resellerId],
         type: QueryTypes.UPDATE,
         transaction
       }
     );
 
-    // Create wallet transaction record
     await sequelize.query(
       `INSERT INTO wallet_transactions 
-       (reseller_id, transaction_type, amount, order_id, reference_id, status, description, created_at, updated_at)
-       VALUES (?, 'credit', ?, ?, ?, 'pending', ?, NOW(), NOW())`,
+       (wallet_id, reseller_id, transaction_type, amount, balance_before, balance_after,
+        order_id, reference_id, status, description, created_at)
+       VALUES (?, ?, 'credit', ?, ?, ?, ?, ?, 'pending', ?, NOW())`,
       {
         replacements: [
+          wallet.id,
           resellerId,
           commissionAmount,
+          balanceBefore,
+          balanceAfter,
           orderId,
           orderNumber,
           `Commission for order #${orderNumber}`
@@ -132,8 +178,9 @@ async function creditPendingCommission(orderId, orderNumber, resellerId, commiss
  * @param {string} orderId - Order ID
  * @param {object} sequelize - Sequelize instance
  */
-async function releaseCommission(orderId, sequelize) {
-  const transaction = await sequelize.transaction();
+async function releaseCommission(orderId, sequelize, existingTransaction = null) {
+  const ownsTransaction = !existingTransaction;
+  const transaction = existingTransaction || await sequelize.transaction();
 
   try {
     // Get order details
@@ -153,7 +200,7 @@ async function releaseCommission(orderId, sequelize) {
 
     if (!order || !order.reseller_id) {
       console.log('No reseller associated with this order, skipping commission release');
-      await transaction.rollback();
+      if (ownsTransaction) await transaction.rollback();
       return;
     }
 
@@ -177,21 +224,38 @@ async function releaseCommission(orderId, sequelize) {
 
     if (!walletTransaction) {
       console.log('No pending commission found for this order');
-      await transaction.rollback();
+      if (ownsTransaction) await transaction.rollback();
       return;
     }
 
-    const commissionAmount = parseFloat(walletTransaction.amount);
+    const commissionAmount = Number.parseFloat(walletTransaction.amount);
+
+    const [wallet] = await sequelize.query(
+      `SELECT current_balance, pending_balance
+       FROM wallets
+       WHERE reseller_id = ?
+       FOR UPDATE`,
+      {
+        replacements: [order.reseller_id],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    if (!wallet) throw new Error('Reseller wallet not found');
+
+    const balanceBefore = Number.parseFloat(wallet.current_balance) || 0;
+    const balanceAfter = balanceBefore + commissionAmount;
 
     // Move from pending_balance to current_balance
     await sequelize.query(
       `UPDATE wallets 
-       SET pending_balance = pending_balance - ?,
-           current_balance = current_balance + ?,
+       SET pending_balance = GREATEST(pending_balance - ?, 0),
+           current_balance = ?,
+           last_transaction_at = NOW(),
            updated_at = NOW()
        WHERE reseller_id = ?`,
       {
-        replacements: [commissionAmount, commissionAmount, order.reseller_id],
+        replacements: [commissionAmount, balanceAfter, order.reseller_id],
         type: QueryTypes.UPDATE,
         transaction
       }
@@ -201,20 +265,21 @@ async function releaseCommission(orderId, sequelize) {
     await sequelize.query(
       `UPDATE wallet_transactions 
        SET status = 'completed',
-           updated_at = NOW()
+           balance_before = ?,
+           balance_after = ?
        WHERE id = ?`,
       {
-        replacements: [walletTransaction.id],
+        replacements: [balanceBefore, balanceAfter, walletTransaction.id],
         type: QueryTypes.UPDATE,
         transaction
       }
     );
 
-    await transaction.commit();
+    if (ownsTransaction) await transaction.commit();
     console.log(`Commission of ₹${commissionAmount} released to reseller ${order.reseller_id}`);
 
   } catch (error) {
-    await transaction.rollback();
+    if (ownsTransaction) await transaction.rollback();
     console.error('Error releasing commission:', error);
     throw error;
   }
@@ -225,8 +290,9 @@ async function releaseCommission(orderId, sequelize) {
  * @param {string} orderId - Order ID
  * @param {object} sequelize - Sequelize instance
  */
-async function cancelCommission(orderId, sequelize) {
-  const transaction = await sequelize.transaction();
+async function cancelCommission(orderId, sequelize, existingTransaction = null) {
+  const ownsTransaction = !existingTransaction;
+  const transaction = existingTransaction || await sequelize.transaction();
 
   try {
     // Get order details
@@ -244,7 +310,7 @@ async function cancelCommission(orderId, sequelize) {
     );
 
     if (!order || !order.reseller_id) {
-      await transaction.rollback();
+      if (ownsTransaction) await transaction.rollback();
       return;
     }
 
@@ -267,21 +333,38 @@ async function cancelCommission(orderId, sequelize) {
     );
 
     if (!walletTransaction) {
-      await transaction.rollback();
+      if (ownsTransaction) await transaction.rollback();
       return;
     }
 
-    const commissionAmount = parseFloat(walletTransaction.amount);
+    const commissionAmount = Number.parseFloat(walletTransaction.amount);
+
+    const [wallet] = await sequelize.query(
+      `SELECT pending_balance
+       FROM wallets
+       WHERE reseller_id = ?
+       FOR UPDATE`,
+      {
+        replacements: [order.reseller_id],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    if (!wallet) throw new Error('Reseller wallet not found');
+
+    const balanceBefore = Number.parseFloat(wallet.pending_balance) || 0;
+    const balanceAfter = Math.max(balanceBefore - commissionAmount, 0);
 
     // Deduct from pending balance and total earned
     await sequelize.query(
       `UPDATE wallets 
-       SET pending_balance = pending_balance - ?,
-           total_earned = total_earned - ?,
+       SET pending_balance = ?,
+           total_earned = GREATEST(total_earned - ?, 0),
+           last_transaction_at = NOW(),
            updated_at = NOW()
        WHERE reseller_id = ?`,
       {
-        replacements: [commissionAmount, commissionAmount, order.reseller_id],
+        replacements: [balanceAfter, commissionAmount, order.reseller_id],
         type: QueryTypes.UPDATE,
         transaction
       }
@@ -290,21 +373,22 @@ async function cancelCommission(orderId, sequelize) {
     // Update wallet transaction status
     await sequelize.query(
       `UPDATE wallet_transactions 
-       SET status = 'cancelled',
-           updated_at = NOW()
+         SET status = 'reversed',
+           balance_before = ?,
+           balance_after = ?
        WHERE id = ?`,
       {
-        replacements: [walletTransaction.id],
+        replacements: [balanceBefore, balanceAfter, walletTransaction.id],
         type: QueryTypes.UPDATE,
         transaction
       }
     );
 
-    await transaction.commit();
+    if (ownsTransaction) await transaction.commit();
     console.log(`Commission of ₹${commissionAmount} cancelled for reseller ${order.reseller_id}`);
 
   } catch (error) {
-    await transaction.rollback();
+    if (ownsTransaction) await transaction.rollback();
     console.error('Error cancelling commission:', error);
     throw error;
   }

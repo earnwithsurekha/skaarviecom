@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { QueryTypes } = require('sequelize');
-const { calculateCommission, creditPendingCommission } = require('../../services/commissionService');
+const { calculateCommission, creditPendingCommission, cancelCommission } = require('../../services/commissionService');
 const { sendOrderLifecycleNotifications } = require('../../services/orderLifecycleNotificationService');
 const { resolveVariantSelection } = require('../../utils/productVariants');
 
@@ -40,107 +40,56 @@ router.post('/orders', async (req, res) => {
       });
     }
 
-    // Get user ID from token (if authenticated) or create guest user
-    let userId = null;
-    let customerId = null;
-    let isGuestOrder = true;
-
-    // Try to get user from authorization header
+    // Checkout requires an authenticated customer session.
     const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        const token = authHeader.substring(7);
-        const { verifyToken } = require('../../utils/jwt');
-        const decoded = verifyToken(token);
-        userId = decoded.id;
-        isGuestOrder = false;
-      } catch (error) {
-        console.log('[Customer Order] No valid auth token, proceeding as guest');
-      }
+    if (!authHeader?.startsWith('Bearer ')) {
+      await transaction.rollback();
+      return res.status(401).json({
+        status: 'error',
+        message: 'Please sign in as a customer to place your order',
+      });
     }
 
-    // Find or create customer record
-    if (userId) {
-      // Authenticated user - get customer ID
-      const [customer] = await sequelize.query(
-        'SELECT id FROM customers WHERE user_id = ?',
-        {
-          replacements: [userId],
-          type: QueryTypes.SELECT,
-          transaction
-        }
-      );
-      customerId = customer?.id;
-    } else {
-      // Guest user - check if email/mobile already exists
-      const [existingUser] = await sequelize.query(
-        'SELECT id FROM users WHERE email = ? OR mobile = ?',
-        {
-          replacements: [shippingAddress.email, shippingAddress.mobile],
-          type: QueryTypes.SELECT,
-          transaction
-        }
-      );
-
-      if (existingUser) {
-        // User exists, link to them
-        userId = existingUser.id;
-        
-        const [customer] = await sequelize.query(
-          'SELECT id FROM customers WHERE user_id = ?',
-          {
-            replacements: [userId],
-            type: QueryTypes.SELECT,
-            transaction
-          }
-        );
-        customerId = customer?.id;
-      } else {
-        // Create new user for guest checkout
-        const randomPassword = require('crypto').randomBytes(16).toString('hex');
-        const bcrypt = require('bcryptjs');
-        const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
-        await sequelize.query(
-          `INSERT INTO users 
-           (full_name, email, mobile, password, role, city, state, address, pincode, status, is_active, created_at, updated_at)
-           VALUES (?, ?, ?, ?, 'customer', ?, ?, ?, ?, 'approved', 1, NOW(), NOW())`,
-          {
-            replacements: [
-              shippingAddress.fullName,
-              shippingAddress.email,
-              shippingAddress.mobile,
-              hashedPassword,
-              shippingAddress.city || null,
-              shippingAddress.state || null,
-              shippingAddress.address || null,
-              shippingAddress.pincode || null
-            ],
-            type: QueryTypes.INSERT,
-            transaction
-          }
-        );
-
-        // Get created user ID
-        const [newUser] = await sequelize.query(
-          'SELECT id FROM users WHERE email = ? AND mobile = ?',
-          {
-            replacements: [shippingAddress.email, shippingAddress.mobile],
-            type: QueryTypes.SELECT,
-            transaction
-          }
-        );
-        userId = newUser.id;
-      }
+    let decoded;
+    try {
+      const { verifyToken } = require('../../utils/jwt');
+      decoded = verifyToken(authHeader.substring(7));
+    } catch {
+      await transaction.rollback();
+      return res.status(401).json({ status: 'error', message: 'Invalid or expired customer session' });
     }
+
+    const userId = decoded.id || decoded.userId;
+    const [customer] = await sequelize.query(
+      'SELECT id FROM customers WHERE user_id = ?',
+      {
+        replacements: [userId],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    if (!customer) {
+      await transaction.rollback();
+      return res.status(403).json({
+        status: 'error',
+        message: 'A customer account is required to place an order',
+      });
+    }
+    const customerId = customer.id;
 
     // Find reseller from referral code
+    const resolvedReferralCode = referralCode
+      || items.find((item) => item.referralCode)?.referralCode
+      || null;
     let resellerId = null;
-    if (referralCode) {
+    if (resolvedReferralCode) {
       const [reseller] = await sequelize.query(
-        'SELECT id FROM resellers WHERE reseller_code = ?',
+        `SELECT r.id
+         FROM resellers r
+         JOIN users u ON r.user_id = u.id
+         WHERE r.reseller_code = ? AND u.is_active = TRUE`,
         {
-          replacements: [referralCode],
+          replacements: [resolvedReferralCode],
           type: QueryTypes.SELECT,
           transaction
         }
@@ -150,47 +99,30 @@ router.post('/orders', async (req, res) => {
         resellerId = reseller.id;
         console.log('[Customer Order] Referral code valid, reseller:', resellerId);
       } else {
-        console.warn('[Customer Order] Invalid referral code:', referralCode);
+        console.warn('[Customer Order] Invalid referral code:', resolvedReferralCode);
       }
     }
 
-    // Create or update customer record with referral
-    if (!customerId) {
+    // Preserve the first valid reseller attribution on the customer profile.
+    if (resellerId) {
       await sequelize.query(
-        `INSERT INTO customers 
-         (user_id, full_name, address, city, state, pincode, referred_by_reseller, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        `UPDATE customers
+         SET referred_by_reseller = COALESCE(referred_by_reseller, ?),
+             updated_at = NOW()
+         WHERE id = ?`,
         {
-          replacements: [
-            userId,
-            shippingAddress.fullName,
-            shippingAddress.address || null,
-            shippingAddress.city || null,
-            shippingAddress.state || null,
-            shippingAddress.pincode || null,
-            resellerId || null
-          ],
-          type: QueryTypes.INSERT,
+          replacements: [resellerId, customerId],
+          type: QueryTypes.UPDATE,
           transaction
         }
       );
-
-      const [newCustomer] = await sequelize.query(
-        'SELECT id FROM customers WHERE user_id = ?',
-        {
-          replacements: [userId],
-          type: QueryTypes.SELECT,
-          transaction
-        }
-      );
-      customerId = newCustomer.id;
     }
 
     // Generate order number
     const orderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
     // Calculate commission
-    const { totalCommission, itemCommissions } = await calculateCommission(items, resellerId, sequelize);
+    const { totalCommission } = await calculateCommission(items, resellerId, sequelize);
     
     console.log('[Customer Order] Commission calculated:', { totalCommission, resellerId });
 
@@ -229,7 +161,6 @@ router.post('/orders', async (req, res) => {
     // Create order items with commission
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      const commission = itemCommissions[i]?.commission || 0;
 
       // Get full product details for order item
       const [product] = await sequelize.query(
@@ -413,7 +344,7 @@ router.post('/orders', async (req, res) => {
         orderId,
         orderNumber,
         totalAmount,
-        isGuestOrder,
+        isGuestOrder: false,
       }
     });
 
@@ -807,50 +738,7 @@ router.post('/orders/:id/cancel', async (req, res) => {
       );
     }
 
-    // Reverse commission if it was pending
-    if (order.reseller_id && !order.commission_paid) {
-      console.log('[Customer Order] Reversing pending commission for reseller:', order.reseller_id);
-      
-      // Check if there's a pending commission transaction
-      const [commissionTx] = await sequelize.query(
-        `SELECT id, amount FROM wallet_transactions 
-         WHERE order_id = ? AND transaction_type = 'credit' AND status = 'pending'`,
-        {
-          replacements: [orderId],
-          type: QueryTypes.SELECT,
-          transaction
-        }
-      );
-
-      if (commissionTx) {
-        // Mark commission transaction as cancelled
-        await sequelize.query(
-          `UPDATE wallet_transactions 
-           SET status = 'cancelled', 
-               description = CONCAT(description, ' - Order cancelled'),
-               updated_at = NOW()
-           WHERE id = ?`,
-          {
-            replacements: [commissionTx.id],
-            type: QueryTypes.UPDATE,
-            transaction
-          }
-        );
-
-        // Deduct from reseller's pending balance
-        await sequelize.query(
-          `UPDATE wallets 
-           SET pending_balance = pending_balance - ?,
-               updated_at = NOW()
-           WHERE reseller_id = ?`,
-          {
-            replacements: [commissionTx.amount, order.reseller_id],
-            type: QueryTypes.UPDATE,
-            transaction
-          }
-        );
-      }
-    }
+    await cancelCommission(orderId, sequelize, transaction);
 
     await transaction.commit();
 

@@ -8,7 +8,7 @@ import ProductSaveButton from './ProductSaveButton';
 import ProductShareButton from './ProductShareButton';
 import { trackProductClick } from '@/lib/productTracking';
 
-export default function ProductCard({ product, source = 'product_listing' }) {
+export default function ProductCard({ product, source = 'product_listing', onSaveChange }) {
   const router = useRouter();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -100,6 +100,8 @@ export default function ProductCard({ product, source = 'product_listing' }) {
           <ProductSaveButton 
             productId={product.id}
             source={source}
+            initialSaved={product.isSaved}
+            onSaveChange={(isSaved) => onSaveChange?.(product.id, isSaved)}
           />
           <ProductShareButton
             productId={product.id}

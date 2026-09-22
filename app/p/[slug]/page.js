@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { 
-  ShoppingCart, Heart, Package, Truck,
+  ShoppingCart, Package, Truck,
   Check, AlertCircle
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ProductImageCarousel from '@/components/product/ProductImageCarousel';
+import ProductSaveButton from '@/components/product/ProductSaveButton';
 import ProductVariantSelector from '@/components/product/ProductVariantSelector';
 import { addToCart } from '@/store/slices/cartSlice';
 import { getVariantGalleryImages, normalizeProductImages } from '@/lib/productVariantMedia';
@@ -131,7 +132,6 @@ export default function PublicProductPage() {
     }));
 
     setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 3000);
   };
 
   if (loading) {
@@ -309,8 +309,11 @@ export default function PublicProductPage() {
               {/* Action Buttons */}
               <div className="space-y-3">
                 <button
-                  onClick={handleAddToCart}
-                  disabled={product.stock_status === 'out_of_stock' || (variants.length > 0 && !selectedVariant) || addedToCart}
+                  onClick={() => {
+                    if (addedToCart) router.push('/cart');
+                    else handleAddToCart();
+                  }}
+                  disabled={product.stock_status === 'out_of_stock' || (variants.length > 0 && !selectedVariant)}
                   className="w-full py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   style={{ 
                     backgroundColor: addedToCart ? 'rgb(34, 197, 94)' : 'rgb(var(--color-primary))',
@@ -320,7 +323,7 @@ export default function PublicProductPage() {
                   {addedToCart ? (
                     <>
                       <Check className="w-5 h-5" />
-                      Added to Cart
+                      Go to Cart
                     </>
                   ) : (
                     <>
@@ -330,17 +333,11 @@ export default function PublicProductPage() {
                   )}
                 </button>
 
-                <button
-                  className="w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
-                  style={{ 
-                    backgroundColor: 'rgb(var(--color-surface))',
-                    border: '1px solid rgb(var(--color-border))',
-                    color: 'rgb(var(--color-text))'
-                  }}
-                >
-                  <Heart className="w-5 h-5" />
-                  Add to Wishlist
-                </button>
+                <ProductSaveButton
+                  productId={product.id}
+                  source="referral_product_detail"
+                  showLabel
+                />
               </div>
 
               {/* Delivery Info */}

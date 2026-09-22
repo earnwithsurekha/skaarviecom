@@ -6,6 +6,7 @@ const { ORDER_STATUS } = require('../config/constants');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const { sendOrderLifecycleNotifications } = require('../services/orderLifecycleNotificationService');
+const { releaseCommission, cancelCommission } = require('../services/commissionService');
 
 const ORDER_STATUS_EMAIL_EVENTS = {
   accepted: 'processing',
@@ -197,6 +198,12 @@ router.patch('/:id/status', authMiddleware, manufacturerOnly, async (req, res) =
       changedBy: userId,
       notes: notes || null
     });
+
+    if (status === ORDER_STATUS.DELIVERED) {
+      await releaseCommission(order.id, sequelize);
+    } else if (status === ORDER_STATUS.CANCELLED) {
+      await cancelCommission(order.id, sequelize);
+    }
 
     const emailEvent = ORDER_STATUS_EMAIL_EVENTS[status];
     if (emailEvent) {
@@ -405,6 +412,8 @@ router.post('/:id/deliver', authMiddleware, manufacturerOnly, async (req, res) =
       changedBy: userId,
       notes: notes || 'Order delivered successfully'
     });
+
+    await releaseCommission(order.id, sequelize);
 
     await sendOrderLifecycleNotifications({
       sequelize,

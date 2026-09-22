@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../../models');
+const { resolveResellerId } = require('../../utils/resellerIdentity');
 
 // @route   GET /api/reseller/earnings/summary
 // @desc    Get earnings summary by period
 // @access  Private (Reseller only)
 router.get('/summary', async (req, res) => {
   try {
-    const resellerId = req.user.id;
+    const resellerId = await resolveResellerId(req, sequelize);
+    if (!resellerId) {
+      return res.status(404).json({ status: 'error', message: 'Reseller profile not found' });
+    }
     const { period = 'month' } = req.query;
 
     let dateFilter = '';
@@ -31,10 +35,11 @@ router.get('/summary', async (req, res) => {
     const [summary] = await sequelize.query(`
       SELECT 
         COALESCE(SUM(CASE WHEN ${dateFilter} THEN wt.amount ELSE 0 END), 0) as period_earnings,
-        COALESCE((SELECT SUM(amount) FROM wallet_transactions WHERE reseller_id = :resellerId AND transaction_type = 'credit'), 0) as lifetime_earnings
+        COALESCE((SELECT SUM(amount) FROM wallet_transactions WHERE reseller_id = :resellerId AND transaction_type = 'credit' AND status IN ('pending', 'completed')), 0) as lifetime_earnings
       FROM wallet_transactions wt
       WHERE wt.reseller_id = :resellerId
       AND wt.transaction_type = 'credit'
+      AND wt.status IN ('pending', 'completed')
     `, {
       replacements: { resellerId },
       type: sequelize.QueryTypes.SELECT
@@ -64,7 +69,10 @@ router.get('/summary', async (req, res) => {
 // @access  Private (Reseller only)
 router.get('/by-product', async (req, res) => {
   try {
-    const resellerId = req.user.id;
+    const resellerId = await resolveResellerId(req, sequelize);
+    if (!resellerId) {
+      return res.status(404).json({ status: 'error', message: 'Reseller profile not found' });
+    }
     const { limit = 10 } = req.query;
 
     const productEarnings = await sequelize.query(`
@@ -110,23 +118,28 @@ router.get('/by-product', async (req, res) => {
 // @access  Private (Reseller only)
 router.get('/transactions', async (req, res) => {
   try {
-    const resellerId = req.user.id;
+    const resellerId = await resolveResellerId(req, sequelize);
+    if (!resellerId) {
+      return res.status(404).json({ status: 'error', message: 'Reseller profile not found' });
+    }
     const { page = 1, limit = 20 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     const transactions = await sequelize.query(`
       SELECT 
-        cl.id,
-        cl.amount,
-        cl.status,
-        cl.created_at,
-        cl.cleared_at,
+        wt.id,
+        wt.amount,
+        wt.status,
+        wt.created_at,
+        wt.balance_before,
+        wt.balance_after,
         o.order_number,
         o.total_amount as order_value
-      FROM commission_logs cl
-      JOIN orders o ON cl.order_id = o.id
-      WHERE cl.reseller_id = :resellerId
-      ORDER BY cl.created_at DESC
+      FROM wallet_transactions wt
+      LEFT JOIN orders o ON wt.order_id = o.id
+      WHERE wt.reseller_id = :resellerId
+        AND wt.transaction_type = 'credit'
+      ORDER BY wt.created_at DESC
       LIMIT :limit OFFSET :offset
     `, {
       replacements: { resellerId, limit: parseInt(limit), offset },
@@ -136,8 +149,9 @@ router.get('/transactions', async (req, res) => {
     // Get total count
     const [countResult] = await sequelize.query(`
       SELECT COUNT(*) as total
-      FROM commission_logs
+      FROM wallet_transactions
       WHERE reseller_id = :resellerId
+        AND transaction_type = 'credit'
     `, {
       replacements: { resellerId },
       type: sequelize.QueryTypes.SELECT

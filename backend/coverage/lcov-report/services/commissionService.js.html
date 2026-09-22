@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for services/orderEmailService.js</title>
+    <title>Code coverage report for services/commissionService.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">services</a> orderEmailService.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">services</a> commissionService.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.65% </span>
+                <span class="strong">52.12% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>71/81</span>
+                <span class='fraction'>49/94</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.75% </span>
+                <span class="strong">48.21% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>55/80</span>
+                <span class='fraction'>27/56</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>14/14</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">56.09% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>66/72</span>
+                <span class='fraction'>46/82</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -410,701 +410,866 @@
 <a name='L345'></a><a href='#L345'>345</a>
 <a name='L346'></a><a href='#L346'>346</a>
 <a name='L347'></a><a href='#L347'>347</a>
-<a name='L348'></a><a href='#L348'>348</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<a name='L348'></a><a href='#L348'>348</a>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a>
+<a name='L362'></a><a href='#L362'>362</a>
+<a name='L363'></a><a href='#L363'>363</a>
+<a name='L364'></a><a href='#L364'>364</a>
+<a name='L365'></a><a href='#L365'>365</a>
+<a name='L366'></a><a href='#L366'>366</a>
+<a name='L367'></a><a href='#L367'>367</a>
+<a name='L368'></a><a href='#L368'>368</a>
+<a name='L369'></a><a href='#L369'>369</a>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a>
+<a name='L372'></a><a href='#L372'>372</a>
+<a name='L373'></a><a href='#L373'>373</a>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a>
+<a name='L377'></a><a href='#L377'>377</a>
+<a name='L378'></a><a href='#L378'>378</a>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a>
+<a name='L389'></a><a href='#L389'>389</a>
+<a name='L390'></a><a href='#L390'>390</a>
+<a name='L391'></a><a href='#L391'>391</a>
+<a name='L392'></a><a href='#L392'>392</a>
+<a name='L393'></a><a href='#L393'>393</a>
+<a name='L394'></a><a href='#L394'>394</a>
+<a name='L395'></a><a href='#L395'>395</a>
+<a name='L396'></a><a href='#L396'>396</a>
+<a name='L397'></a><a href='#L397'>397</a>
+<a name='L398'></a><a href='#L398'>398</a>
+<a name='L399'></a><a href='#L399'>399</a>
+<a name='L400'></a><a href='#L400'>400</a>
+<a name='L401'></a><a href='#L401'>401</a>
+<a name='L402'></a><a href='#L402'>402</a>
+<a name='L403'></a><a href='#L403'>403</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">186x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-yes">20x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">20x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { QueryTypes } = require('sequelize');
-const { getSenderEmail, sendEmail } = require('../utils/email');
 &nbsp;
-const DEFAULT_APP_URL = process.env.NODE_ENV === 'production'
-  ? <span class="branch-0 cbranch-no" title="branch not covered" >'https://skaarvi.shop'</span>
-  : 'http://localhost:3000';
-const APP_URL = (
-  process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_APP_URL || DEFAULT_APP_URL
-).replace(/\/$/, '');
-const SUPPORT_EMAIL = getSenderEmail();
+/**
+ * Calculate commission for order items
+ * @param {Array} orderItems - Array of {productId, quantity, price}
+ * @param {string} resellerId - Reseller ID for commission attribution
+ * @param {object} sequelize - Sequelize instance
+ * @returns {Promise&lt;{totalCommission: number, itemCommissions: Array}&gt;}
+ */
+async function <span class="fstat-no" title="function not covered" >calculateCommission(</span>orderItems, resellerId, sequelize) {
+  const itemCommissions = <span class="cstat-no" title="statement not covered" >[];</span>
+  let totalCommission = <span class="cstat-no" title="statement not covered" >0;</span>
 &nbsp;
-const escapeHtml = (value) =&gt; String(value ?? <span class="branch-1 cbranch-no" title="branch not covered" >'')</span>
-  .replaceAll('&amp;', '&amp;amp;')
-  .replaceAll('&lt;', '&amp;lt;')
-  .replaceAll('&gt;', '&amp;gt;')
-  .replaceAll('"', '&amp;quot;')
-  .replaceAll("'", '&amp;#039;');
+<span class="cstat-no" title="statement not covered" >  for (const item of orderItems) {</span>
+<span class="cstat-no" title="statement not covered" >    try {</span>
+      // Get product details including reseller margin
+      const [product] = <span class="cstat-no" title="statement not covered" >await sequelize.query(</span>
+        `SELECT 
+          id,
+          name,
+          reseller_margin,
+          selling_price
+         FROM products
+         WHERE id = ? AND status = 'approved' AND deleted_at IS NULL`,
+        {
+          replacements: [item.productId],
+          type: QueryTypes.SELECT
+        }
+      );
 &nbsp;
-const parseJson = (value) =&gt; {
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (!value) <span class="cstat-no" title="statement not covered" >return {};</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (Buffer.isBuffer(value)) <span class="cstat-no" title="statement not covered" >return parseJson(value.toString('utf8'));</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof value === 'object') <span class="cstat-no" title="statement not covered" >return value;</span>
+<span class="cstat-no" title="statement not covered" >      if (!product) {</span>
+<span class="cstat-no" title="statement not covered" >        console.warn(`Product ${item.productId} not found or inactive`);</span>
+<span class="cstat-no" title="statement not covered" >        itemCommissions.push({</span>
+          productId: item.productId,
+          quantity: item.quantity,
+          commission: 0,
+        });
+<span class="cstat-no" title="statement not covered" >        continue;</span>
+      }
+&nbsp;
+      // Calculate commission based on reseller_margin
+      const commissionPerUnit = <span class="cstat-no" title="statement not covered" >parseFloat(product.reseller_margin) || 0;</span>
+      const itemCommission = <span class="cstat-no" title="statement not covered" >commissionPerUnit * item.quantity;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      itemCommissions.push({</span>
+        productId: item.productId,
+        productName: product.name,
+        quantity: item.quantity,
+        price: item.price,
+        commissionPerUnit,
+        totalCommission: itemCommission,
+      });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      totalCommission += itemCommission;</span>
+&nbsp;
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >      console.error(`Error calculating commission for product ${item.productId}:`, error);</span>
+<span class="cstat-no" title="statement not covered" >      itemCommissions.push({</span>
+        productId: item.productId,
+        quantity: item.quantity,
+        commission: 0,
+        error: error.message,
+      });
+    }
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return {</span>
+    totalCommission,
+    itemCommissions,
+  };
+}
+&nbsp;
+/**
+ * Credit pending commission to reseller wallet
+ * @param {string} orderId - Order ID
+ * @param {string} orderNumber - Order number for reference
+ * @param {string} resellerId - Reseller ID
+ * @param {number} commissionAmount - Total commission amount
+ * @param {object} sequelize - Sequelize instance
+ * @param {object} transaction - Database transaction
+ */
+async function creditPendingCommission(orderId, orderNumber, resellerId, commissionAmount, sequelize, transaction) {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!resellerId || commissionAmount &lt;= 0) {
+<span class="cstat-no" title="statement not covered" >    console.log('Skipping commission credit: No reseller or zero amount');</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
 &nbsp;
   try {
-    return JSON.parse(value);
+    const [existingTransaction] = await sequelize.query(
+      `SELECT id
+       FROM wallet_transactions
+       WHERE order_id = ?
+         AND reseller_id = ?
+         AND transaction_type = 'credit'
+       LIMIT 1`,
+      {
+        replacements: [orderId, resellerId],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    if (existingTransaction) return;
+&nbsp;
+    await sequelize.query(
+      `INSERT INTO wallets
+       (id, reseller_id, current_balance, pending_balance, total_earned, total_withdrawn, created_at, updated_at)
+       VALUES (UUID(), ?, 0, 0, 0, 0, NOW(), NOW())
+       ON DUPLICATE KEY UPDATE reseller_id = VALUES(reseller_id)`,
+      {
+        replacements: [resellerId],
+        type: QueryTypes.INSERT,
+        transaction
+      }
+    );
+&nbsp;
+    const [wallet] = await sequelize.query(
+      `SELECT id, pending_balance
+       FROM wallets
+       WHERE reseller_id = ?
+       FOR UPDATE`,
+      {
+        replacements: [resellerId],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!wallet) <span class="cstat-no" title="statement not covered" >throw new Error('Unable to initialize reseller wallet');</span>
+&nbsp;
+    const balanceBefore = Number.parseFloat(wallet.pending_balance) || <span class="branch-1 cbranch-no" title="branch not covered" >0;</span>
+    const balanceAfter = balanceBefore + commissionAmount;
+&nbsp;
+    await sequelize.query(
+      `UPDATE wallets 
+       SET pending_balance = ?,
+           total_earned = total_earned + ?,
+           last_transaction_at = NOW(),
+           updated_at = NOW()
+       WHERE reseller_id = ?`,
+      {
+        replacements: [balanceAfter, commissionAmount, resellerId],
+        type: QueryTypes.UPDATE,
+        transaction
+      }
+    );
+&nbsp;
+    await sequelize.query(
+      `INSERT INTO wallet_transactions 
+       (wallet_id, reseller_id, transaction_type, amount, balance_before, balance_after,
+        order_id, reference_id, status, description, created_at)
+       VALUES (?, ?, 'credit', ?, ?, ?, ?, ?, 'pending', ?, NOW())`,
+      {
+        replacements: [
+          wallet.id,
+          resellerId,
+          commissionAmount,
+          balanceBefore,
+          balanceAfter,
+          orderId,
+          orderNumber,
+          `Commission for order #${orderNumber}`
+        ],
+        type: QueryTypes.INSERT,
+        transaction
+      }
+    );
+&nbsp;
+    console.log(`Pending commission of ₹${commissionAmount} credited to reseller ${resellerId}`);
+&nbsp;
   } catch (error) {
-<span class="cstat-no" title="statement not covered" >    console.warn('[Order Email] Could not parse shipping address:', error.message);</span>
-<span class="cstat-no" title="statement not covered" >    return {};</span>
+<span class="cstat-no" title="statement not covered" >    console.error('Error crediting pending commission:', error);</span>
+<span class="cstat-no" title="statement not covered" >    throw error;</span>
   }
-};
+}
 &nbsp;
-const formatAmount = (value) =&gt; Number(value || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>.toLocaleString('en-IN', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+/**
+ * Release commission from pending to available balance
+ * Called when order status changes to 'delivered'
+ * @param {string} orderId - Order ID
+ * @param {object} sequelize - Sequelize instance
+ */
+async function releaseCommission(orderId, sequelize, existingTransaction = null) {
+  const ownsTransaction = !existingTransaction;
+  const transaction = existingTransaction || await sequelize.transaction();
 &nbsp;
-const formatDate = (value) =&gt; {
-  const date = value ? new Date(value) : <span class="branch-1 cbranch-no" title="branch not covered" >new Date();</span>
-  return date.toLocaleString('en-IN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Kolkata',
-  });
-};
-&nbsp;
-const formatPaymentMethod = (value) =&gt; {
-  const labels = {
-    cod: 'Cash on Delivery',
-    razorpay: 'Online payment',
-    upi: 'UPI',
-    wallet: 'Wallet',
-  };
-  return labels[value] || <span class="branch-1 cbranch-no" title="branch not covered" >value </span>|| <span class="branch-2 cbranch-no" title="branch not covered" >'Not specified';</span>
-};
-&nbsp;
-const getEventContent = (event, context, details) =&gt; {
-  const { order, customerName } = context;
-  const orderNumber = order.order_number;
-  const trackingNumber = details.trackingNumber || order.tracking_number;
-  const courierPartner = details.courierPartner || order.courier_partner;
-  const cancellationReason = details.reason || order.cancelled_reason;
-  const returnNotes = details.notes || details.reason;
-  const cancellationDetail = cancellationReason ? ` Reason: ${cancellationReason}` : '';
-  const returnRequestDetail = returnNotes ? ` Details: ${returnNotes}` : '';
-  const returnApprovalDetail = returnNotes ? ` Note: ${returnNotes}` : '';
-  const returnRejectionDetail = returnNotes ? ` Reason: ${returnNotes}` : '';
-&nbsp;
-  const events = {
-    placed: {
-      subject: `Order confirmed - ${orderNumber}`,
-      label: 'ORDER CONFIRMED',
-      title: `Thank you for your order, ${customerName}`,
-      message: `We have received order ${orderNumber} and will let you know as it moves through fulfillment.`,
-      note: 'Please keep this email for your records. You will receive another update when your order ships.',
-      accent: '#166534',
-    },
-    processing: {
-      subject: `Your order ${orderNumber} is being prepared`,
-      label: 'ORDER UPDATE',
-      title: 'Your order is now being processed',
-      message: `Our fulfillment team has started preparing order ${orderNumber}.`,
-      note: 'We will email the courier and tracking details as soon as the order is dispatched.',
-      accent: '#1d4ed8',
-    },
-    shipped: {
-      subject: `Your order ${orderNumber} has shipped`,
-      label: 'ORDER SHIPPED',
-      title: 'Your package is on the way',
-      message: courierPartner
-        ? `Order ${orderNumber} has been handed to ${courierPartner}.`
-        : `Order ${orderNumber} has been handed to the delivery partner.`,
-      note: trackingNumber
-        ? `Tracking number: ${trackingNumber}`
-        : 'Tracking details will appear in My Orders when they are available.',
-      accent: '#0369a1',
-    },
-    delivered: {
-      subject: `Your order ${orderNumber} was delivered`,
-      label: 'DELIVERED',
-      title: 'Your order has been delivered',
-      message: `Order ${orderNumber} has been marked as delivered. We hope everything arrived in good condition.`,
-      note: 'If anything is not right, you can request a return from My Orders within 7 days of delivery.',
-      accent: '#15803d',
-    },
-    cancelled: {
-      subject: `Order ${orderNumber} has been cancelled`,
-      label: 'ORDER CANCELLED',
-      title: 'Your order has been cancelled',
-      message: `Order ${orderNumber} will not be fulfilled.${cancellationDetail}`,
-      note: order.payment_status === 'paid'
-        ? <span class="branch-0 cbranch-no" title="branch not covered" >'If payment was captured, any applicable refund will be returned according to the original payment method.'</span>
-        : 'No payment action is required for this order.',
-      accent: '#b91c1c',
-    },
-    return_requested: {
-      subject: `Return request received - ${orderNumber}`,
-      label: 'RETURN REQUESTED',
-      title: 'We received your return request',
-      message: `Your return request for order ${orderNumber} is now under review.${returnRequestDetail}`,
-      note: 'Our team will review your request within 2-3 business days and email you when a decision is made.',
-      accent: '#a16207',
-    },
-    return_approved: {
-      subject: `Return approved - ${orderNumber}`,
-      label: 'RETURN APPROVED',
-      title: 'Your return request was approved',
-      message: `The return request for order ${orderNumber} has been approved.${returnApprovalDetail}`,
-      note: 'Your refund is now pending and is normally processed within 5-7 business days.',
-      accent: '#15803d',
-    },
-    return_rejected: {
-      subject: `Return request update - ${orderNumber}`,
-      label: 'RETURN UPDATE',
-      title: 'Your return request was not approved',
-      message: `The return request for order ${orderNumber} could not be approved.${returnRejectionDetail}`,
-      note: `If you need clarification, contact ${SUPPORT_EMAIL} and include your order number.`,
-      accent: '#b91c1c',
-    },
-  };
-&nbsp;
-  return events[event];
-};
-&nbsp;
-const loadOrderEmailContext = async (sequelize, orderId) =&gt; {
-  const [order] = await sequelize.query(
-    `SELECT
-      o.id, o.order_number, o.total_amount, o.final_amount, o.shipping_address,
-      o.payment_method, o.payment_status, o.order_status, o.tracking_number,
-      o.courier_partner, o.cancelled_reason, o.refund_amount, o.refund_status,
-      o.ordered_at, o.shipped_at, o.delivered_at,
-      u.email AS customer_email, u.full_name AS customer_name
-     FROM orders o
-     LEFT JOIN customers c ON c.id = o.customer_id
-     LEFT JOIN users u ON u.id = c.user_id
-     WHERE o.id = ?`,
-    {
-      replacements: [orderId],
-      type: QueryTypes.SELECT,
-    }
-  );
-&nbsp;
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (!order) <span class="cstat-no" title="statement not covered" >return null;</span>
-&nbsp;
-  const items = await sequelize.query(
-    `SELECT product_name, product_sku, quantity, selected_size, selected_color, selling_price, item_total
-     FROM order_items
-     WHERE order_id = ?
-     ORDER BY created_at ASC`,
-    {
-      replacements: [orderId],
-      type: QueryTypes.SELECT,
-    }
-  );
-&nbsp;
-  const shippingAddress = parseJson(order.shipping_address);
-&nbsp;
-  return {
-    order,
-    items,
-    shippingAddress,
-    customerEmail: String(shippingAddress.email || order.customer_email || '').trim(),
-    customerName: String(
-      shippingAddress.fullName || <span class="branch-1 cbranch-no" title="branch not covered" >shippingAddress.full_name </span>|| <span class="branch-2 cbranch-no" title="branch not covered" >order.customer_name </span>|| <span class="branch-3 cbranch-no" title="branch not covered" >'Customer'</span>
-    ).trim(),
-  };
-};
-&nbsp;
-const renderItemsHtml = (items) =&gt; items.map((item) =&gt; `
-  &lt;tr&gt;
-    &lt;td style="padding:12px 0;border-bottom:1px solid #e5e7eb;"&gt;
-      &lt;div style="font-weight:600;color:#111827;"&gt;${escapeHtml(item.product_name)}&lt;/div&gt;
-      ${item.product_sku ? `&lt;div style="font-size:12px;color:#6b7280;margin-top:3px;"&gt;SKU: ${escapeHtml(item.product_sku)}&lt;/div&gt;` : <span class="branch-1 cbranch-no" title="branch not covered" >''}</span>
-      ${(item.selected_color || item.selected_size) ? <span class="branch-0 cbranch-no" title="branch not covered" >`&lt;div style="font-size:12px;color:#6b7280;margin-top:3px;"&gt;${escapeHtml([item.selected_color, item.selected_size].filter(Boolean).join(' / '))}&lt;/div&gt;` </span>: ''}
-    &lt;/td&gt;
-    &lt;td style="padding:12px 8px;border-bottom:1px solid #e5e7eb;text-align:center;color:#4b5563;"&gt;${escapeHtml(item.quantity)}&lt;/td&gt;
-    &lt;td style="padding:12px 0;border-bottom:1px solid #e5e7eb;text-align:right;color:#111827;"&gt;&amp;#8377;${formatAmount(item.item_total)}&lt;/td&gt;
-  &lt;/tr&gt;
-`).join('');
-&nbsp;
-const renderAddress = (address) =&gt; [
-  address.fullName || <span class="branch-1 cbranch-no" title="branch not covered" >address.full_name,</span>
-  address.address,
-  address.city,
-  address.state,
-  address.pincode,
-].filter(Boolean).map(escapeHtml).join(', ');
-&nbsp;
-const buildHtml = (context, content) =&gt; {
-  const { order, items, shippingAddress } = context;
-  const orderUrl = `${APP_URL}/customer/orders/${encodeURIComponent(order.id)}`;
-  const address = renderAddress(shippingAddress);
-&nbsp;
-  return `&lt;!doctype html&gt;
-&lt;html lang="en"&gt;
-&lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;&lt;/head&gt;
-&lt;body style="margin:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;"&gt;
-  &lt;div style="display:none;max-height:0;overflow:hidden;color:transparent;"&gt;${escapeHtml(content.message)}&lt;/div&gt;
-  &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6;padding:24px 12px;"&gt;
-    &lt;tr&gt;&lt;td align="center"&gt;
-      &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;"&gt;
-        &lt;tr&gt;&lt;td style="background:#111827;padding:24px 32px;color:#ffffff;"&gt;
-          &lt;div style="font-size:24px;font-weight:700;"&gt;SKAARVI&lt;/div&gt;
-          &lt;div style="font-size:12px;color:#d1d5db;margin-top:4px;"&gt;B2B Reseller Marketplace&lt;/div&gt;
-        &lt;/td&gt;&lt;/tr&gt;
-        &lt;tr&gt;&lt;td style="padding:32px;"&gt;
-          &lt;div style="font-size:12px;font-weight:700;letter-spacing:1px;color:${content.accent};"&gt;${escapeHtml(content.label)}&lt;/div&gt;
-          &lt;h1 style="font-size:26px;line-height:1.25;margin:10px 0 12px;color:#111827;"&gt;${escapeHtml(content.title)}&lt;/h1&gt;
-          &lt;p style="font-size:16px;line-height:1.6;color:#4b5563;margin:0 0 20px;"&gt;${escapeHtml(content.message)}&lt;/p&gt;
-          &lt;div style="background:#f9fafb;border-left:4px solid ${content.accent};padding:14px 16px;color:#374151;line-height:1.5;margin-bottom:24px;"&gt;${escapeHtml(content.note)}&lt;/div&gt;
-&nbsp;
-          &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:24px;border-collapse:collapse;"&gt;
-            &lt;tr&gt;
-              &lt;td style="padding:10px 0;color:#6b7280;"&gt;Order number&lt;/td&gt;
-              &lt;td style="padding:10px 0;text-align:right;font-weight:700;"&gt;${escapeHtml(order.order_number)}&lt;/td&gt;
-            &lt;/tr&gt;
-            &lt;tr&gt;
-              &lt;td style="padding:10px 0;color:#6b7280;"&gt;Order date&lt;/td&gt;
-              &lt;td style="padding:10px 0;text-align:right;"&gt;${escapeHtml(formatDate(order.ordered_at))}&lt;/td&gt;
-            &lt;/tr&gt;
-            &lt;tr&gt;
-              &lt;td style="padding:10px 0;color:#6b7280;"&gt;Payment method&lt;/td&gt;
-              &lt;td style="padding:10px 0;text-align:right;"&gt;${escapeHtml(formatPaymentMethod(order.payment_method))}&lt;/td&gt;
-            &lt;/tr&gt;
-          &lt;/table&gt;
-&nbsp;
-          &lt;h2 style="font-size:18px;margin:0 0 8px;"&gt;Order summary&lt;/h2&gt;
-          &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;"&gt;
-            &lt;tr style="font-size:12px;color:#6b7280;"&gt;
-              &lt;th align="left" style="padding:8px 0;border-bottom:2px solid #e5e7eb;"&gt;Item&lt;/th&gt;
-              &lt;th align="center" style="padding:8px;border-bottom:2px solid #e5e7eb;"&gt;Qty&lt;/th&gt;
-              &lt;th align="right" style="padding:8px 0;border-bottom:2px solid #e5e7eb;"&gt;Amount&lt;/th&gt;
-            &lt;/tr&gt;
-            ${renderItemsHtml(items)}
-            &lt;tr&gt;
-              &lt;td colspan="2" style="padding:16px 8px 0 0;text-align:right;font-weight:700;"&gt;Order total&lt;/td&gt;
-              &lt;td style="padding:16px 0 0;text-align:right;font-size:18px;font-weight:700;"&gt;&amp;#8377;${formatAmount(order.final_amount || <span class="branch-1 cbranch-no" title="branch not covered" >order.total_amount)</span>}&lt;/td&gt;
-            &lt;/tr&gt;
-          &lt;/table&gt;
-&nbsp;
-          ${address ? `&lt;div style="margin-top:28px;"&gt;&lt;h2 style="font-size:18px;margin:0 0 8px;"&gt;Delivery address&lt;/h2&gt;&lt;p style="margin:0;color:#4b5563;line-height:1.6;"&gt;${address}&lt;/p&gt;&lt;/div&gt;` : <span class="branch-1 cbranch-no" title="branch not covered" >''}</span>
-&nbsp;
-          &lt;div style="text-align:center;margin-top:30px;"&gt;
-            &lt;a href="${escapeHtml(orderUrl)}" style="display:inline-block;background:${content.accent};color:#ffffff;text-decoration:none;font-weight:700;padding:13px 22px;border-radius:6px;"&gt;View My Orders&lt;/a&gt;
-          &lt;/div&gt;
-        &lt;/td&gt;&lt;/tr&gt;
-        &lt;tr&gt;&lt;td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;color:#6b7280;font-size:12px;line-height:1.6;"&gt;
-          Need help? Contact &lt;a href="mailto:${escapeHtml(SUPPORT_EMAIL)}" style="color:#374151;"&gt;${escapeHtml(SUPPORT_EMAIL)}&lt;/a&gt;&lt;br&gt;
-          This is an automated transactional email from Skaarvi.
-        &lt;/td&gt;&lt;/tr&gt;
-      &lt;/table&gt;
-    &lt;/td&gt;&lt;/tr&gt;
-  &lt;/table&gt;
-&lt;/body&gt;
-&lt;/html&gt;`;
-};
-&nbsp;
-const buildText = (context, content) =&gt; {
-  const { order, items, shippingAddress } = context;
-  const itemLines = items.map((item) =&gt;
-    `- ${item.product_name}${(item.selected_color || item.selected_size) ? <span class="branch-0 cbranch-no" title="branch not covered" >` (${[item.selected_color, item.selected_size].filter(Boolean).join(' / ')})` </span>: ''} x ${item.quantity}: Rs. ${formatAmount(item.item_total)}`
-  ).join('\n');
-  const address = [
-    shippingAddress.fullName || <span class="branch-1 cbranch-no" title="branch not covered" >shippingAddress.full_name,</span>
-    shippingAddress.address,
-    shippingAddress.city,
-    shippingAddress.state,
-    shippingAddress.pincode,
-  ].filter(Boolean).join(', ');
-&nbsp;
-  return `${content.label}
-&nbsp;
-${content.title}
-&nbsp;
-${content.message}
-${content.note}
-&nbsp;
-Order number: ${order.order_number}
-Order date: ${formatDate(order.ordered_at)}
-Payment method: ${formatPaymentMethod(order.payment_method)}
-&nbsp;
-Order summary
-${itemLines}
-Order total: Rs. ${formatAmount(order.final_amount || <span class="branch-1 cbranch-no" title="branch not covered" >order.total_amount)</span>}
-${address ? `\nDelivery address: ${address}` : <span class="branch-1 cbranch-no" title="branch not covered" >''}</span>
-&nbsp;
-View your orders: ${APP_URL}/customer/orders/${encodeURIComponent(order.id)}
-Need help? Contact ${SUPPORT_EMAIL}
-&nbsp;
-Skaarvi B2B Reseller Marketplace`;
-};
-&nbsp;
-const sendOrderLifecycleEmail = async ({ sequelize, orderId, event, details = {} }) =&gt; {
   try {
-    const context = await loadOrderEmailContext(sequelize, orderId);
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (!context) {
-<span class="cstat-no" title="statement not covered" >      console.warn(`[Order Email] Order ${orderId} was not found; skipping ${event} email`);</span>
-<span class="cstat-no" title="statement not covered" >      return { success: false, skipped: true, reason: 'ORDER_NOT_FOUND' };</span>
+    // Get order details
+    const [order] = await sequelize.query(
+      `SELECT 
+        id,
+        order_number,
+        reseller_id
+       FROM orders
+       WHERE id = ? AND reseller_id IS NOT NULL`,
+      {
+        replacements: [orderId],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+&nbsp;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!order || !order.reseller_id) {
+<span class="cstat-no" title="statement not covered" >      console.log('No reseller associated with this order, skipping commission release');</span>
+<span class="cstat-no" title="statement not covered" >      if (ownsTransaction) <span class="cstat-no" title="statement not covered" >await transaction.rollback();</span></span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
     }
 &nbsp;
-    if (!context.customerEmail) {
-      console.warn(`[Order Email] Order ${context.order.order_number} has no customer email; skipping ${event} email`);
-      return { success: false, skipped: true, reason: 'EMAIL_MISSING' };
+    // Get pending commission amount from wallet transactions
+    const [walletTransaction] = await sequelize.query(
+      `SELECT 
+        id,
+        amount
+       FROM wallet_transactions
+       WHERE order_id = ? 
+         AND reseller_id = ?
+         AND transaction_type = 'credit'
+         AND status = 'pending'
+       LIMIT 1`,
+      {
+        replacements: [orderId, order.reseller_id],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+&nbsp;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!walletTransaction) {
+<span class="cstat-no" title="statement not covered" >      console.log('No pending commission found for this order');</span>
+<span class="cstat-no" title="statement not covered" >      if (ownsTransaction) <span class="cstat-no" title="statement not covered" >await transaction.rollback();</span></span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
     }
 &nbsp;
-    const content = getEventContent(event, context, details);
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (!content) {
-<span class="cstat-no" title="statement not covered" >      console.warn(`[Order Email] Unsupported event ${event}; skipping email`);</span>
-<span class="cstat-no" title="statement not covered" >      return { success: false, skipped: true, reason: 'UNSUPPORTED_EVENT' };</span>
-    }
+    const commissionAmount = Number.parseFloat(walletTransaction.amount);
 &nbsp;
-    const result = await sendEmail({
-      to: context.customerEmail,
-      subject: content.subject,
-      html: buildHtml(context, content),
-      text: buildText(context, content),
-    });
+    const [wallet] = await sequelize.query(
+      `SELECT current_balance, pending_balance
+       FROM wallets
+       WHERE reseller_id = ?
+       FOR UPDATE`,
+      {
+        replacements: [order.reseller_id],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!wallet) <span class="cstat-no" title="statement not covered" >throw new Error('Reseller wallet not found');</span>
 &nbsp;
-    console.log(`[Order Email] Sent ${event} email for ${context.order.order_number}`);
-    return result;
+    const balanceBefore = Number.parseFloat(wallet.current_balance) || <span class="branch-1 cbranch-no" title="branch not covered" >0;</span>
+    const balanceAfter = balanceBefore + commissionAmount;
+&nbsp;
+    // Move from pending_balance to current_balance
+    await sequelize.query(
+      `UPDATE wallets 
+       SET pending_balance = GREATEST(pending_balance - ?, 0),
+           current_balance = ?,
+           last_transaction_at = NOW(),
+           updated_at = NOW()
+       WHERE reseller_id = ?`,
+      {
+        replacements: [commissionAmount, balanceAfter, order.reseller_id],
+        type: QueryTypes.UPDATE,
+        transaction
+      }
+    );
+&nbsp;
+    // Update wallet transaction status
+    await sequelize.query(
+      `UPDATE wallet_transactions 
+       SET status = 'completed',
+           balance_before = ?,
+           balance_after = ?
+       WHERE id = ?`,
+      {
+        replacements: [balanceBefore, balanceAfter, walletTransaction.id],
+        type: QueryTypes.UPDATE,
+        transaction
+      }
+    );
+&nbsp;
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (ownsTransaction) await transaction.commit();
+    console.log(`Commission of ₹${commissionAmount} released to reseller ${order.reseller_id}`);
+&nbsp;
   } catch (error) {
-    console.error(`[Order Email] Failed to send ${event} email for order ${orderId}:`, error.message);
-    return { success: false, error: error.message };
+<span class="cstat-no" title="statement not covered" >    if (ownsTransaction) <span class="cstat-no" title="statement not covered" >await transaction.rollback();</span></span>
+<span class="cstat-no" title="statement not covered" >    console.error('Error releasing commission:', error);</span>
+<span class="cstat-no" title="statement not covered" >    throw error;</span>
   }
-};
+}
+&nbsp;
+/**
+ * Cancel commission on order cancellation
+ * @param {string} orderId - Order ID
+ * @param {object} sequelize - Sequelize instance
+ */
+async function cancelCommission(orderId, sequelize, existingTransaction = null) {
+  const ownsTransaction = !existingTransaction;
+  const transaction = existingTransaction || await sequelize.transaction();
+&nbsp;
+  try {
+    // Get order details
+    const [order] = await sequelize.query(
+      `SELECT 
+        id,
+        reseller_id
+       FROM orders
+       WHERE id = ? AND reseller_id IS NOT NULL`,
+      {
+        replacements: [orderId],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+&nbsp;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!order || !order.reseller_id) {
+<span class="cstat-no" title="statement not covered" >      if (ownsTransaction) <span class="cstat-no" title="statement not covered" >await transaction.rollback();</span></span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+    }
+&nbsp;
+    // Get pending commission
+    const [walletTransaction] = await sequelize.query(
+      `SELECT 
+        id,
+        amount
+       FROM wallet_transactions
+       WHERE order_id = ? 
+         AND reseller_id = ?
+         AND transaction_type = 'credit'
+         AND status = 'pending'
+       LIMIT 1`,
+      {
+        replacements: [orderId, order.reseller_id],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+&nbsp;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!walletTransaction) {
+<span class="cstat-no" title="statement not covered" >      if (ownsTransaction) <span class="cstat-no" title="statement not covered" >await transaction.rollback();</span></span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+    }
+&nbsp;
+    const commissionAmount = Number.parseFloat(walletTransaction.amount);
+&nbsp;
+    const [wallet] = await sequelize.query(
+      `SELECT pending_balance
+       FROM wallets
+       WHERE reseller_id = ?
+       FOR UPDATE`,
+      {
+        replacements: [order.reseller_id],
+        type: QueryTypes.SELECT,
+        transaction
+      }
+    );
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!wallet) <span class="cstat-no" title="statement not covered" >throw new Error('Reseller wallet not found');</span>
+&nbsp;
+    const balanceBefore = Number.parseFloat(wallet.pending_balance) || <span class="branch-1 cbranch-no" title="branch not covered" >0;</span>
+    const balanceAfter = Math.max(balanceBefore - commissionAmount, 0);
+&nbsp;
+    // Deduct from pending balance and total earned
+    await sequelize.query(
+      `UPDATE wallets 
+       SET pending_balance = ?,
+           total_earned = GREATEST(total_earned - ?, 0),
+           last_transaction_at = NOW(),
+           updated_at = NOW()
+       WHERE reseller_id = ?`,
+      {
+        replacements: [balanceAfter, commissionAmount, order.reseller_id],
+        type: QueryTypes.UPDATE,
+        transaction
+      }
+    );
+&nbsp;
+    // Update wallet transaction status
+    await sequelize.query(
+      `UPDATE wallet_transactions 
+         SET status = 'reversed',
+           balance_before = ?,
+           balance_after = ?
+       WHERE id = ?`,
+      {
+        replacements: [balanceBefore, balanceAfter, walletTransaction.id],
+        type: QueryTypes.UPDATE,
+        transaction
+      }
+    );
+&nbsp;
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (ownsTransaction) await transaction.commit();
+    console.log(`Commission of ₹${commissionAmount} cancelled for reseller ${order.reseller_id}`);
+&nbsp;
+  } catch (error) {
+<span class="cstat-no" title="statement not covered" >    if (ownsTransaction) <span class="cstat-no" title="statement not covered" >await transaction.rollback();</span></span>
+<span class="cstat-no" title="statement not covered" >    console.error('Error cancelling commission:', error);</span>
+<span class="cstat-no" title="statement not covered" >    throw error;</span>
+  }
+}
 &nbsp;
 module.exports = {
-  sendOrderLifecycleEmail,
-};</pre></td></tr></table></pre>
+  calculateCommission,
+  creditPendingCommission,
+  releaseCommission,
+  cancelCommission,
+};
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->

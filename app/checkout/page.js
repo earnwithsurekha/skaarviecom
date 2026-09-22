@@ -29,6 +29,9 @@ export default function CheckoutPage() {
   
   const { items, total, subtotal, shipping, referralCode } = useSelector((state) => state.cart);
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const hasCustomerSession = isAuthenticated && (
+    user?.role === 'customer' || Boolean(user?.customerId)
+  );
   
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('email-password');
@@ -72,7 +75,7 @@ export default function CheckoutPage() {
     }
     
     // Pre-fill user info if logged in
-    if (isAuthenticated && user) {
+    if (hasCustomerSession && user) {
       console.log('[Checkout] User data:', { name: user.name, fullName: user.fullName, email: user.email, mobile: user.mobile });
       const userName = user.name || user.fullName || user.email?.split('@')[0] || '';
       console.log('[Checkout] Using name:', userName);
@@ -86,16 +89,10 @@ export default function CheckoutPage() {
       // Show auth modal if not logged in
       setShowAuthModal(true);
     }
-  }, [items.length, isAuthenticated, user, orderLoading]);
+  }, [items.length, hasCustomerSession, user, orderLoading]);
 
   const handleAuthModalClose = () => {
-    setShowAuthModal(false);
-    // Don't navigate away - let them continue as guest
-  };
-
-  const handleGuestCheckout = () => {
-    setShowAuthModal(false);
-    toast('Continuing as guest. You\'ll create an account after placing the order.');
+    router.push('/cart');
   };
 
   const handlePasswordLogin = async (e) => {
@@ -275,6 +272,12 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = async () => {
+    if (!hasCustomerSession) {
+      setShowAuthModal(true);
+      toast.error('Please sign in as a customer to place your order');
+      return;
+    }
+
     if (!validateShippingInfo()) {
       return;
     }
@@ -297,18 +300,11 @@ export default function CheckoutPage() {
         totalAmount: total,
       };
 
-      // Prepare headers with optional authentication
+      const token = localStorage.getItem('token');
       const headers = {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       };
-
-      // Add authorization header if user is authenticated
-      if (isAuthenticated) {
-        const token = localStorage.getItem('token');
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-      }
 
       const response = await fetch('/api/customer/orders', {
         method: 'POST',
@@ -773,28 +769,15 @@ export default function CheckoutPage() {
               </form>
             )}
 
-            {/* Divider */}
-            <div className="relative my-4 sm:my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-xs sm:text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">OR</span>
-              </div>
-            </div>
-
-            {/* Guest Checkout Button */}
-            <button
-              onClick={handleGuestCheckout}
-              className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-colors"
-            >
-              Continue as Guest
-            </button>
-
             <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-3 sm:mt-4">
               Don't have an account?{' '}
               <button
-                onClick={() => router.push('/register/customer')}
+                onClick={() => {
+                  const signupParams = new URLSearchParams({ redirect: '/checkout' });
+                  const checkoutReferralCode = referralCode || items[0]?.referralCode;
+                  if (checkoutReferralCode) signupParams.set('ref', checkoutReferralCode);
+                  router.push(`/register/customer?${signupParams.toString()}`);
+                }}
                 className="text-blue-600 hover:text-blue-700 font-semibold"
               >
                 Sign Up

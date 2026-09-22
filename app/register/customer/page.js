@@ -129,7 +129,12 @@ export default function CustomerRegistrationPage() {
           toast.error('This email or phone is already registered');
           setError(data.message);
           setTimeout(() => {
-            router.push('/login/customer');
+            const loginParams = new URLSearchParams();
+            const redirectUrl = searchParams.get('redirect');
+            const referralCode = searchParams.get('ref') || searchParams.get('referral');
+            if (redirectUrl) loginParams.set('redirect', redirectUrl);
+            if (referralCode) loginParams.set('ref', referralCode);
+            router.push(`/login/customer${loginParams.size ? `?${loginParams.toString()}` : ''}`);
           }, 2000);
           return;
         }
@@ -180,7 +185,10 @@ export default function CustomerRegistrationPage() {
           Already have an account?{' '}
           <button
             type="button"
-            onClick={() => router.push('/login/customer')}
+            onClick={() => {
+              const queryString = searchParams.toString();
+              router.push(`/login/customer${queryString ? `?${queryString}` : ''}`);
+            }}
             className="font-semibold text-blue-600 hover:text-purple-700 dark:text-blue-400"
           >
             Sign in
