@@ -305,7 +305,11 @@ export default function CustomerProductsPage() {
         {!loading && sortedProducts.length > 0 && (
           <div className="grid grid-cols-2 gap-2 px-2 pb-4 sm:gap-4 sm:px-4 lg:grid-cols-2 lg:gap-6 lg:px-0 xl:grid-cols-3 2xl:grid-cols-4">
             {sortedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                detailsBasePath="/customer/products"
+              />
             ))}
           </div>
         )}

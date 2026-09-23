@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Package,
@@ -12,6 +12,8 @@ import {
   BookmarkCheck,
   Eye,
   TrendingUp,
+  ChevronLeft,
+  ChevronRight,
   X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -36,6 +38,17 @@ export default function ProductsPage() {
   });
   const [searchInput, setSearchInput] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const tabStripRef = useRef(null);
+
+  const selectTab = (tab, event) => {
+    setActiveTab(tab);
+    setPagination((current) => ({ ...current, page: 1 }));
+    event.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  };
+
+  const scrollTabs = (direction) => {
+    tabStripRef.current?.scrollBy({ left: direction * 180, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -285,51 +298,73 @@ export default function ProductsPage() {
       </div>
 
       {/* Quick Filter Tabs */}
-      <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0">
+      <div className="-mx-4 flex min-w-0 items-center gap-1 px-1 sm:mx-0 sm:px-0">
         <button
-          onClick={() => { setActiveTab('all'); setPagination({ ...pagination, page: 1 }); }}
-          className={`snap-start px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-            activeTab === 'all'
-              ? 'bg-primary text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-          }`}
-          style={activeTab === 'all' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
+          type="button"
+          onClick={() => scrollTabs(-1)}
+          className="flex h-10 w-10 flex-none items-center justify-center text-gray-600 dark:text-gray-300 sm:hidden"
+          aria-label="Scroll product tabs left"
         >
-          All Products
+          <ChevronLeft className="h-5 w-5" />
         </button>
+        <div ref={tabStripRef} className="flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth pb-2 touch-pan-x">
+          <button
+            type="button"
+            onClick={(event) => selectTab('all', event)}
+            className={`flex-none snap-start px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              activeTab === 'all'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+            style={activeTab === 'all' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
+          >
+            All Products
+          </button>
+          <button
+            type="button"
+            onClick={(event) => selectTab('trending', event)}
+            className={`flex flex-none snap-start items-center gap-2 px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              activeTab === 'trending'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+            style={activeTab === 'trending' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
+          >
+            <TrendingUp className="h-4 w-4" />
+            Trending
+          </button>
+          <button
+            type="button"
+            onClick={(event) => selectTab('best_selling', event)}
+            className={`flex-none snap-start px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              activeTab === 'best_selling'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+            style={activeTab === 'best_selling' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
+          >
+            Best Selling
+          </button>
+          <button
+            type="button"
+            onClick={(event) => selectTab('new_arrivals', event)}
+            className={`flex-none snap-start px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              activeTab === 'new_arrivals'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+            style={activeTab === 'new_arrivals' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
+          >
+            New Arrivals
+          </button>
+        </div>
         <button
-          onClick={() => { setActiveTab('trending'); setPagination({ ...pagination, page: 1 }); }}
-          className={`flex snap-start items-center gap-2 px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-            activeTab === 'trending'
-              ? 'bg-primary text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-          }`}
-          style={activeTab === 'trending' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
+          type="button"
+          onClick={() => scrollTabs(1)}
+          className="flex h-10 w-10 flex-none items-center justify-center text-gray-600 dark:text-gray-300 sm:hidden"
+          aria-label="Scroll product tabs right"
         >
-          <TrendingUp className="h-4 w-4" />
-          Trending
-        </button>
-        <button
-          onClick={() => { setActiveTab('best_selling'); setPagination({ ...pagination, page: 1 }); }}
-          className={`snap-start px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-            activeTab === 'best_selling'
-              ? 'bg-primary text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-          }`}
-          style={activeTab === 'best_selling' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
-        >
-          Best Selling
-        </button>
-        <button
-          onClick={() => { setActiveTab('new_arrivals'); setPagination({ ...pagination, page: 1 }); }}
-          className={`snap-start px-3 py-2 sm:px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-            activeTab === 'new_arrivals'
-              ? 'bg-primary text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-          }`}
-          style={activeTab === 'new_arrivals' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
-        >
-          New Arrivals
+          <ChevronRight className="h-5 w-5" />
         </button>
       </div>
 

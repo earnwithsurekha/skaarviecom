@@ -96,32 +96,35 @@ export default function ResellerProductDetailsPage() {
 
   const specifications = parseSpecifications(product.specifications);
   const stockQuantity = Number(product.stock_quantity) || 0;
-  const stockText = stockQuantity > 10
-    ? 'In Stock'
-    : stockQuantity > 0
-      ? `Low Stock (${stockQuantity})`
-      : 'Out of Stock';
-  const stockColor = stockQuantity > 10
-    ? 'rgb(22, 163, 74)'
-    : stockQuantity > 0
-      ? 'rgb(234, 88, 12)'
-      : 'rgb(220, 38, 38)';
+  let stockText = 'Out of Stock';
+  let stockColor = 'rgb(220, 38, 38)';
+  if (stockQuantity > 10) {
+    stockText = 'In Stock';
+    stockColor = 'rgb(22, 163, 74)';
+  } else if (stockQuantity > 0) {
+    stockText = `Low Stock (${stockQuantity})`;
+    stockColor = 'rgb(234, 88, 12)';
+  }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl py-2 sm:py-4 lg:py-6">
       <button
         type="button"
         onClick={() => router.push('/reseller/products')}
-        className="mb-6 flex items-center gap-2 px-3 py-2"
+        className="mb-4 flex min-h-11 items-center gap-2 py-2 sm:mb-6"
         style={{ color: 'rgb(var(--color-text-secondary))' }}
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Products
       </button>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <div className="space-y-6">
-          <ProductImageCarousel images={images} productName={product.name} />
+      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-8">
+        <div className="min-w-0 space-y-6">
+          <ProductImageCarousel
+            images={images}
+            productName={product.name}
+            aspectClassName="aspect-[4/3] sm:aspect-square"
+          />
 
           {videos.length > 0 && (
             <section aria-labelledby="product-videos-heading">
@@ -140,40 +143,40 @@ export default function ResellerProductDetailsPage() {
           )}
         </div>
 
-        <div>
+        <div className="min-w-0">
           <p className="mb-2 text-sm font-medium" style={{ color: 'rgb(var(--color-primary))' }}>
             {product.category_name || 'Uncategorized'}
           </p>
-          <h1 className="text-3xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>{product.name}</h1>
+          <h1 className="break-words text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>{product.name}</h1>
           {product.manufacturer_name && (
             <p className="mt-2 text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
               by {product.manufacturer_name}
             </p>
           )}
 
-          <dl className="mt-6 grid grid-cols-2 gap-4 border-y py-5" style={{ borderColor: 'rgb(var(--color-border))' }}>
-            <div>
+          <dl className="mt-5 grid grid-cols-1 gap-4 border-y py-4 sm:mt-6 sm:grid-cols-2 sm:py-5" style={{ borderColor: 'rgb(var(--color-border))' }}>
+            <div className="min-w-0">
               <dt className="text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>Selling Price</dt>
-              <dd className="mt-1 text-2xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>
+              <dd className="mt-1 break-words text-xl font-bold sm:text-2xl" style={{ color: 'rgb(var(--color-text))' }}>
                 {formatCurrency(product.selling_price)}
               </dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>Reseller Margin</dt>
-              <dd className="mt-1 text-2xl font-bold" style={{ color: 'rgb(22, 163, 74)' }}>
+              <dd className="mt-1 break-words text-xl font-bold sm:text-2xl" style={{ color: 'rgb(22, 163, 74)' }}>
                 {formatCurrency(product.reseller_profit)}
               </dd>
             </div>
           </dl>
 
           <div className="mt-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5" style={{ color: stockColor }} />
+            <div className="flex items-start gap-2">
+              <Package className="mt-0.5 h-5 w-5 shrink-0" style={{ color: stockColor }} />
               <span className="font-medium" style={{ color: stockColor }}>{stockText}</span>
             </div>
-            <div className="flex items-center gap-2" style={{ color: 'rgb(var(--color-text-secondary))' }}>
-              <Truck className="h-5 w-5" />
-              <span>{product.delivery_days ? `${product.delivery_days} day delivery` : 'Delivery information not provided'}</span>
+            <div className="flex items-start gap-2" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+              <Truck className="mt-0.5 h-5 w-5 shrink-0" />
+              <span className="min-w-0 break-words">{product.delivery_days ? `${product.delivery_days} day delivery` : 'Delivery information not provided'}</span>
             </div>
           </div>
 
@@ -182,21 +185,21 @@ export default function ResellerProductDetailsPage() {
               <h2 id="variants-heading" className="mb-3 text-lg font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
                 Available Variants
               </h2>
-              <div className="overflow-x-auto border" style={{ borderColor: 'rgb(var(--color-border))' }}>
-                <table className="w-full text-left text-sm">
+              <div className="min-w-0 overflow-x-auto border" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                <table className="min-w-full table-fixed text-left text-sm">
                   <thead style={{ backgroundColor: 'rgb(var(--color-background))' }}>
                     <tr>
-                      <th className="px-4 py-3">Color</th>
-                      <th className="px-4 py-3">Size</th>
-                      <th className="px-4 py-3">Stock</th>
+                      <th className="!whitespace-normal px-3 py-3 sm:px-4">Color</th>
+                      <th className="!whitespace-normal px-3 py-3 sm:px-4">Size</th>
+                      <th className="!whitespace-normal px-3 py-3 sm:px-4">Stock</th>
                     </tr>
                   </thead>
                   <tbody>
                     {variants.map((variant) => (
                       <tr key={variant.id} className="border-t" style={{ borderColor: 'rgb(var(--color-border))' }}>
-                        <td className="px-4 py-3">{variant.color_name || 'Any'}</td>
-                        <td className="px-4 py-3">{variant.size_label || 'Any'}</td>
-                        <td className="px-4 py-3">{variant.stock_quantity}</td>
+                        <td className="break-words !whitespace-normal px-3 py-3 sm:px-4">{variant.color_name || 'Any'}</td>
+                        <td className="break-words !whitespace-normal px-3 py-3 sm:px-4">{variant.size_label || 'Any'}</td>
+                        <td className="break-words !whitespace-normal px-3 py-3 sm:px-4">{variant.stock_quantity}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -207,26 +210,26 @@ export default function ResellerProductDetailsPage() {
         </div>
       </div>
 
-      <div className="mt-10 grid gap-8 border-t pt-8 lg:grid-cols-2" style={{ borderColor: 'rgb(var(--color-border))' }}>
-        <section aria-labelledby="description-heading">
+      <div className="mt-8 grid min-w-0 grid-cols-1 gap-6 border-t pt-6 lg:mt-10 lg:grid-cols-2 lg:gap-8 lg:pt-8" style={{ borderColor: 'rgb(var(--color-border))' }}>
+        <section className="min-w-0" aria-labelledby="description-heading">
           <h2 id="description-heading" className="mb-3 text-xl font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
             Description
           </h2>
-          <p className="whitespace-pre-wrap" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+          <p className="break-words whitespace-pre-wrap" style={{ color: 'rgb(var(--color-text-secondary))' }}>
             {product.description || 'No description available.'}
           </p>
         </section>
 
-        <section aria-labelledby="specifications-heading">
+        <section className="min-w-0" aria-labelledby="specifications-heading">
           <h2 id="specifications-heading" className="mb-3 text-xl font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
             Specifications
           </h2>
           {Object.keys(specifications).length > 0 ? (
             <dl className="divide-y" style={{ borderColor: 'rgb(var(--color-border))' }}>
               {Object.entries(specifications).map(([key, value]) => (
-                <div key={key} className="grid grid-cols-3 gap-4 py-2">
-                  <dt className="font-medium" style={{ color: 'rgb(var(--color-text))' }}>{key}</dt>
-                  <dd className="col-span-2" style={{ color: 'rgb(var(--color-text-secondary))' }}>{String(value)}</dd>
+                <div key={key} className="grid min-w-0 grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4 sm:py-2">
+                  <dt className="break-words font-medium" style={{ color: 'rgb(var(--color-text))' }}>{key}</dt>
+                  <dd className="min-w-0 break-words sm:col-span-2" style={{ color: 'rgb(var(--color-text-secondary))' }}>{String(value)}</dd>
                 </div>
               ))}
             </dl>
@@ -240,7 +243,7 @@ export default function ResellerProductDetailsPage() {
             <FileText className="h-5 w-5" />
             Shipping Information
           </h2>
-          <p style={{ color: 'rgb(var(--color-text-secondary))' }}>
+          <p className="break-words whitespace-pre-wrap" style={{ color: 'rgb(var(--color-text-secondary))' }}>
             {product.shipping_info || 'Shipping information not provided.'}
           </p>
         </section>
