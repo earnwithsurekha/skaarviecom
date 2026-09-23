@@ -6,7 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { store, persistor } from '@/store';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SessionProvider } from '@/contexts/SessionContext';
-import TawkToChat from '@/components/TawkToChat';
+import LiveSupportChat from '@/components/LiveSupportChat';
 import PushNotificationManager from '@/components/PushNotificationManager';
 
 export function Providers({ children }) {
@@ -55,7 +55,7 @@ export function Providers({ children }) {
               },
             }}
           />
-          <TawkToChat />
+          <LiveSupportChat />
         </SessionProvider>
         </ThemeProvider>
       </PersistGate>

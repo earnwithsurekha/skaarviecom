@@ -9,6 +9,8 @@
     "test": "jest --coverage",
     "migrate": "node scripts/migrate.js",
     "migrate:fcm": "node run-fcm-migration.js",
+    "migrate:chat": "node run-chat-migration.js",
+    "create:support-user": "node scripts/create-customer-support-user.js",
     "migrate:product-variants": "node run-product-variant-migration.js",
     "backfill:manufacturer-passwords": "node scripts/update-default-passwords.js",
     "backfill:color-images": "node scripts/normalize-color-image-assignments.js",
@@ -43,6 +45,7 @@
     "redis": "^4.6.11",
     "sequelize": "^6.35.2",
     "sharp": "^0.35.2",
+    "socket.io": "^4.8.3",
     "twilio": "^4.20.0",
     "uuid": "^9.0.1",
     "winston": "^3.11.0"

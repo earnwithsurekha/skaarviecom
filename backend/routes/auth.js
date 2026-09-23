@@ -1394,6 +1394,14 @@ router.post('/login/password', async (req, res) => {
       });
     }
 
+    if (effectiveRole === 'customer_support' && !user.is_active) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Your customer support account has been deactivated',
+        code: 'ACCOUNT_INACTIVE',
+      });
+    }
+
     // Update last login
     await sequelize.query(
       'UPDATE users SET updated_at = NOW() WHERE id = ?',
