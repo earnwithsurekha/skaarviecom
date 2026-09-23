@@ -25,10 +25,10 @@ export default function ProductCard({ product, source = 'product_listing', onSav
       );
       
       // Route based on authentication status
-      if (isAuthenticated && (user?.role === 'reseller' || user?.resellerId)) {
-        router.push(`/reseller/products/${product.id}`);
-      } else if (isAuthenticated && user?.role === 'customer') {
+      if (isAuthenticated && user?.role === 'customer') {
         router.push(`/customer/products/${product.id}`);
+      } else if (isAuthenticated && (user?.role === 'reseller' || user?.resellerId)) {
+        router.push(`/reseller/products/${product.id}`);
       } else {
         // Not logged in or other roles go to public product page
         router.push(`/products/${product.id}`);
