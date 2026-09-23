@@ -86,6 +86,7 @@ export default function CustomerWishlistPage() {
               key={product.id}
               product={product}
               source="customer_wishlist"
+              detailsBasePath="/customer/products"
               onSaveChange={handleSaveChange}
             />
           ))}

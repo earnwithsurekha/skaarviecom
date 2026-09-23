@@ -8,7 +8,12 @@ import ProductSaveButton from './ProductSaveButton';
 import ProductShareButton from './ProductShareButton';
 import { trackProductClick } from '@/lib/productTracking';
 
-export default function ProductCard({ product, source = 'product_listing', onSaveChange }) {
+export default function ProductCard({
+  product,
+  source = 'product_listing',
+  detailsBasePath,
+  onSaveChange,
+}) {
   const router = useRouter();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -24,8 +29,10 @@ export default function ProductCard({ product, source = 'product_listing', onSav
         console.error('Tracking error:', err)
       );
       
-      // Route based on authentication status
-      if (isAuthenticated && user?.role === 'customer') {
+      // Page-specific destinations take precedence for dual-role accounts.
+      if (detailsBasePath) {
+        router.push(`${detailsBasePath}/${product.id}`);
+      } else if (isAuthenticated && user?.role === 'customer') {
         router.push(`/customer/products/${product.id}`);
       } else if (isAuthenticated && (user?.role === 'reseller' || user?.resellerId)) {
         router.push(`/reseller/products/${product.id}`);
