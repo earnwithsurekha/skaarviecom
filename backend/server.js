@@ -107,6 +107,7 @@ app.use('/api/admin', require('./routes/admin/reseller-upgrades'));
 // Customer Routes
 app.use('/api/customer', require('./routes/customer/reseller-upgrade'));
 app.use('/api/customer', require('./routes/customer/check-access'));
+app.use('/api/customer', require('./routes/customer/wishlist'));
 
 // Reseller Routes (with authentication)
 const { authMiddleware } = require('./middleware/auth');
