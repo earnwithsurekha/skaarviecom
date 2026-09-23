@@ -31,6 +31,7 @@ module.exports = {
   // User Roles
   ROLES: {
     ADMIN: 'admin',
+    CUSTOMER_SUPPORT: 'customer_support',
     MANUFACTURER: 'manufacturer',
     RESELLER: 'reseller',
     CUSTOMER: 'customer'

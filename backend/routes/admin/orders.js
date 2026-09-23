@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware, adminOnly } = require('../../middleware/auth');
+const { authMiddleware, adminOnly, adminOrCustomerSupport } = require('../../middleware/auth');
 const { sequelize } = require('../../models');
 const { QueryTypes } = require('sequelize');
 const { sendOrderLifecycleNotifications } = require('../../services/orderLifecycleNotificationService');
@@ -16,7 +16,7 @@ const ORDER_STATUS_EMAIL_EVENTS = {
 // @route   GET /api/admin/orders
 // @desc    Get all orders with admin capabilities
 // @access  Private (Admin)
-router.get('/', authMiddleware, adminOnly, async (req, res) => {
+router.get('/', authMiddleware, adminOrCustomerSupport, async (req, res) => {
   try {
     const { 
       status = 'all', 
@@ -121,7 +121,7 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
 // @route   GET /api/admin/orders/:id
 // @desc    Get single order details
 // @access  Private (Admin)
-router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
+router.get('/:id', authMiddleware, adminOrCustomerSupport, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -195,7 +195,7 @@ router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
       SELECT *
       FROM order_status_history
       WHERE order_id = :id
-      ORDER BY changed_at DESC
+      ORDER BY created_at DESC
     `, {
       replacements: { id },
       type: QueryTypes.SELECT

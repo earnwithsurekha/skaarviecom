@@ -54,6 +54,26 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
+const customerSupportOnly = (req, res, next) => {
+  if (req.user.role !== ROLES.CUSTOMER_SUPPORT) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'Access denied. Customer support only'
+    });
+  }
+  next();
+};
+
+const adminOrCustomerSupport = (req, res, next) => {
+  if (![ROLES.ADMIN, ROLES.CUSTOMER_SUPPORT].includes(req.user.role)) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'Access denied'
+    });
+  }
+  next();
+};
+
 // Check if user is admin or manufacturer
 const adminOrManufacturer = (req, res, next) => {
   if (req.user.role !== ROLES.ADMIN && req.user.role !== ROLES.MANUFACTURER) {
@@ -69,5 +89,7 @@ module.exports = {
   authMiddleware,
   manufacturerOnly,
   adminOnly,
+  customerSupportOnly,
+  adminOrCustomerSupport,
   adminOrManufacturer
 };

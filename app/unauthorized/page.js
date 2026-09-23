@@ -14,6 +14,8 @@ export default function UnauthorizedPage() {
     if (user) {
       if (user.role === 'admin') {
         router.push('/admin/dashboard');
+      } else if (user.role === 'customer_support') {
+        router.push('/customersupport/chat');
       } else if (user.role === 'manufacturer') {
         router.push('/manufacturer/dashboard');
       } else if (user.role === 'reseller') {

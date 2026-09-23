@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '@/store/slices/authSlice';
 import { 
   LayoutDashboard, Users, Package, LogOut, Menu, X, Settings, 
-  ShoppingCart, UserCheck, FolderOpen, DollarSign, BarChart3, Wallet, ArrowUpRight, Award, TrendingUp, Image
+  ShoppingCart, UserCheck, FolderOpen, DollarSign, BarChart3, Wallet, ArrowUpRight, Award, TrendingUp, Image, MessageCircle
 } from 'lucide-react';
 import { useState, useTransition, useEffect } from 'react';
 import toast from 'react-hot-toast';
@@ -99,6 +99,7 @@ export default function AdminLayout({ children }) {
     { name: 'Referrals', href: '/admin/referrals', icon: Award },
     { name: 'Banners', href: '/admin/banners', icon: Image },
     { name: 'Demand Analytics', href: '/admin/demand-analytics', icon: TrendingUp },
+    { name: 'Live Chat', href: '/admin/live-chat', icon: MessageCircle },
     { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];

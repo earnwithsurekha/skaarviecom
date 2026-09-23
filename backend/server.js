@@ -4,12 +4,25 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const path = require('path');
+const path = require('node:path');
+const { createServer } = require('node:http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const { sessionTimeoutMiddleware } = require('./middleware/sessionTimeout');
+const { initializeChatSocket } = require('./services/chatSocket');
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  path: '/api/socket.io',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
+
+initializeChatSocket(io);
 
 // Security middleware with relaxed CSP for images
 app.use(helmet({
@@ -144,7 +157,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
   console.log(`📊 Health check available at http://localhost:${PORT}/health`);
 });
