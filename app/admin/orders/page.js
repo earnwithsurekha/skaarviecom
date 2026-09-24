@@ -136,6 +136,19 @@ export default function OrdersManagementPage() {
     }
   };
 
+  const formatAddress = (address) => {
+    if (typeof address === 'string') return address;
+    if (!address || typeof address !== 'object') return '';
+
+    return [
+      address.fullName,
+      address.address,
+      [address.city, address.state, address.pincode].filter(Boolean).join(', '),
+      address.mobile ? `Phone: ${address.mobile}` : '',
+      address.email,
+    ].filter(Boolean).join('\n');
+  };
+
   const handleUpdateStatus = async () => {
     if (!newStatus) {
       toast.error('Please select a status');
@@ -304,9 +317,9 @@ export default function OrdersManagementPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-0 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Orders Management
@@ -332,7 +345,7 @@ export default function OrdersManagementPage() {
             exportToCSV(orders, headers, `orders-export-${new Date().toISOString().split('T')[0]}.csv`);
             toast.success('Orders exported successfully');
           }}
-          className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 flex items-center gap-2"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 sm:w-auto"
           style={{ backgroundColor: 'rgb(var(--color-primary))' }}
         >
           <Download className="w-4 h-4" />
@@ -532,8 +545,9 @@ export default function OrdersManagementPage() {
                           e.stopPropagation();
                           fetchOrderDetails(order.orderId);
                         }}
-                        className="hover:opacity-70 transition-opacity"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
                         style={{ color: 'rgb(var(--color-primary))' }}
+                        aria-label={`View order ${order.orderNumber}`}
                       >
                         <Eye className="w-5 h-5" />
                       </button>
@@ -574,10 +588,13 @@ export default function OrdersManagementPage() {
       {/* Order Details Modal */}
       {showDetailsModal && selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div
+            className="w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-xl dark:bg-gray-800"
+            style={{ maxHeight: 'calc(100dvh - 4rem)' }}
+          >
+            <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-800 sm:px-6">
+              <div className="min-w-0">
+                <h2 className="break-all text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                   Order #{selectedOrder.orderNumber}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -586,16 +603,17 @@ export default function OrdersManagementPage() {
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                aria-label="Close order details"
               >
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
               {/* Status and Actions */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50 sm:flex-row sm:items-center sm:justify-between">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Order Status</p>
                     <div className="mt-1">{getStatusBadge(selectedOrder.orderStatus)}</div>
@@ -605,10 +623,10 @@ export default function OrdersManagementPage() {
                     <div className="mt-1">{getPaymentBadge(selectedOrder.paymentStatus)}</div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:flex">
                   <button
                     onClick={() => setShowStatusModal(true)}
-                    className="btn btn-primary"
+                    className="btn btn-primary min-h-11 justify-center"
                   >
                     <Edit className="w-4 h-4" />
                     Update Status
@@ -616,7 +634,7 @@ export default function OrdersManagementPage() {
                   {selectedOrder.orderStatus !== 'cancelled' && selectedOrder.orderStatus !== 'delivered' && (
                     <button
                       onClick={() => setShowCancelModal(true)}
-                      className="btn btn-danger"
+                      className="btn btn-danger min-h-11 justify-center"
                     >
                       <XCircle className="w-4 h-4" />
                       Cancel Order
@@ -676,8 +694,8 @@ export default function OrdersManagementPage() {
                     <MapPin className="w-5 h-5 text-red-600 dark:text-red-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-white">Shipping Address</h3>
                   </div>
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    {selectedOrder.shippingAddress}
+                  <p className="whitespace-pre-line break-words text-sm text-gray-900 dark:text-white">
+                    {formatAddress(selectedOrder.shippingAddress)}
                   </p>
                 </div>
               )}

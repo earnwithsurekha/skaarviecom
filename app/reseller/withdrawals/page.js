@@ -5,13 +5,10 @@ import { useRouter } from 'next/navigation';
 import { 
   Wallet, 
   DollarSign, 
-  CreditCard, 
   Clock, 
   CheckCircle, 
   XCircle,
   AlertCircle,
-  Filter,
-  ChevronRight,
   Building,
   Smartphone,
   Calendar
@@ -212,7 +209,7 @@ export default function WithdrawalsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Withdrawals
@@ -224,7 +221,7 @@ export default function WithdrawalsPage() {
         <button
           onClick={() => setShowRequestModal(true)}
           disabled={!balance || balance.current_balance < 500}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6"
           style={{ backgroundColor: 'rgb(var(--color-primary))' }}
         >
           <DollarSign className="h-5 w-5" />
@@ -293,7 +290,7 @@ export default function WithdrawalsPage() {
       </div>
 
       {/* Payment Details */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Payment Details
         </h2>
@@ -370,16 +367,16 @@ export default function WithdrawalsPage() {
 
       {/* Withdrawal History */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="flex flex-col items-stretch gap-3 border-b border-gray-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Withdrawal History
           </h2>
-          <div className="flex gap-2">
+          <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto">
             {['all', 'pending', 'approved', 'paid', 'rejected'].map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full min-w-0 rounded-lg px-2 py-2 text-xs font-medium transition-colors sm:w-auto sm:px-3 sm:text-sm ${
                   statusFilter === status
                     ? 'text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -491,20 +488,21 @@ export default function WithdrawalsPage() {
       {/* Request Withdrawal Modal */}
       {showRequestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg bg-white shadow-xl dark:bg-gray-800">
+            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-6 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Request Withdrawal
               </h3>
               <button
                 onClick={() => setShowRequestModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="flex h-11 w-11 flex-none items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                aria-label="Close withdrawal request"
               >
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitRequest} className="p-6 space-y-4">
+            <form onSubmit={handleSubmitRequest} className="space-y-4 p-4 sm:p-6">
               {/* Available Balance */}
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-blue-900 dark:text-blue-400 mb-1">
@@ -602,18 +600,18 @@ export default function WithdrawalsPage() {
               </div>
 
               {/* Submit Button */}
-              <div className="flex gap-3 pt-4">
+              <div className="grid grid-cols-2 gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowRequestModal(false)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="min-h-11 w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-700 hover:bg-gray-50 sm:px-4 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={processing}
-                  className="flex-1 px-4 py-2 rounded-lg text-white font-medium transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="min-h-11 w-full rounded-lg px-3 py-2 font-medium text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
                   style={{ backgroundColor: 'rgb(var(--color-primary))' }}
                 >
                   {processing ? 'Processing...' : 'Submit Request'}

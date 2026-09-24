@@ -293,22 +293,23 @@ export default function ManufacturerDetailPage({ params }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             onClick={() => router.push('/admin/manufacturers')}
-            className="p-2 rounded-lg transition-opacity hover:opacity-70"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
             style={{ backgroundColor: 'rgb(var(--color-surface))' }}
+            aria-label="Back to manufacturers"
           >
             <ArrowLeft className="w-5 h-5" style={{ color: 'rgb(var(--color-text))' }} />
           </button>
-          <div>
-            <h1 className="text-3xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>{manufacturer.companyName}</h1>
+          <div className="min-w-0">
+            <h1 className="break-words text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>{manufacturer.companyName}</h1>
             <p className="mt-1" style={{ color: 'rgb(var(--color-text-secondary))' }}>Review manufacturer application</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col gap-2 items-end">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
+          <div className="col-span-2 flex flex-col items-start gap-2 sm:col-auto sm:items-end">
             <StatusBadge status={manufacturer.approvalStatus} />
             {manufacturer.isActive === false && (
               <span className="px-3 py-1 text-sm font-medium rounded" style={{
@@ -321,7 +322,7 @@ export default function ManufacturerDetailPage({ params }) {
           </div>
           <button
             onClick={openEditModal}
-            className="px-4 py-2 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95 flex items-center gap-2"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2 font-medium transition-all hover:opacity-90 active:scale-95 sm:px-4"
             style={{
               backgroundColor: 'rgb(var(--color-primary))',
               color: 'white'
@@ -332,7 +333,7 @@ export default function ManufacturerDetailPage({ params }) {
           </button>
           <button
             onClick={() => setShowSuspendModal(true)}
-            className="px-4 py-2 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95 flex items-center gap-2"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2 font-medium transition-all hover:opacity-90 active:scale-95 sm:px-4"
             style={{
               backgroundColor: manufacturer.isActive !== false ? '#ef4444' : '#10b981',
               color: 'white'
@@ -410,7 +411,7 @@ export default function ManufacturerDetailPage({ params }) {
           </div>
           <div>
             <p className="text-sm font-medium" style={{ color: 'rgb(var(--color-text-secondary))' }}>Email Address</p>
-            <p className="text-base mt-1" style={{ color: 'rgb(var(--color-text))' }}>
+            <p className="mt-1 break-words text-base" style={{ color: 'rgb(var(--color-text))' }}>
               {manufacturer.user?.email || manufacturer.email || 'Not provided'}
             </p>
           </div>
@@ -448,7 +449,7 @@ export default function ManufacturerDetailPage({ params }) {
           </div>
           <div>
             <label className="text-sm font-medium" style={{ color: 'rgb(var(--color-text-secondary))' }}>Account Number</label>
-            <p className="text-base mt-1" style={{ color: 'rgb(var(--color-text))' }}>{manufacturer.bankAccountNumber}</p>
+            <p className="mt-1 break-all text-base" style={{ color: 'rgb(var(--color-text))' }}>{manufacturer.bankAccountNumber}</p>
           </div>
           <div>
             <label className="text-sm font-medium" style={{ color: 'rgb(var(--color-text-secondary))' }}>IFSC Code</label>
@@ -504,18 +505,18 @@ export default function ManufacturerDetailPage({ params }) {
 
       {/* Action Buttons */}
       {(manufacturer.approvalStatus === 'pending' || manufacturer.approvalStatus === 'rejected') && (
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex items-center justify-between gap-4 -mx-6 -mb-6">
+        <div className="sticky bottom-0 -mx-4 -mb-4 flex flex-col gap-3 border-t border-gray-200 bg-white p-4 sm:-mx-6 sm:-mb-6 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <button
             onClick={() => router.push('/admin/manufacturers')}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+            className="min-h-11 w-full rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto"
           >
             Back to List
           </button>
-          <div className="flex gap-4">
+          <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:gap-4">
             {(manufacturer.approvalStatus === 'pending' || manufacturer.approvalStatus === 'approved') && (
               <button
                 onClick={() => setShowRejectModal(true)}
-                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center gap-2"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-3 font-medium text-white transition-colors hover:bg-red-700 sm:px-6"
               >
                 <XCircle className="w-5 h-5" />
                 Reject
@@ -523,7 +524,7 @@ export default function ManufacturerDetailPage({ params }) {
             )}
             <button
               onClick={() => setShowApproveModal(true)}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center gap-2"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 font-medium text-white transition-colors hover:bg-green-700 sm:px-6"
             >
               <CheckCircle className="w-5 h-5" />
               {manufacturer.approvalStatus === 'rejected' ? 'Reapprove' : 'Approve'}
@@ -534,16 +535,16 @@ export default function ManufacturerDetailPage({ params }) {
 
       {/* Show reject button for approved manufacturers */}
       {manufacturer.approvalStatus === 'approved' && (
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex items-center justify-between gap-4 -mx-6 -mb-6">
+        <div className="sticky bottom-0 -mx-4 -mb-4 flex flex-col gap-3 border-t border-gray-200 bg-white p-4 sm:-mx-6 sm:-mb-6 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <button
             onClick={() => router.push('/admin/manufacturers')}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+            className="min-h-11 w-full rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto"
           >
             Back to List
           </button>
           <button
             onClick={() => setShowRejectModal(true)}
-            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center gap-2"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3 font-medium text-white transition-colors hover:bg-red-700 sm:w-auto"
           >
             <XCircle className="w-5 h-5" />
             Reject

@@ -201,23 +201,29 @@ export default function OrderDetailPage() {
   // Check cancel/return eligibility
   const cancelEligibility = canCancelOrder(order);
   const returnEligibility = canReturnOrder(order);
+  const returnStatusColor = {
+    pending: 'text-yellow-600 dark:text-yellow-400',
+    approved: 'text-green-600 dark:text-green-400',
+    rejected: 'text-red-600 dark:text-red-400',
+  }[order.return_status] || 'text-red-600 dark:text-red-400';
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex min-w-0 items-center justify-between">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             onClick={() => router.push('/customer/orders')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="flex h-11 w-11 flex-none items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+            aria-label="Back to orders"
           >
             <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
               Order Details
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="mt-1 break-all text-sm text-gray-600 dark:text-gray-400">
               Order #{order.order_number}
             </p>
           </div>
@@ -225,13 +231,13 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Order Status Banner */}
-      <div className={`${statusConfig.color} rounded-lg p-6`}>
-        <div className="flex items-start gap-4">
+      <div className={`${statusConfig.color} rounded-lg p-4 sm:p-6`}>
+        <div className="flex items-start gap-3 sm:gap-4">
           <div className="flex-shrink-0">
             <StatusIcon className="h-8 w-8" />
           </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold mb-1">{statusConfig.label}</h2>
+          <div className="min-w-0 flex-1">
+            <h2 className="mb-1 text-lg font-bold sm:text-xl">{statusConfig.label}</h2>
             <p className="text-sm opacity-90">{statusConfig.description}</p>
             <p className="text-xs opacity-75 mt-2">
               Ordered on {new Date(order.created_at).toLocaleDateString('en-IN', {
@@ -242,13 +248,11 @@ export default function OrderDetailPage() {
             </p>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 mt-4">
+            <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               {cancelEligibility.eligible && (
                 <button
                   onClick={() => setShowCancelModal(true)}
-                  className="px-4 py-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 
-                           text-red-600 dark:text-red-400 font-medium rounded-lg shadow-sm 
-                           transition-colors flex items-center gap-2 text-sm"
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white/90 px-4 py-2 text-sm font-medium text-red-600 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-red-400 dark:hover:bg-gray-800"
                 >
                   <XCircle className="h-4 w-4" />
                   Cancel Order
@@ -258,9 +262,7 @@ export default function OrderDetailPage() {
               {returnEligibility.eligible && (
                 <button
                   onClick={() => setShowReturnModal(true)}
-                  className="px-4 py-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 
-                           text-blue-600 dark:text-blue-400 font-medium rounded-lg shadow-sm 
-                           transition-colors flex items-center gap-2 text-sm"
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white/90 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-blue-400 dark:hover:bg-gray-800"
                 >
                   <Package className="h-4 w-4" />
                   Return Order
@@ -273,13 +275,9 @@ export default function OrderDetailPage() {
               )}
 
               {order.return_status && (
-                <div className="px-4 py-2 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-sm text-sm">
+                <div className="break-words rounded-lg bg-white/90 px-4 py-2 text-sm shadow-sm dark:bg-gray-800/90">
                   <span className="font-medium">Return Status: </span>
-                  <span className={`font-bold ${
-                    order.return_status === 'pending' ? 'text-yellow-600 dark:text-yellow-400' :
-                    order.return_status === 'approved' ? 'text-green-600 dark:text-green-400' :
-                    'text-red-600 dark:text-red-400'
-                  }`}>
+                  <span className={`font-bold ${returnStatusColor}`}>
                     {order.return_status.charAt(0).toUpperCase() + order.return_status.slice(1)}
                   </span>
                 </div>
@@ -289,10 +287,10 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         {/* Order Items */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="min-w-0 space-y-4 lg:col-span-2 lg:space-y-6">
+          <div className="min-w-0 rounded-lg bg-white p-4 shadow sm:p-6 dark:bg-gray-800">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Package className="h-5 w-5" />
               Order Items ({items.length})
@@ -300,8 +298,8 @@ export default function OrderDetailPage() {
 
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={item.id} className="flex gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0">
-                  <div className="w-20 h-20 flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
+                <div key={item.id} className="flex min-w-0 gap-3 border-b border-gray-200 pb-4 last:border-0 sm:gap-4 dark:border-gray-700">
+                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-gray-100 sm:h-20 sm:w-20 dark:bg-gray-700">
                     {item.product_image ? (
                       <img
                         src={item.product_image}
@@ -315,7 +313,7 @@ export default function OrderDetailPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    <h3 className="mb-1 break-words font-semibold text-gray-900 dark:text-white">
                       {item.product_name}
                     </h3>
                     {(item.selected_color || item.selected_size) && (
@@ -326,8 +324,8 @@ export default function OrderDetailPage() {
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                       Quantity: {item.quantity}
                     </p>
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                      <span className="break-words text-lg font-bold text-gray-900 dark:text-white">
                         {formatPrice(item.subtotal)}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -341,27 +339,27 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Delivery Address */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="min-w-0 rounded-lg bg-white p-4 shadow sm:p-6 dark:bg-gray-800">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <MapPin className="h-5 w-5" />
               Delivery Address
             </h2>
 
             {order.shipping_address && (
-              <div className="space-y-2 text-gray-700 dark:text-gray-300">
-                <p className="font-semibold">{order.shipping_address.fullName}</p>
-                <p className="text-sm">{order.shipping_address.address}</p>
-                <p className="text-sm">
+              <div className="min-w-0 space-y-2 text-gray-700 dark:text-gray-300">
+                <p className="break-words font-semibold">{order.shipping_address.fullName}</p>
+                <p className="break-words text-sm">{order.shipping_address.address}</p>
+                <p className="break-words text-sm">
                   {order.shipping_address.city}, {order.shipping_address.state} - {order.shipping_address.pincode}
                 </p>
-                <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <span className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4" />
-                    {order.shipping_address.mobile}
+                <div className="mt-4 flex min-w-0 flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:gap-4 dark:border-gray-700">
+                  <span className="flex min-w-0 items-start gap-2 text-sm">
+                    <Phone className="mt-0.5 h-4 w-4 flex-none" />
+                    <span className="break-all">{order.shipping_address.mobile}</span>
                   </span>
-                  <span className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4" />
-                    {order.shipping_address.email}
+                  <span className="flex min-w-0 items-start gap-2 text-sm">
+                    <Mail className="mt-0.5 h-4 w-4 flex-none" />
+                    <span className="break-all">{order.shipping_address.email}</span>
                   </span>
                 </div>
               </div>
@@ -370,24 +368,24 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Order Summary Sidebar */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-4 lg:space-y-6">
           {/* Payment Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="min-w-0 rounded-lg bg-white p-4 shadow sm:p-6 dark:bg-gray-800">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
               Payment Details
             </h2>
 
             <div className="space-y-3">
-              <div className="flex justify-between text-sm">
+              <div className="flex min-w-0 items-start justify-between gap-3 text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Method</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="min-w-0 break-words text-right font-semibold text-gray-900 dark:text-white">
                   {order.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex min-w-0 items-start justify-between gap-3 text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Status</span>
-                <span className={`font-semibold ${
+                <span className={`min-w-0 break-words text-right font-semibold ${
                   order.payment_status === 'pending' 
                     ? 'text-yellow-600 dark:text-yellow-400'
                     : 'text-green-600 dark:text-green-400'
@@ -399,29 +397,29 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Price Summary */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="min-w-0 rounded-lg bg-white p-4 shadow sm:p-6 dark:bg-gray-800">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Price Summary
             </h2>
 
             <div className="space-y-3">
-              <div className="flex justify-between text-sm">
+              <div className="flex min-w-0 justify-between gap-3 text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
                 <span className="font-semibold text-gray-900 dark:text-white">
                   {formatPrice(order.total_amount)}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex min-w-0 justify-between gap-3 text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Shipping</span>
                 <span className="font-semibold text-green-600 dark:text-green-400">
                   FREE
                 </span>
               </div>
               <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                <div className="flex justify-between">
+                <div className="flex min-w-0 items-start justify-between gap-3">
                   <span className="font-bold text-gray-900 dark:text-white">Total</span>
-                  <span className="text-xl font-bold text-gray-900 dark:text-white">
+                  <span className="min-w-0 break-words text-right text-xl font-bold text-gray-900 dark:text-white">
                     {formatPrice(order.final_amount)}
                   </span>
                 </div>
@@ -430,11 +428,11 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Order Info */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6">
+          <div className="min-w-0 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 dark:from-blue-900/20 dark:to-indigo-900/20">
             <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <Calendar className="h-4 w-4" />
-                <span>
+              <div className="flex min-w-0 items-start gap-2 text-gray-700 dark:text-gray-300">
+                <Calendar className="mt-0.5 h-4 w-4 flex-none" />
+                <span className="min-w-0 break-words">
                   Ordered: {new Date(order.created_at).toLocaleDateString('en-IN', {
                     day: '2-digit',
                     month: 'short',
@@ -442,9 +440,9 @@ export default function OrderDetailPage() {
                   })}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <Package className="h-4 w-4" />
-                <span>Order ID: {order.order_number}</span>
+              <div className="flex min-w-0 items-start gap-2 text-gray-700 dark:text-gray-300">
+                <Package className="mt-0.5 h-4 w-4 flex-none" />
+                <span className="min-w-0 break-all">Order ID: {order.order_number}</span>
               </div>
             </div>
           </div>

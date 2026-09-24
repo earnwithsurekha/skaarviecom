@@ -23,6 +23,7 @@ export default function ReferralLinksPage() {
   const [productPerformance, setProductPerformance] = useState([]);
   const [copied, setCopied] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState('all');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     fetchReferralStats();
@@ -30,29 +31,35 @@ export default function ReferralLinksPage() {
 
   const fetchReferralStats = async () => {
     setLoading(true);
+    setErrorMessage('');
     try {
       // Fetch reseller code
       const codeResponse = await fetch('/api/reseller/referrals/my-code');
       const codeData = await codeResponse.json();
       
-      if (codeData.status === 'success') {
-        setReferralCode(codeData.data.reseller_code);
+      if (!codeResponse.ok || codeData.status !== 'success') {
+        throw new Error(codeData.message || 'Unable to load your referral code');
+      }
+
+      const code = codeData.data?.resellerCode || codeData.data?.reseller_code;
+      if (!code) throw new Error('Your reseller account does not have a referral code');
+
+      setReferralCode(code);
         
-        // Fetch click statistics
-        const statsResponse = await fetch(`/api/track/click-stats/${codeData.data.reseller_code}`);
-        const statsData = await statsResponse.json();
+      // Fetch click statistics
+      const statsResponse = await fetch(`/api/track/click-stats/${encodeURIComponent(code)}`);
+      const statsData = await statsResponse.json();
         
-        if (statsData.status === 'success') {
-          setStats({
-            totalClicks: statsData.data.stats.total_clicks || 0,
-            uniqueVisitors: statsData.data.stats.unique_visitors || 0,
-            convertedClicks: statsData.data.stats.converted_clicks || 0,
-            conversionRate: statsData.data.stats.total_clicks > 0 
-              ? ((statsData.data.stats.converted_clicks / statsData.data.stats.total_clicks) * 100).toFixed(2)
-              : 0
-          });
-          setProductPerformance(statsData.data.productBreakdown || []);
-        }
+      if (statsResponse.ok && statsData.status === 'success') {
+        setStats({
+          totalClicks: statsData.data.stats.total_clicks || 0,
+          uniqueVisitors: statsData.data.stats.unique_visitors || 0,
+          convertedClicks: statsData.data.stats.converted_clicks || 0,
+          conversionRate: statsData.data.stats.total_clicks > 0 
+            ? ((statsData.data.stats.converted_clicks / statsData.data.stats.total_clicks) * 100).toFixed(2)
+            : 0
+        });
+        setProductPerformance(statsData.data.productBreakdown || []);
       }
 
       // Fetch dashboard stats for earnings and orders
@@ -69,6 +76,7 @@ export default function ReferralLinksPage() {
 
     } catch (error) {
       console.error('Error fetching referral stats:', error);
+      setErrorMessage(error.message || 'Unable to load referral tracking');
     } finally {
       setLoading(false);
     }
@@ -96,11 +104,31 @@ export default function ReferralLinksPage() {
     );
   }
 
+  if (errorMessage) {
+    return (
+      <div className="flex min-h-64 items-center justify-center">
+        <div className="w-full max-w-md rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900/40 dark:bg-red-900/20">
+          <Activity className="mx-auto mb-3 h-10 w-10 text-red-500" />
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Referral tracking unavailable</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{errorMessage}</p>
+          <button
+            type="button"
+            onClick={fetchReferralStats}
+            className="mt-4 min-h-11 rounded-lg px-5 py-2 font-medium text-white"
+            style={{ backgroundColor: 'rgb(var(--color-primary))' }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+      <div className="mb-5 sm:mb-8">
+        <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
           Referral Link Tracking
         </h1>
         <p style={{ color: 'rgb(var(--color-text) / 0.7)' }}>
@@ -110,7 +138,7 @@ export default function ReferralLinksPage() {
 
       {/* Referral Code Card */}
       <div 
-        className="p-6 rounded-lg mb-8"
+        className="mb-8 rounded-lg p-4 sm:p-6"
         style={{ backgroundColor: 'rgb(var(--color-surface))' }}
       >
         <div className="flex items-center justify-between mb-4">
@@ -126,21 +154,21 @@ export default function ReferralLinksPage() {
         </div>
 
         <div 
-          className="flex items-center gap-3 p-4 rounded-lg mb-4"
+          className="mb-4 flex min-w-0 flex-col items-stretch gap-3 rounded-lg p-3 sm:flex-row sm:items-center sm:p-4"
           style={{ 
             backgroundColor: 'rgb(var(--color-background))',
             border: '1px solid rgb(var(--color-border))'
           }}
         >
           <code 
-            className="flex-1 text-2xl font-bold"
+            className="min-w-0 break-all text-xl font-bold sm:flex-1 sm:text-2xl"
             style={{ color: 'rgb(var(--color-primary))' }}
           >
             {referralCode}
           </code>
           <button
             onClick={copyReferralCode}
-            className="px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-all sm:w-auto"
             style={{ 
               backgroundColor: 'rgb(var(--color-primary))',
               color: 'white'
@@ -177,7 +205,7 @@ export default function ReferralLinksPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Clicks */}
         <div 
-          className="p-6 rounded-lg"
+          className="rounded-lg p-4 sm:p-6"
           style={{ backgroundColor: 'rgb(var(--color-surface))' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -201,7 +229,7 @@ export default function ReferralLinksPage() {
 
         {/* Orders Generated */}
         <div 
-          className="p-6 rounded-lg"
+          className="rounded-lg p-4 sm:p-6"
           style={{ backgroundColor: 'rgb(var(--color-surface))' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -225,7 +253,7 @@ export default function ReferralLinksPage() {
 
         {/* Conversion Rate */}
         <div 
-          className="p-6 rounded-lg"
+          className="rounded-lg p-4 sm:p-6"
           style={{ backgroundColor: 'rgb(var(--color-surface))' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -249,7 +277,7 @@ export default function ReferralLinksPage() {
 
         {/* Total Earnings */}
         <div 
-          className="p-6 rounded-lg"
+          className="rounded-lg p-4 sm:p-6"
           style={{ backgroundColor: 'rgb(var(--color-surface))' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -277,7 +305,7 @@ export default function ReferralLinksPage() {
         className="rounded-lg overflow-hidden"
         style={{ backgroundColor: 'rgb(var(--color-surface))' }}
       >
-        <div className="p-6 border-b" style={{ borderColor: 'rgb(var(--color-border))' }}>
+        <div className="border-b p-4 sm:p-6" style={{ borderColor: 'rgb(var(--color-border))' }}>
           <h2 className="text-xl font-semibold flex items-center gap-2" style={{ color: 'rgb(var(--color-text))' }}>
             <BarChart3 className="w-6 h-6" />
             Product Performance
@@ -288,7 +316,7 @@ export default function ReferralLinksPage() {
         </div>
 
         {productPerformance.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="touch-pan-x overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr style={{ backgroundColor: 'rgb(var(--color-background))' }}>
@@ -382,7 +410,7 @@ export default function ReferralLinksPage() {
             </table>
           </div>
         ) : (
-          <div className="p-12 text-center">
+          <div className="p-6 text-center sm:p-12">
             <Activity className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgb(var(--color-text) / 0.3)' }} />
             <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
               No Click Data Yet
@@ -406,7 +434,7 @@ export default function ReferralLinksPage() {
 
       {/* How It Works */}
       <div 
-        className="mt-8 p-6 rounded-lg"
+        className="mt-8 rounded-lg p-4 sm:p-6"
         style={{ backgroundColor: 'rgb(var(--color-surface))' }}
       >
         <h2 className="text-xl font-semibold mb-4" style={{ color: 'rgb(var(--color-text))' }}>

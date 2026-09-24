@@ -117,10 +117,10 @@ export default function MyStorePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+      <div className="mb-5 sm:mb-8">
+        <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
           My Store
         </h1>
         <p style={{ color: 'rgb(var(--color-text) / 0.7)' }}>
@@ -130,7 +130,7 @@ export default function MyStorePage() {
 
       {/* Store URL Card */}
       <div 
-        className="p-6 rounded-lg mb-6"
+        className="mb-6 rounded-lg p-4 sm:p-6"
         style={{ backgroundColor: 'rgb(var(--color-surface))' }}
       >
         <div className="flex items-center justify-between mb-4">
@@ -153,23 +153,23 @@ export default function MyStorePage() {
         </div>
 
         <div 
-          className="flex items-center gap-3 p-4 rounded-lg mb-4"
+          className="mb-4 grid min-w-0 grid-cols-[minmax(0,1fr)_44px_44px] items-center gap-2 rounded-lg p-3 sm:flex sm:gap-3 sm:p-4"
           style={{ 
             backgroundColor: 'rgb(var(--color-background))',
             border: '1px solid rgb(var(--color-border))'
           }}
         >
-          <Globe className="w-5 h-5 flex-shrink-0" style={{ color: 'rgb(var(--color-text) / 0.5)' }} />
+          <Globe className="hidden h-5 w-5 flex-shrink-0 sm:block" style={{ color: 'rgb(var(--color-text) / 0.5)' }} />
           <input
             type="text"
             value={store?.store_url || ''}
             readOnly
-            className="flex-1 bg-transparent outline-none"
+            className="min-w-0 bg-transparent text-sm outline-none sm:flex-1 sm:text-base"
             style={{ color: 'rgb(var(--color-text))' }}
           />
           <button
             onClick={copyStoreUrl}
-            className="p-2 rounded-lg transition-opacity hover:opacity-80"
+            className="flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
             style={{ backgroundColor: 'rgb(var(--color-primary))', color: 'white' }}
             title="Copy URL"
           >
@@ -177,7 +177,7 @@ export default function MyStorePage() {
           </button>
           <button
             onClick={visitStore}
-            className="p-2 rounded-lg transition-opacity hover:opacity-80"
+            className="flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
             style={{ 
               backgroundColor: 'rgb(var(--color-surface))',
               border: '1px solid rgb(var(--color-border))',
@@ -197,7 +197,7 @@ export default function MyStorePage() {
       {/* Analytics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div 
-          className="p-6 rounded-lg"
+          className="rounded-lg p-4 sm:p-6"
           style={{ backgroundColor: 'rgb(var(--color-surface))' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -295,7 +295,7 @@ export default function MyStorePage() {
           className="p-6 rounded-lg"
           style={{ backgroundColor: 'rgb(var(--color-surface))' }}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
               Store Information
             </h3>
@@ -312,7 +312,7 @@ export default function MyStorePage() {
                 Edit
               </button>
             ) : (
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex">
                 <button
                   onClick={handleCancel}
                   disabled={saving}

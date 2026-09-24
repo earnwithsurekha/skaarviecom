@@ -35,7 +35,7 @@ export default function OrdersTable({ orders, onRefresh }) {
               <td>
                 <button
                   onClick={() => handleViewOrder(order.id)}
-                  className="font-mono text-sm text-primary-600 hover:text-primary-700 hover:underline"
+                  className="inline-flex min-h-11 items-center font-mono text-sm text-primary-600 hover:text-primary-700 hover:underline"
                 >
                   {order.orderNumber}
                 </button>
@@ -70,8 +70,9 @@ export default function OrdersTable({ orders, onRefresh }) {
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => handleViewOrder(order.id)}
-                    className="btn btn-ghost btn-sm"
+                    className="btn btn-ghost h-11 w-11 p-0"
                     title="View Details"
+                    aria-label={`View order ${order.orderNumber}`}
                   >
                     <Eye className="w-4 h-4" />
                   </button>

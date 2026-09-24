@@ -313,7 +313,7 @@ export default function ResellerUpgradeRequestsPage() {
                             setSelectedRequest(request);
                             setShowDetailsModal(true);
                           }}
-                          className="p-2 hover:opacity-70 rounded-lg transition-opacity"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
                           style={{ color: 'rgb(var(--color-primary))' }}
                           title="View Details"
                         >
@@ -327,7 +327,7 @@ export default function ResellerUpgradeRequestsPage() {
                                 setShowApproveModal(true);
                               }}
                               disabled={processing}
-                              className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors disabled:opacity-50"
+                              className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-green-600 transition-colors hover:bg-green-50 disabled:opacity-50 dark:text-green-400 dark:hover:bg-green-900/20"
                               title="Approve"
                             >
                               <CheckCircle className="h-5 w-5" />
@@ -338,7 +338,7 @@ export default function ResellerUpgradeRequestsPage() {
                                 setShowRejectModal(true);
                               }}
                               disabled={processing}
-                              className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                              className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20"
                               title="Reject"
                             >
                               <XCircle className="h-5 w-5" />
@@ -381,25 +381,28 @@ export default function ResellerUpgradeRequestsPage() {
       {/* Details Modal */}
       {showDetailsModal && selectedRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
+          <div
+            className="w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-gray-800"
+            style={{ maxHeight: 'calc(100dvh - 4rem)' }}
+          >
+            <div className="sticky top-0 border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Upgrade Request Details
               </h2>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
               {/* Customer Info */}
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Customer Information</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                   <div>
                     <span className="text-gray-600 dark:text-gray-400">Name:</span>
                     <p className="font-medium text-gray-900 dark:text-white">{selectedRequest.customer_name || 'N/A'}</p>
                   </div>
                   <div>
                     <span className="text-gray-600 dark:text-gray-400">Email:</span>
-                    <p className="font-medium text-gray-900 dark:text-white">{selectedRequest.customer_email || 'N/A'}</p>
+                    <p className="break-words font-medium text-gray-900 dark:text-white">{selectedRequest.customer_email || 'N/A'}</p>
                   </div>
                   <div>
                     <span className="text-gray-600 dark:text-gray-400">Mobile:</span>
@@ -407,7 +410,7 @@ export default function ResellerUpgradeRequestsPage() {
                   </div>
                   <div>
                     <span className="text-gray-600 dark:text-gray-400">User ID:</span>
-                    <p className="font-medium text-gray-900 dark:text-white">{selectedRequest.user_id}</p>
+                    <p className="break-all font-medium text-gray-900 dark:text-white">{selectedRequest.user_id}</p>
                   </div>
                 </div>
               </div>
@@ -425,7 +428,7 @@ export default function ResellerUpgradeRequestsPage() {
               {/* Status Info */}
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Status Information</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                   <div>
                     <span className="text-gray-600 dark:text-gray-400">Status:</span>
                     <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
@@ -458,8 +461,8 @@ export default function ResellerUpgradeRequestsPage() {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex gap-3">
+            <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50 sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 {selectedRequest.status === 'pending' && (
                   <>
                     <button

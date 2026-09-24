@@ -209,7 +209,7 @@ export default function SavedProductsPage() {
                 <div className="absolute top-2 right-2 flex gap-2">
                   <button
                     onClick={() => handleRemoveProduct(product.id)}
-                    className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg transition-colors hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-900/30"
                     title="Remove from saved"
                   >
                     <Trash2 className="h-5 w-5 text-red-600" />
@@ -245,14 +245,14 @@ export default function SavedProductsPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/reseller/products/${product.id}`}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                   >
                     <Eye className="h-4 w-4" />
                     View
                   </Link>
                   <button
                     onClick={() => openShareModal(product)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
+                    className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium text-white transition-all hover:opacity-90"
                     style={{ backgroundColor: 'rgb(var(--color-primary))' }}
                   >
                     <Share2 className="h-4 w-4" />
@@ -290,7 +290,7 @@ export default function SavedProductsPage() {
           onClick={() => setShareModalOpen(false)}
         >
           <div 
-            className="rounded-lg p-6 max-w-md w-full"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg p-4 sm:p-6"
             style={{ backgroundColor: 'rgb(var(--color-surface))' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -301,7 +301,7 @@ export default function SavedProductsPage() {
               </h3>
               <button
                 onClick={() => setShareModalOpen(false)}
-                className="p-1 rounded-lg hover:opacity-70"
+                className="flex h-11 w-11 items-center justify-center rounded-lg hover:opacity-70"
                 style={{ color: 'rgb(var(--color-text) / 0.7)' }}
               >
                 <X className="w-5 h-5" />

@@ -123,11 +123,13 @@ export default function AnalyticsPage() {
 
       <div className="space-y-6">
         {/* Date Range Filter */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range:</span>
-            <div className="flex gap-2">
+        <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="mb-2 flex items-center gap-2 sm:mb-0">
+              <Calendar className="h-5 w-5 flex-none text-gray-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:ml-3 sm:inline-flex">
               {[
                 { value: 'all', label: 'All Time' },
                 { value: '7days', label: 'Last 7 Days' },
@@ -137,7 +139,7 @@ export default function AnalyticsPage() {
                 <button
                   key={range.value}
                   onClick={() => handleDateRangeChange(range.value)}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  className={`min-h-11 rounded-md px-2 py-2 text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:py-1 sm:text-sm ${
                     dateRange === range.value
                       ? 'btn-primary'
                       : 'btn-outline'
@@ -149,8 +151,8 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 btn btn-outline rounded-md ">
+          <div className="flex">
+            <button className="btn btn-outline min-h-11 w-full rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 sm:w-auto dark:bg-gray-800 dark:text-gray-300">
               <Download className="h-4 w-4" />
               Export CSV
             </button>
@@ -210,10 +212,12 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Sort Options */}
-        <div className="mb-4 flex items-center gap-2">
-          <Filter className="h-5 w-5 text-gray-400" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</span>
-          <div className="flex gap-2">
+        <div className="mb-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 sm:flex">
             {[
               { value: 'saves', label: 'Saves' },
               { value: 'shares', label: 'Shares' },
@@ -224,7 +228,7 @@ export default function AnalyticsPage() {
               <button
                 key={sort.value}
                 onClick={() => handleSortChange(sort.value)}
-                className={sortBy === sort.value ? 'btn-primary btn-sm' : 'btn-outline btn-sm'}
+                className={`${sortBy === sort.value ? 'btn-primary' : 'btn-outline'} min-h-11 min-w-0 px-2 text-xs sm:min-h-0 sm:px-3 sm:text-sm`}
               >
                 {sort.label}
               </button>

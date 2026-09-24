@@ -127,7 +127,17 @@ export default function ResellersManagementPage() {
       if (!response.ok) throw new Error('Failed to fetch reseller profile');
 
       const data = await response.json();
-      setSelectedReseller(data.data);
+      const reseller = data.data;
+      let status = 'inactive';
+      if (Number(reseller.accountStatus) === 0) {
+        status = 'suspended';
+      } else if (reseller.approvalStatus === 'approved') {
+        status = 'active';
+      }
+      setSelectedReseller({
+        ...reseller,
+        status,
+      });
       setShowProfileModal(true);
     } catch (error) {
       console.error('Profile fetch error:', error);
@@ -339,9 +349,9 @@ export default function ResellersManagementPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-0 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Resellers Management
@@ -367,7 +377,7 @@ export default function ResellersManagementPage() {
             exportToCSV(resellers, headers, `resellers-export-${new Date().toISOString().split('T')[0]}.csv`);
             toast.success('Resellers exported successfully');
           }}
-          className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 flex items-center gap-2"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 sm:w-auto"
           style={{ backgroundColor: 'rgb(var(--color-primary))' }}
         >
           <Download className="w-4 h-4" />
@@ -553,8 +563,8 @@ export default function ResellersManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => fetchResellerProfile(reseller.userId)}
-                          className="hover:opacity-70 transition-opacity"
+                          onClick={() => fetchResellerProfile(reseller.id)}
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
                           style={{ color: 'rgb(var(--color-primary))' }}
                           title="View Profile"
                         >
@@ -562,7 +572,7 @@ export default function ResellersManagementPage() {
                         </button>
                         <button
                           onClick={() => handleEditReseller(reseller)}
-                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
                           title="Edit Details"
                         >
                           <Edit className="w-5 h-5" />
@@ -570,7 +580,7 @@ export default function ResellersManagementPage() {
                         {reseller.accountStatus !== 'active' && (
                           <button
                             onClick={() => handleApproveReseller(reseller.id)}
-                            className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
                             title="Approve Reseller"
                           >
                             <CheckCircle className="w-5 h-5" />
@@ -578,7 +588,7 @@ export default function ResellersManagementPage() {
                         )}
                         <button
                           onClick={() => fetchReferralTree(reseller.id)}
-                          className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
                           title="View Referrals"
                         >
                           <Users className="w-5 h-5" />
@@ -661,7 +671,10 @@ export default function ResellersManagementPage() {
                       <span className="font-medium">Phone:</span> {selectedReseller.phoneNumber}
                     </p>
                     <p className="text-gray-600 dark:text-gray-400">
-                      <span className="font-medium">Location:</span> {selectedReseller.city}, {selectedReseller.state}
+                      <span className="font-medium">Location:</span>{' '}
+                      {[selectedReseller.city, selectedReseller.state, selectedReseller.pincode]
+                        .filter((value) => value && value !== 'N/A' && value !== '000000')
+                        .join(', ') || 'Not provided'}
                     </p>
                   </div>
                 </div>
@@ -673,10 +686,13 @@ export default function ResellersManagementPage() {
                   </div>
                   <div className="space-y-2 text-sm">
                     <p className="text-gray-600 dark:text-gray-400">
-                      <span className="font-medium">Account:</span> ****{selectedReseller.accountNumber?.slice(-4) || 'N/A'}
+                      <span className="font-medium">Account:</span>{' '}
+                      {selectedReseller.bankAccountNumber
+                        ? `****${selectedReseller.bankAccountNumber.slice(-4)}`
+                        : 'Not provided'}
                     </p>
                     <p className="text-gray-600 dark:text-gray-400">
-                      <span className="font-medium">IFSC:</span> {selectedReseller.ifscCode || 'N/A'}
+                      <span className="font-medium">IFSC:</span> {selectedReseller.bankIfscCode || 'Not provided'}
                     </p>
                     <p className="text-gray-600 dark:text-gray-400">
                       <span className="font-medium">UPI:</span> {selectedReseller.upiId || 'N/A'}

@@ -66,13 +66,16 @@ router.get('/', async (req, res) => {
         u.is_verified,
         r.reseller_code,
         r.reseller_type,
+        u.address as address_line1,
+        NULL as address_line2,
         r.city,
         r.state,
         r.pincode,
         r.bank_account_number,
-        r.bank_ifsc_code,
+        r.bank_ifsc_code as bank_ifsc,
         r.bank_account_holder,
         r.upi_id,
+        'India' as country,
         r.commission_rate,
         r.profile_photo_url
       FROM users u
@@ -119,6 +122,8 @@ router.put('/personal', async (req, res) => {
       SET full_name = :full_name,
           email = :email,
           mobile = :mobile,
+          city = :city,
+          state = :state,
           profile_photo = :profile_photo,
           updated_at = NOW()
       WHERE id = :resellerId
@@ -128,6 +133,8 @@ router.put('/personal', async (req, res) => {
         full_name, 
         email, 
         mobile, 
+        city: city || null,
+        state: state || null,
         profile_photo: profile_photo || null 
       }
     });
@@ -138,7 +145,7 @@ router.put('/personal', async (req, res) => {
       SET city = :city,
           state = :state,
           updated_at = NOW()
-      WHERE id = :resellerId
+        WHERE user_id = :resellerId
     `, {
       replacements: { resellerId, city, state }
     });
@@ -174,11 +181,11 @@ router.put('/bank', async (req, res) => {
     await sequelize.query(`
       UPDATE resellers
       SET bank_account_number = :bank_account_number,
-          bank_ifsc = :bank_ifsc,
+          bank_ifsc_code = :bank_ifsc,
           bank_account_holder = :bank_account_holder,
           upi_id = :upi_id,
           updated_at = NOW()
-      WHERE id = :resellerId
+        WHERE user_id = :resellerId
     `, {
       replacements: { 
         resellerId,
@@ -358,31 +365,50 @@ router.post('/photo', upload.single('photo'), validateImageQuality, async (req, 
 // @desc    Update address details
 // @access  Private (Reseller only)
 router.put('/address', async (req, res) => {
+  let transaction;
   try {
     const resellerId = req.user.id;
-    const { address_line1, address_line2, city, state, pincode, country } = req.body;
+    const { address_line1, address_line2, city, state, pincode } = req.body;
+    const address = [address_line1, address_line2].filter(Boolean).join(', ') || null;
+    transaction = await sequelize.transaction();
 
     await sequelize.query(`
-      UPDATE resellers
-      SET address_line1 = :address_line1,
-          address_line2 = :address_line2,
+      UPDATE users
+      SET address = :address,
           city = :city,
           state = :state,
           pincode = :pincode,
-          country = :country,
           updated_at = NOW()
       WHERE id = :resellerId
     `, {
-      replacements: { 
+      replacements: {
         resellerId,
-        address_line1: address_line1 || null,
-        address_line2: address_line2 || null,
+        address,
         city: city || null,
         state: state || null,
-        pincode: pincode || null,
-        country: country || 'India'
-      }
+        pincode: pincode || null
+      },
+      transaction
     });
+
+    await sequelize.query(`
+      UPDATE resellers
+      SET city = :city,
+          state = :state,
+          pincode = :pincode,
+          updated_at = NOW()
+      WHERE user_id = :resellerId
+    `, {
+      replacements: { 
+        resellerId,
+        city: city || null,
+        state: state || null,
+        pincode: pincode || null
+      },
+      transaction
+    });
+
+    await transaction.commit();
 
     res.json({
       status: 'success',
@@ -390,6 +416,7 @@ router.put('/address', async (req, res) => {
     });
 
   } catch (error) {
+    if (transaction) await transaction.rollback();
     console.error('Update address error:', error);
     res.status(500).json({
       status: 'error',

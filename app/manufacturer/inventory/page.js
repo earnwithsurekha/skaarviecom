@@ -48,7 +48,7 @@ export default function InventoryPage() {
         setPagination({
           ...pagination,
           total: data.data.pagination.total,
-          pages: data.data.pagination.pages,
+          pages: data.data.pagination.totalPages,
         });
       }
     } catch (error) {
@@ -123,8 +123,8 @@ export default function InventoryPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+        <div className="mb-5 sm:mb-8">
+          <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
             Inventory Management
           </h1>
           <p style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -163,7 +163,7 @@ export default function InventoryPage() {
               <option value="desc">Descending</option>
             </select>
 
-            <label className="flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+            <label className="flex min-h-11 cursor-pointer items-center space-x-2 rounded-lg px-4 py-2" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
               <input
                 type="checkbox"
                 checked={filters.low_stock_only}
@@ -253,7 +253,7 @@ export default function InventoryPage() {
                           {product.hasVariants ? (
                             <button
                               onClick={() => router.push(`/manufacturer/products/add?id=${product.id}`)}
-                              className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                              className="flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                               style={{ color: 'rgb(var(--color-primary))', backgroundColor: 'rgba(var(--color-primary), 0.1)' }}
                               title="Edit Variant Stock"
                             >
@@ -263,7 +263,7 @@ export default function InventoryPage() {
                             <>
                               <button
                                 onClick={() => openModal(product, 'increase')}
-                                className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                                className="flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                                 style={{ color: 'rgb(var(--color-success))', backgroundColor: 'rgba(34, 197, 94, 0.1)' }}
                                 title="Add Stock"
                               >
@@ -271,7 +271,7 @@ export default function InventoryPage() {
                               </button>
                               <button
                                 onClick={() => openModal(product, 'decrease')}
-                                className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                                className="flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                                 style={{ color: 'rgb(var(--color-danger))', backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
                                 title="Remove Stock"
                               >
@@ -279,7 +279,7 @@ export default function InventoryPage() {
                               </button>
                               <button
                                 onClick={() => openModal(product, 'update')}
-                                className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                                className="flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                                 style={{ color: 'rgb(var(--color-primary))', backgroundColor: 'rgba(var(--color-primary), 0.1)' }}
                                 title="Update Stock"
                               >
@@ -289,7 +289,7 @@ export default function InventoryPage() {
                           )}
                           <button
                             onClick={() => router.push(`/manufacturer/inventory/${product.id}/history`)}
-                            className="p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                            className="flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                             style={{ color: 'rgb(var(--color-text-secondary))', backgroundColor: 'rgba(var(--color-text-secondary), 0.1)' }}
                             title="View History"
                           >
@@ -333,8 +333,8 @@ export default function InventoryPage() {
 
       {/* Stock Action Modal */}
       {modalType && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="card p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="card max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto p-4 sm:p-6">
             <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(var(--color-text))' }}>
               {modalType === 'increase' && 'Increase Stock'}
               {modalType === 'decrease' && 'Decrease Stock'}
@@ -381,17 +381,17 @@ export default function InventoryPage() {
                 </>
               )}
             </div>
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:justify-end">
               <button
                 onClick={closeModal}
-                className="btn btn-secondary"
+                className="btn btn-secondary min-h-11 w-full sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 onClick={handleStockAction}
                 disabled={!modalData.quantity}
-                className="btn btn-primary"
+                className="btn btn-primary min-h-11 w-full sm:w-auto"
               >
                 Confirm
               </button>

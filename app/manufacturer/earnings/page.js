@@ -87,8 +87,8 @@ export default function EarningsPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+        <div className="mb-5 sm:mb-8">
+          <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
             Earnings Overview
           </h1>
           <p style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -118,18 +118,18 @@ export default function EarningsPage() {
 
         {/* Product Earnings */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
+          <div className="border-b border-gray-200 px-4 py-4 sm:px-6 dark:border-gray-700">
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Product-wise Earnings</h2>
-              <div className="flex gap-2">
-                <div className="relative">
+              <div className="flex w-full sm:w-auto">
+                <div className="relative w-full sm:w-auto">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search products..."
-                    className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="h-11 w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:ring-2 focus:ring-blue-500 sm:w-auto dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
               </div>

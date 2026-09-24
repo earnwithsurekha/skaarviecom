@@ -231,7 +231,7 @@ export default function ReferralsPage() {
       </div>
 
       {/* Referral Link Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex items-center gap-2 mb-4">
           <Link2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -244,16 +244,16 @@ export default function ReferralsPage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Referral Code
             </label>
-            <div className="flex gap-2">
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={referralCode}
                 readOnly
-                className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white font-mono text-lg"
+                className="min-w-0 w-full flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 font-mono text-base text-gray-900 sm:text-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
               <button
                 onClick={() => copyToClipboard(referralCode)}
-                className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 flex items-center gap-2"
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 sm:w-auto"
                 style={{ backgroundColor: 'rgb(var(--color-primary))' }}
               >
                 <Copy className="h-5 w-5" />
@@ -266,16 +266,16 @@ export default function ReferralsPage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Registration Link
             </label>
-            <div className="flex gap-2">
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={generateRegistrationLink()}
                 readOnly
-                className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white text-sm"
+                className="min-w-0 w-full flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
               <button
                 onClick={() => copyToClipboard(generateRegistrationLink())}
-                className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 flex items-center gap-2"
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 sm:w-auto"
                 style={{ backgroundColor: 'rgb(var(--color-primary))' }}
               >
                 <Copy className="h-5 w-5" />

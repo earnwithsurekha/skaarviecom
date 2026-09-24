@@ -203,15 +203,15 @@ export default function OrderDetailPage() {
         backgroundColor: 'rgb(var(--color-background))',
         borderColor: 'rgb(var(--color-border))'
       }}>
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button onClick={() => router.back()} className="btn btn-ghost btn-sm">
+        <div className="py-4 sm:px-6">
+          <div className="flex min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+              <button onClick={() => router.back()} className="btn btn-ghost h-11 w-11 flex-none p-0" aria-label="Back to orders">
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>
+              <div className="min-w-0">
+                <div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+                  <h1 className="break-all text-xl font-bold sm:text-2xl" style={{ color: 'rgb(var(--color-text))' }}>
                     {order.orderNumber}
                   </h1>
                   <OrderStatusBadge status={order.orderStatus} />
@@ -222,12 +222,12 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
               {availableActions.includes('accept') && (
                 <button
                   onClick={handleAcceptOrder}
                   disabled={actionLoading}
-                  className="btn btn-success btn-sm"
+                  className="btn btn-success min-h-11 justify-center"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Accept Order
@@ -237,7 +237,7 @@ export default function OrderDetailPage() {
                 <button
                   onClick={handleUpdateToProcessing}
                   disabled={actionLoading}
-                  className="btn btn-primary btn-sm"
+                  className="btn btn-primary min-h-11 justify-center"
                 >
                   <Package className="w-4 h-4 mr-2" />
                   Start Processing
@@ -247,7 +247,7 @@ export default function OrderDetailPage() {
                 <button
                   onClick={() => setShowShippingModal(true)}
                   disabled={actionLoading}
-                  className="btn btn-primary btn-sm"
+                  className="btn btn-primary min-h-11 justify-center"
                 >
                   <Truck className="w-4 h-4 mr-2" />
                   Mark as Shipped
@@ -257,7 +257,7 @@ export default function OrderDetailPage() {
                 <button
                   onClick={handleMarkDelivered}
                   disabled={actionLoading}
-                  className="btn btn-success btn-sm"
+                  className="btn btn-success min-h-11 justify-center"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Mark as Delivered
@@ -269,7 +269,7 @@ export default function OrderDetailPage() {
       </header>
 
       {/* Main Content */}
-      <main className="p-6 space-y-6">
+      <main className="space-y-4 py-4 sm:space-y-6 sm:p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Order Details */}
           <div className="lg:col-span-2 space-y-6">

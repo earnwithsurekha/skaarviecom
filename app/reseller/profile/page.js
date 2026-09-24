@@ -337,8 +337,9 @@ export default function ProfilePage() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingPhoto}
-              className="absolute bottom-0 right-0 p-2 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+              className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-md transition-all hover:shadow-lg disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
               style={{ color: 'rgb(var(--color-primary))' }}
+              aria-label="Upload profile photo"
             >
               {uploadingPhoto ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: 'rgb(var(--color-primary))' }}></div>

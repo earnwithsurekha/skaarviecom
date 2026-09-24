@@ -67,7 +67,7 @@ export default function CustomerCartPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-background))' }}>
-      <main>
+      <main className="min-w-0">
         {/* Back to Home Button */}
         <button
           onClick={() => router.push('/customer')}
@@ -79,10 +79,10 @@ export default function CustomerCartPage() {
         </button>
 
         {/* Page Title */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3" style={{ color: 'rgb(var(--color-text))' }}>
-              <ShoppingCart className="h-8 w-8" />
+        <div className="mb-6 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="flex items-center gap-2 text-2xl font-bold sm:gap-3 sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
+              <ShoppingCart className="h-7 w-7 flex-none sm:h-8 sm:w-8" />
               Shopping Cart
             </h1>
             <p className="text-sm mt-1" style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -92,7 +92,7 @@ export default function CustomerCartPage() {
           {items.length > 0 && (
             <button
               onClick={handleClearCart}
-              className="text-sm font-medium flex items-center gap-2 transition-colors hover:opacity-80"
+              className="flex min-h-11 flex-none items-center gap-2 text-sm font-medium transition-colors hover:opacity-80"
               style={{ color: 'rgb(var(--color-danger))' }}
             >
               <Trash2 className="h-4 w-4" />
@@ -122,9 +122,9 @@ export default function CustomerCartPage() {
             </button>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="min-w-0 space-y-4 lg:col-span-2">
               {/* Referral Info Banner */}
               {referralCode && (
                 <div className="border rounded-lg p-4 flex items-center gap-3" style={{ 
@@ -147,12 +147,12 @@ export default function CustomerCartPage() {
               {items.map((item) => (
                 <div
                   key={getCartItemId(item.productId, item.selectedSize, item.selectedColor)}
-                  className="rounded-lg shadow p-4 flex gap-4"
+                  className="grid min-w-0 grid-cols-[4rem_minmax(0,1fr)] gap-3 rounded-lg p-3 shadow sm:grid-cols-[6rem_minmax(0,1fr)_auto] sm:gap-4 sm:p-4"
                   style={{ backgroundColor: 'rgb(var(--color-surface))' }}
                 >
                   {/* Product Image */}
                   <div
-                    className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer"
+                    className="h-16 w-16 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg sm:h-24 sm:w-24"
                     style={{ backgroundColor: 'rgb(var(--color-background))' }}
                     onClick={() => router.push(`/customer/products/${item.productId}`)}
                   >
@@ -170,9 +170,9 @@ export default function CustomerCartPage() {
                   </div>
 
                   {/* Product Info */}
-                  <div className="flex-1">
+                  <div className="min-w-0">
                     <h3
-                      className="font-semibold mb-1 cursor-pointer hover:opacity-80 transition-opacity"
+                      className="mb-1 break-words font-semibold transition-opacity hover:opacity-80"
                       style={{ color: 'rgb(var(--color-text))' }}
                       onClick={() => router.push(`/customer/products/${item.productId}`)}
                     >
@@ -193,7 +193,7 @@ export default function CustomerCartPage() {
                     )}
 
                     {/* Quantity Controls */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                       <button
                         onClick={() => handleUpdateQuantity(getCartItemId(item.productId, item.selectedSize, item.selectedColor), item.quantity - 1, item.maxStock)}
                         disabled={item.quantity <= 1}
@@ -202,7 +202,7 @@ export default function CustomerCartPage() {
                       >
                         <Minus className="h-4 w-4" />
                       </button>
-                      <span className="text-lg font-semibold w-12 text-center" style={{ color: 'rgb(var(--color-text))' }}>
+                      <span className="w-8 text-center text-base font-semibold sm:w-12 sm:text-lg" style={{ color: 'rgb(var(--color-text))' }}>
                         {item.quantity}
                       </span>
                       <button
@@ -231,11 +231,11 @@ export default function CustomerCartPage() {
                   </div>
 
                   {/* Item Total */}
-                  <div className="text-right">
+                  <div className="col-start-2 min-w-0 text-left sm:col-start-auto sm:text-right">
                     <p className="text-sm mb-1" style={{ color: 'rgb(var(--color-text-secondary))' }}>
                       Item Total
                     </p>
-                    <p className="text-xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>
+                    <p className="break-words text-lg font-bold sm:text-xl" style={{ color: 'rgb(var(--color-text))' }}>
                       {formatPrice(item.price * item.quantity)}
                     </p>
                   </div>
@@ -244,33 +244,33 @@ export default function CustomerCartPage() {
             </div>
 
             {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="rounded-lg shadow p-6 sticky top-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+            <div className="min-w-0 lg:col-span-1">
+              <div className="sticky top-6 min-w-0 rounded-lg p-4 shadow sm:p-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
                 <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(var(--color-text))' }}>
                   Order Summary
                 </h2>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex justify-between">
+                  <div className="flex min-w-0 justify-between gap-3">
                     <span style={{ color: 'rgb(var(--color-text-secondary))' }}>Subtotal</span>
                     <span className="font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
                       {formatPrice(subtotal)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: 'rgb(var(--color-text-secondary))' }}>Platform Fee ({totalItems} items × ₹5)</span>
-                    <span className="font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <span className="min-w-0 break-words" style={{ color: 'rgb(var(--color-text-secondary))' }}>Platform Fee ({totalItems} items × ₹5)</span>
+                    <span className="flex-none font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
                       {formatPrice(platformFee || 0)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex min-w-0 justify-between gap-3">
                     <span style={{ color: 'rgb(var(--color-text-secondary))' }}>Shipping</span>
                     <span className="font-semibold" style={{ color: shipping === 0 ? 'rgb(var(--color-success))' : 'rgb(var(--color-text))' }}>
                       {shipping === 0 ? 'FREE' : formatPrice(shipping)}
                     </span>
                   </div>
                   <div className="border-t pt-3" style={{ borderColor: 'rgb(var(--color-border))' }}>
-                    <div className="flex justify-between">
+                    <div className="flex min-w-0 justify-between gap-3">
                       <span className="text-lg font-semibold" style={{ color: 'rgb(var(--color-text))' }}>Total</span>
                       <span className="text-xl font-bold" style={{ color: 'rgb(var(--color-primary))' }}>
                         {formatPrice(total)}

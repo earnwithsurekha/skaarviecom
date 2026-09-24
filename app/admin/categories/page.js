@@ -32,6 +32,16 @@ export default function CategoriesManagementPage() {
     fetchCategories();
   }, []);
 
+  const normalizeCategory = (category) => ({
+    categoryId: category.categoryId || category.id,
+    categoryName: category.categoryName || category.name,
+    description: category.description || '',
+    parentCategoryId: category.parentCategoryId || category.parent_id || null,
+    sortOrder: category.sortOrder ?? category.sort_order ?? 0,
+    status: category.status || (Number(category.is_active) === 1 ? 'active' : 'inactive'),
+    productCount: category.productCount ?? category.product_count ?? 0,
+  });
+
   const fetchCategories = async () => {
     try {
       setLoading(true);
@@ -50,7 +60,7 @@ export default function CategoriesManagementPage() {
       if (!response.ok) throw new Error('Failed to fetch categories');
 
       const data = await response.json();
-      setCategories(data.data || []);
+      setCategories((data.data || []).map(normalizeCategory));
     } catch (error) {
       console.error('Categories fetch error:', error);
       toast.error('Failed to load categories');
@@ -134,7 +144,13 @@ export default function CategoriesManagementPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.categoryName,
+          description: formData.description,
+          parentId: formData.parentCategoryId,
+          sortOrder: formData.sortOrder,
+          isActive: formData.status === 'active',
+        }),
       });
 
       if (!response.ok) {
@@ -251,21 +267,23 @@ export default function CategoriesManagementPage() {
           <div className="flex self-end gap-2 sm:self-auto">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`inline-flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
                 viewMode === 'grid'
                   ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
+              aria-label="Grid view"
             >
               <Grid3x3 className="w-5 h-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`inline-flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
                 viewMode === 'list'
                   ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
+              aria-label="List view"
             >
               <List className="w-5 h-5" />
             </button>
@@ -329,7 +347,7 @@ export default function CategoriesManagementPage() {
                   <button
                     key={`view-${category.categoryId}`}
                     onClick={() => router.push(`/admin/products?category=${category.categoryId}`)}
-                    className="p-2 hover:opacity-70 transition-opacity rounded-lg"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
                     style={{ color: 'rgb(var(--color-primary))' }}
                     title="View Products"
                   >
@@ -338,7 +356,7 @@ export default function CategoriesManagementPage() {
                   <button
                     key={`edit-${category.categoryId}`}
                     onClick={() => handleEditCategory(category)}
-                    className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
                     title="Edit"
                   >
                     <Edit className="w-4 h-4" />
@@ -346,7 +364,7 @@ export default function CategoriesManagementPage() {
                   <button
                     key={`delete-${category.categoryId}`}
                     onClick={() => handleDeleteCategory(category)}
-                    className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                     title="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -410,7 +428,7 @@ export default function CategoriesManagementPage() {
                       <button
                         key={`view-${category.categoryId}`}
                         onClick={() => router.push(`/admin/products?category=${category.categoryId}`)}
-                        className="hover:opacity-70 transition-opacity"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg transition-opacity hover:opacity-70"
                         style={{ color: 'rgb(var(--color-primary))' }}
                         title="View Products"
                       >
@@ -419,7 +437,7 @@ export default function CategoriesManagementPage() {
                       <button
                         key={`edit-${category.categoryId}`}
                         onClick={() => handleEditCategory(category)}
-                        className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
                         title="Edit"
                       >
                         <Edit className="w-5 h-5" />
@@ -427,7 +445,7 @@ export default function CategoriesManagementPage() {
                       <button
                         key={`delete-${category.categoryId}`}
                         onClick={() => handleDeleteCategory(category)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                         title="Delete"
                       >
                         <Trash2 className="w-5 h-5" />

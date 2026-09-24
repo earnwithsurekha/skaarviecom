@@ -140,21 +140,6 @@ export default function WalletManagementPage() {
     }).format(amount || 0);
   };
 
-  const getStatusBadge = (status) => {
-    const statusColors = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      approved: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      paid: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      rejected: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-    };
-
-    return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status?.toUpperCase()}
-      </span>
-    );
-  };
-
   if (loading && activeTab === 'overview') {
     return (
       <div className="flex items-center justify-center h-96">
@@ -166,34 +151,34 @@ export default function WalletManagementPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Wallet Management</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">Wallet Management</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Manage reseller and manufacturer financial accounts
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
           <Link
             href="/admin/withdrawals"
-            className="btn btn-primary"
+            className="btn btn-primary min-w-0 justify-center px-3 sm:px-4"
           >
-            <ArrowUpRight className="w-4 h-4" />
+            <ArrowUpRight className="h-4 w-4 flex-none" />
             Withdrawals
           </Link>
           <Link
             href="/admin/settlements"
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+            className="flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-lg bg-purple-600 px-3 py-2 text-white transition-colors hover:bg-purple-700 sm:px-4"
           >
-            <ArrowDownRight className="w-4 h-4" />
+            <ArrowDownRight className="h-4 w-4 flex-none" />
             Settlements
           </Link>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-8">
+      <div className="overflow-x-auto border-b border-gray-200 dark:border-gray-700">
+        <nav className="-mb-px flex min-w-max gap-6 sm:gap-8">
           {['overview', 'resellers', 'manufacturers'].map((tab) => (
             <button
               key={tab}

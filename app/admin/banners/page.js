@@ -561,15 +561,17 @@ export default function BannersPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleEdit(banner)}
-                          className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
                           title="Edit"
+                          aria-label={`Edit ${banner.title}`}
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(banner.id)}
-                          className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                           title="Delete"
+                          aria-label={`Delete ${banner.title}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -611,8 +613,11 @@ export default function BannersPage() {
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div
+            className="w-full max-w-2xl overflow-y-auto rounded-lg bg-white dark:bg-gray-800"
+            style={{ maxHeight: 'calc(100dvh - 4rem)' }}
+          >
+            <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700 sm:p-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {editingBanner ? 'Edit Banner' : 'Create New Banner'}
               </h2>
@@ -621,13 +626,14 @@ export default function BannersPage() {
                   setShowModal(false);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                aria-label="Close banner editor"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 p-4 sm:p-6">
               {/* Image Upload */}
               <div>
                 <label htmlFor="banner-image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -702,7 +708,7 @@ export default function BannersPage() {
               </div>
 
               {/* Banner Type & Display Order */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Banner Type *
@@ -735,7 +741,7 @@ export default function BannersPage() {
               </div>
 
               {/* Link URL & Target */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Link URL
@@ -765,7 +771,7 @@ export default function BannersPage() {
               </div>
 
               {/* Start & End Date */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Start Date

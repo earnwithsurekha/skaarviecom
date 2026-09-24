@@ -267,8 +267,8 @@ export default function SupportOrders() {
       )}
 
       {selectedOrder && (
-        <dialog open className="fixed inset-0 z-50 flex h-full max-h-none w-full max-w-none items-center justify-center bg-slate-950/60 p-3 sm:p-6" aria-label={`Order ${selectedOrder.orderNumber} details`} onCancel={() => setSelectedOrder(null)}>
-          <div className="max-h-[94vh] w-full max-w-5xl overflow-y-auto rounded-md bg-white shadow-2xl">
+        <dialog open className="fixed inset-0 z-50 !m-0 flex h-dvh max-h-none w-full max-w-none box-border items-center justify-center bg-slate-950/60 p-3 sm:p-6" aria-label={`Order ${selectedOrder.orderNumber} details`} onCancel={() => setSelectedOrder(null)}>
+          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-y-auto rounded-md bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)]">
             <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
               <div>
                 <div className="flex flex-wrap items-center gap-2">

@@ -254,7 +254,7 @@ export default function DashboardPage() {
               </div>
               <button 
                 onClick={() => router.push('/manufacturer/inventory?low_stock_only=true')}
-                className="text-sm text-yellow-600 hover:text-yellow-700 font-medium"
+                className="flex min-h-11 flex-none items-center px-2 text-sm font-medium text-yellow-600 hover:text-yellow-700"
               >
                 View All
               </button>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
             </div>
             <button 
               onClick={() => router.push('/manufacturer/orders')}
-              className="text-sm font-medium hover:opacity-80 transition-opacity"
+              className="flex min-h-11 flex-none items-center px-2 text-sm font-medium transition-opacity hover:opacity-80"
               style={{ color: 'rgb(var(--color-primary))' }}
             >
               View All

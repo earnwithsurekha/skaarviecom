@@ -73,8 +73,8 @@ export default function SettlementsPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+        <div className="mb-5 sm:mb-8">
+          <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
             Settlement History
           </h1>
           <p style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -84,12 +84,12 @@ export default function SettlementsPage() {
 
         {/* Status Tabs */}
         <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex gap-4">
+          <div className="grid grid-cols-4 gap-1 sm:flex sm:gap-4">
             {statusTabs.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => handleStatusFilter(tab.value)}
-                className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                className={`min-w-0 border-b-2 px-1 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-base ${
                   selectedStatus === tab.value
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -153,7 +153,7 @@ export default function SettlementsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
                           onClick={() => handleViewDetail(settlement.id)}
-                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 flex items-center gap-1"
+                          className="flex min-h-11 items-center gap-1 px-2 text-blue-600 hover:text-blue-800 dark:text-blue-400"
                         >
                           <FileText className="w-4 h-4" />
                           View
@@ -170,14 +170,15 @@ export default function SettlementsPage() {
         {/* Detail Modal */}
         {showDetailModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800">
+            <div className="max-h-[calc(100dvh-2rem)] w-full max-w-4xl overflow-y-auto rounded-lg bg-white dark:bg-gray-800">
+              <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-gray-200 bg-white p-4 sm:p-6 dark:border-gray-700 dark:bg-gray-800">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Settlement Details
                 </h3>
                 <button
                   onClick={() => setShowDetailModal(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="flex h-11 w-11 flex-none items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  aria-label="Close settlement details"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -188,11 +189,11 @@ export default function SettlementsPage() {
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               ) : selectedSettlement ? (
-                <div className="p-6">
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="p-4 sm:p-6">
+                  <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Settlement ID</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{selectedSettlement.settlementId}</p>
+                      <p className="break-all text-lg font-semibold text-gray-900 dark:text-white">{selectedSettlement.settlementId}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
@@ -216,7 +217,7 @@ export default function SettlementsPage() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">Platform Fee</p>
                       <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatCurrency(selectedSettlement.platformFeeTotal)}</p>
                     </div>
-                    <div className="col-span-2">
+                    <div className="sm:col-span-2">
                       <p className="text-sm text-gray-500 dark:text-gray-400">Net Payable</p>
                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(selectedSettlement.netPayable)}</p>
                     </div>
@@ -226,12 +227,12 @@ export default function SettlementsPage() {
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Orders in this Settlement</h4>
                     <div className="space-y-2">
                       {settlementOrders.map((order) => (
-                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">{order.order_number}</p>
+                        <div key={order.id} className="flex flex-col items-start gap-2 rounded-lg bg-gray-50 p-3 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-700">
+                          <div className="min-w-0">
+                            <p className="break-all font-medium text-gray-900 dark:text-white">{order.order_number}</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(order.ordered_at)}</p>
                           </div>
-                          <div className="text-right">
+                          <div className="sm:text-right">
                             <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(order.manufacturerAmount)}</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{order.order_status}</p>
                           </div>

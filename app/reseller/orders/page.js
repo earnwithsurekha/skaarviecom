@@ -167,7 +167,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-7">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-2">
             <Package className="h-5 w-5 text-gray-600 dark:text-gray-400" />
@@ -226,8 +226,8 @@ export default function OrdersPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
           <div className="md:col-span-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -259,14 +259,14 @@ export default function OrdersPage() {
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className="mt-3 flex md:mt-4">
           <button
             onClick={() => {
               setSearchInput('');
               setFilters({ search: '', status: '' });
               setPagination({ ...pagination, page: 1 });
             }}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="w-full rounded-lg bg-gray-200 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-300 sm:w-auto dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
             Clear
           </button>
