@@ -61,7 +61,7 @@ export default function StockHistoryPage({ params }) {
         setPagination({
           ...pagination,
           total: data.data.pagination.total,
-          pages: data.data.pagination.pages,
+          pages: data.data.pagination.totalPages,
         });
       }
     } catch (error) {
@@ -98,26 +98,26 @@ export default function StockHistoryPage({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 py-2 sm:p-6 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => router.push('/manufacturer/inventory')}
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 mb-4 flex items-center"
+            className="mb-4 flex min-h-11 items-center text-blue-600 hover:text-blue-800 dark:text-blue-400"
           >
             ← Back to Inventory
           </button>
           {product && (
             <>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="mb-2 break-words text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
                 Stock History: {product.name}
               </h1>
-              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="grid grid-cols-1 gap-2 text-sm text-gray-600 sm:flex sm:items-center sm:space-x-4 dark:text-gray-400">
                 <span>Current Stock: <strong className="text-gray-900 dark:text-white">{product.stock_quantity}</strong></span>
-                <span>•</span>
+                <span className="hidden sm:inline">•</span>
                 <span>Threshold: <strong className="text-gray-900 dark:text-white">{product.low_stock_threshold}</strong></span>
-                <span>•</span>
+                <span className="hidden sm:inline">•</span>
                 <span>Total Sold: <strong className="text-gray-900 dark:text-white">{product.sales_count}</strong></span>
               </div>
             </>
@@ -230,7 +230,7 @@ export default function StockHistoryPage({ params }) {
 
           {/* Pagination */}
           {pagination.pages > 1 && (
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between">
+            <div className="portal-pagination flex items-center justify-between border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-gray-600">
               <div className="text-sm text-gray-700 dark:text-gray-300">
                 Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} changes
               </div>

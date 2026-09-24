@@ -198,29 +198,29 @@ export default function ManufacturerProductDetailPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 py-2 sm:p-6 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="flex min-h-11 items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back to Products</span>
           </button>
 
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
             <button
               onClick={viewAnalytics}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-purple-600 px-3 py-2 text-white transition-colors hover:bg-purple-700 sm:px-4"
             >
               <BarChart3 className="h-5 w-5" />
               Analytics
             </button>
             <button
               onClick={handleToggleVisibility}
-              className={product.status === 'active' ? 'btn btn-warning' : 'btn btn-success'}
+              className={`${product.status === 'active' ? 'btn-warning' : 'btn-success'} btn min-h-11 justify-center`}
             >
               {product.status === 'active' ? (
                 <>
@@ -236,7 +236,7 @@ export default function ManufacturerProductDetailPage() {
             </button>
             <button
               onClick={handleEdit}
-              className="btn btn-primary"
+              className="btn btn-primary min-h-11 justify-center"
             >
               <Edit className="h-5 w-5" />
               Edit
@@ -244,7 +244,7 @@ export default function ManufacturerProductDetailPage() {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="btn btn-danger"
+              className="btn btn-danger min-h-11 justify-center"
             >
               {deleting ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

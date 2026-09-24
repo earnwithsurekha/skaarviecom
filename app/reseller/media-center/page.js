@@ -186,10 +186,10 @@ export default function MediaDownloadCenterPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+      <div className="mb-5 sm:mb-8">
+        <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
           Media Download Center
         </h1>
         <p style={{ color: 'rgb(var(--color-text) / 0.7)' }}>
@@ -199,10 +199,10 @@ export default function MediaDownloadCenterPage() {
 
       {/* Filters & Search */}
       <div 
-        className="p-6 rounded-lg mb-6"
+        className="mb-6 rounded-lg p-4 sm:p-6"
         style={{ backgroundColor: 'rgb(var(--color-surface))' }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
           {/* Search */}
           <div className="relative">
             <Search 
@@ -464,14 +464,14 @@ export default function MediaDownloadCenterPage() {
           onClick={clearSelection}
         >
           <div 
-            className="rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-4xl overflow-y-auto rounded-lg p-4 sm:p-6"
             style={{ backgroundColor: 'rgb(var(--color-surface))' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+            <div className="mb-6 flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="mb-2 break-words text-xl font-bold sm:text-2xl" style={{ color: 'rgb(var(--color-text))' }}>
                   {selectedProduct.name}
                 </h2>
                 <p style={{ color: 'rgb(var(--color-text) / 0.7)' }}>
@@ -480,7 +480,8 @@ export default function MediaDownloadCenterPage() {
               </div>
               <button
                 onClick={clearSelection}
-                className="p-2 rounded-lg hover:opacity-70"
+                className="flex h-11 w-11 flex-none items-center justify-center rounded-lg hover:opacity-70"
+                aria-label="Close media viewer"
                 style={{ color: 'rgb(var(--color-text))' }}
               >
                 ✕
@@ -489,8 +490,8 @@ export default function MediaDownloadCenterPage() {
 
             {/* Product Images Section */}
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(var(--color-text))' }}>
+              <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="flex items-center gap-2 text-lg font-semibold" style={{ color: 'rgb(var(--color-text))' }}>
                   <ImageIcon className="w-5 h-5" />
                   Product Images ({selectedProduct.images?.length || 0})
                 </h3>
@@ -498,7 +499,7 @@ export default function MediaDownloadCenterPage() {
                   <button
                     onClick={() => downloadAllImages(selectedProduct)}
                     disabled={downloading[`all-${selectedProduct.id}`]}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 transition-colors disabled:opacity-50 sm:w-auto"
                     style={{ 
                       backgroundColor: 'rgb(var(--color-primary))',
                       color: 'white'

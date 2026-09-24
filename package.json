@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "android:assets": "capacitor-assets generate --android --iconBackgroundColor \"#4f46e5\" --iconBackgroundColorDark \"#312e81\" --splashBackgroundColor \"#4f46e5\" --splashBackgroundColorDark \"#312e81\"",
+    "android:assets": "capacitor-assets generate --android --iconBackgroundColor \"#f97316\" --iconBackgroundColorDark \"#c2410c\" --splashBackgroundColor \"#f97316\" --splashBackgroundColorDark \"#c2410c\"",
     "android:sync": "cap sync android",
     "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug",
     "android:install": "cd android && gradlew.bat installDebug"

@@ -156,6 +156,7 @@ export default function ProductsPage() {
       sortBy: 'created_at'
     });
     setPagination({ ...pagination, page: 1 });
+    setFiltersOpen(false);
   };
 
   const handleSaveProduct = async (productId, isSaved) => {
@@ -470,17 +471,17 @@ export default function ProductsPage() {
           <div className="md:col-span-4"></div>
         </div>
         
-        <div className="flex gap-2 mt-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 md:flex md:gap-2">
           <button
             onClick={handleSearch}
-            className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
+            className="w-full rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 md:w-auto"
             style={{ backgroundColor: 'rgb(var(--color-primary))' }}
           >
             Apply Filters
           </button>
           <button
             onClick={clearFilters}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="w-full rounded-lg bg-gray-200 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-300 md:w-auto dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
             Clear
           </button>

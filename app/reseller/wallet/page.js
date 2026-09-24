@@ -8,9 +8,7 @@ import {
   TrendingUp,
   TrendingDown,
   Plus,
-  X,
-  Calendar,
-  Filter
+  X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -203,7 +201,7 @@ export default function WalletPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Wallet
@@ -215,7 +213,7 @@ export default function WalletPage() {
         <button
           onClick={() => setShowWithdrawModal(true)}
           disabled={!balance || balance.current_balance < 500}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           style={{ backgroundColor: 'rgb(var(--color-primary))' }}
         >
           <Plus className="h-5 w-5" />
@@ -224,7 +222,7 @@ export default function WalletPage() {
       </div>
 
       {/* Earnings Summary Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
           Earnings Summary
         </h2>
@@ -276,14 +274,14 @@ export default function WalletPage() {
 
       {/* Transaction History */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="flex flex-col items-stretch gap-3 border-b border-gray-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Transaction History
           </h2>
-          <div className="flex gap-2">
+          <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto">
             <button
               onClick={() => setFilter('all')}
-              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+              className={`w-full rounded-lg px-4 py-2 text-sm transition-colors sm:w-auto ${
                 filter === 'all'
                   ? 'bg-primary text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -294,7 +292,7 @@ export default function WalletPage() {
             </button>
             <button
               onClick={() => setFilter('credit')}
-              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+              className={`w-full rounded-lg px-4 py-2 text-sm transition-colors sm:w-auto ${
                 filter === 'credit'
                   ? 'bg-primary text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -305,7 +303,7 @@ export default function WalletPage() {
             </button>
             <button
               onClick={() => setFilter('debit')}
-              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+              className={`w-full rounded-lg px-4 py-2 text-sm transition-colors sm:w-auto ${
                 filter === 'debit'
                   ? 'bg-primary text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -411,20 +409,21 @@ export default function WalletPage() {
       {/* Withdrawal Modal */}
       {showWithdrawModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg bg-white dark:bg-gray-800">
+            <div className="flex items-center justify-between border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Request Withdrawal
               </h2>
               <button
                 onClick={() => setShowWithdrawModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="flex h-11 w-11 flex-none items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                aria-label="Close withdrawal request"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            <form onSubmit={handleWithdraw} className="p-6 space-y-4">
+            <form onSubmit={handleWithdraw} className="space-y-4 p-4 sm:p-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Available Balance
@@ -468,11 +467,11 @@ export default function WalletPage() {
                 </select>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="grid grid-cols-2 gap-3 pt-4">
                 <button
                   type="submit"
                   disabled={processing}
-                  className="flex-1 px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="min-h-11 w-full rounded-lg px-3 py-2 text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
                   style={{ backgroundColor: 'rgb(var(--color-primary))' }}
                 >
                   {processing ? 'Processing...' : 'Submit Request'}
@@ -480,7 +479,7 @@ export default function WalletPage() {
                 <button
                   type="button"
                   onClick={() => setShowWithdrawModal(false)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="min-h-11 w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 sm:px-4 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>

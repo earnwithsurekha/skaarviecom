@@ -82,8 +82,8 @@ export default function OrdersPage() {
         backgroundColor: 'rgb(var(--color-background))',
         borderColor: 'rgb(var(--color-border))'
       }}>
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="py-4 sm:px-6">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>
                 Orders Management
@@ -92,17 +92,17 @@ export default function OrdersPage() {
                 Manage and fulfill your orders
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline min-h-11 w-full sm:w-auto"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 {showFilters ? 'Hide Filters' : 'Show Filters'}
               </button>
               <button
                 onClick={handleExport}
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline min-h-11 w-full sm:w-auto"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
@@ -113,7 +113,7 @@ export default function OrdersPage() {
       </header>
 
       {/* Main Content */}
-      <main className="p-6 space-y-6">
+      <main className="space-y-4 py-4 sm:space-y-6 sm:p-6">
         {/* Filters */}
         {showFilters && (
           <OrderFilters

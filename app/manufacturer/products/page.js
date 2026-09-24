@@ -103,7 +103,7 @@ export default function ProductsPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>Products</h1>
             <p className="mt-2 text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -112,7 +112,7 @@ export default function ProductsPage() {
           </div>
           <button
             onClick={() => router.push('/manufacturer/products/add')}
-            className="btn btn-primary"
+            className="btn btn-primary min-h-11 w-full justify-center sm:w-auto"
           >
             <Plus size={20} />
             Add Product
@@ -258,7 +258,7 @@ export default function ProductsPage() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => router.push(`/manufacturer/products/${product.id}`)}
-                            className="p-2 rounded transition-colors hover:opacity-70"
+                            className="flex h-11 w-11 items-center justify-center rounded transition-colors hover:opacity-70"
                             style={{ color: 'rgb(var(--color-primary))' }}
                             title="View"
                           >
@@ -267,7 +267,7 @@ export default function ProductsPage() {
                           {product.status === 'draft' && (
                             <button
                               onClick={() => router.push(`/manufacturer/products/add?id=${product.id}`)}
-                              className="p-2 rounded transition-colors hover:opacity-70"
+                              className="flex h-11 w-11 items-center justify-center rounded transition-colors hover:opacity-70"
                               style={{ color: 'rgb(var(--color-text-secondary))' }}
                               title="Edit"
                             >
@@ -276,7 +276,7 @@ export default function ProductsPage() {
                           )}
                           <button
                             onClick={() => handleDelete(product.id)}
-                            className="p-2 rounded transition-colors hover:opacity-70"
+                            className="flex h-11 w-11 items-center justify-center rounded transition-colors hover:opacity-70"
                             style={{ color: 'rgb(var(--color-danger))' }}
                             title="Delete"
                           >

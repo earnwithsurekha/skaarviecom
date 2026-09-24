@@ -314,9 +314,9 @@ export default function ReportsAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-0 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Reports & Analytics
@@ -327,7 +327,7 @@ export default function ReportsAnalyticsPage() {
         </div>
         <button
           onClick={() => handleExport('pdf')}
-          className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 flex items-center gap-2"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 sm:w-auto"
           style={{ backgroundColor: 'rgb(var(--color-primary))' }}
         >
           <Download className="w-4 h-4" />
@@ -338,12 +338,12 @@ export default function ReportsAnalyticsPage() {
       {/* Date Range Selector */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {['today', '7days', '30days', 'year'].map((filter) => (
               <button
                 key={filter}
                 onClick={() => handleQuickFilter(filter)}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                className="min-h-11 rounded-lg px-3 py-2 text-sm font-medium transition-all sm:px-4"
                 style={quickFilter === filter ? {
                   backgroundColor: 'rgb(var(--color-primary))',
                   color: 'white'
@@ -367,7 +367,7 @@ export default function ReportsAnalyticsPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-1 items-center gap-2 sm:flex">
             <input
               type="date"
               value={dateRange.startDate}
@@ -375,7 +375,7 @@ export default function ReportsAnalyticsPage() {
                 setDateRange({ ...dateRange, startDate: e.target.value });
                 setQuickFilter('custom');
               }}
-              className="px-4 py-2 rounded-lg focus:ring-2 focus:outline-none transition-all"
+              className="min-h-11 min-w-0 w-full rounded-lg px-4 py-2 transition-all focus:outline-none focus:ring-2 sm:w-auto"
               style={{
                 backgroundColor: 'rgb(var(--color-background))',
                 border: '1px solid rgb(var(--color-border))',
@@ -384,7 +384,7 @@ export default function ReportsAnalyticsPage() {
               onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(var(--color-primary))'}
               onBlur={(e) => e.currentTarget.style.borderColor = 'rgb(var(--color-border))'}
             />
-            <span style={{ color: 'rgb(var(--color-text-secondary))' }}>to</span>
+            <span className="text-center" style={{ color: 'rgb(var(--color-text-secondary))' }}>to</span>
             <input
               type="date"
               value={dateRange.endDate}
@@ -392,7 +392,7 @@ export default function ReportsAnalyticsPage() {
                 setDateRange({ ...dateRange, endDate: e.target.value });
                 setQuickFilter('custom');
               }}
-              className="px-4 py-2 rounded-lg focus:ring-2 focus:outline-none transition-all"
+              className="min-h-11 min-w-0 w-full rounded-lg px-4 py-2 transition-all focus:outline-none focus:ring-2 sm:w-auto"
               style={{
                 backgroundColor: 'rgb(var(--color-background))',
                 border: '1px solid rgb(var(--color-border))',
@@ -403,7 +403,7 @@ export default function ReportsAnalyticsPage() {
             />
             <button
               onClick={fetchReportData}
-              className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
+              className="min-h-11 w-full rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 sm:w-auto"
               style={{ backgroundColor: 'rgb(var(--color-primary))' }}
             >
               Apply
@@ -417,14 +417,14 @@ export default function ReportsAnalyticsPage() {
         backgroundColor: 'rgb(var(--color-background))',
         border: '1px solid rgb(var(--color-border))'
       }}>
-        <div className="flex p-1 gap-1">
+        <div className="grid grid-cols-2 gap-1 p-1 sm:flex">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium text-sm transition-all"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-md px-2 py-3 text-sm font-medium transition-all sm:flex-1 sm:px-4"
                 style={activeTab === tab.id ? {
                   backgroundColor: 'rgba(var(--color-primary), 0.1)',
                   color: 'rgb(var(--color-primary))',

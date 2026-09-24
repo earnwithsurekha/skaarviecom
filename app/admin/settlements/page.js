@@ -284,9 +284,9 @@ export default function SettlementsManagementPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-0 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Manufacturer Settlements
@@ -295,7 +295,7 @@ export default function SettlementsManagementPage() {
             Process and track manufacturer payments
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
           <button
             onClick={() => {
               if (settlements.length === 0) {
@@ -312,14 +312,14 @@ export default function SettlementsManagementPage() {
               exportToCSV(settlements, headers, `settlements-export-${new Date().toISOString().split('T')[0]}.csv`);
               toast.success('Settlements exported successfully');
             }}
-            className="btn btn-success"
+            className="btn btn-success min-h-11 justify-center"
           >
             <Download className="w-4 h-4" />
             Export
           </button>
           <button
             onClick={() => setShowProcessModal(true)}
-            className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 flex items-center gap-2"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2 text-white transition-all hover:opacity-90 sm:px-4"
             style={{ backgroundColor: 'rgb(var(--color-primary))' }}
           >
             <DollarSign className="w-4 h-4" />

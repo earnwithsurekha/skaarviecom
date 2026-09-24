@@ -142,7 +142,7 @@ export default function AnalyticsTable({ products, onSort, currentSort }) {
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                 <button
                   onClick={() => router.push(`/manufacturer/products/${product.productId}/analytics`)}
-                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center gap-1"
+                  className="inline-flex min-h-11 items-center gap-1 px-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   <Eye className="h-4 w-4" />
                   View Details

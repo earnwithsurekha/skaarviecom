@@ -41,12 +41,12 @@ export default function OrderFilters({ filters, onFilterChange, onRefresh }) {
   return (
     <div className="card space-y-4">
       {/* Status Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:overflow-x-auto sm:pb-2">
         {statusTabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => onFilterChange({ status: tab.value })}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`min-h-11 min-w-0 rounded-lg px-2 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-sm sm:whitespace-nowrap ${
               filters.status === tab.value
                 ? 'bg-primary-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -79,7 +79,8 @@ export default function OrderFilters({ filters, onFilterChange, onRefresh }) {
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-gray-400 hover:text-gray-600"
+                aria-label="Clear order search"
               >
                 ×
               </button>
@@ -113,7 +114,7 @@ export default function OrderFilters({ filters, onFilterChange, onRefresh }) {
       </div>
 
       {/* Active Filters and Actions */}
-      <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'rgb(var(--color-border))' }}>
+      <div className="flex flex-col items-stretch gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'rgb(var(--color-border))' }}>
         <div className="flex items-center gap-2 flex-wrap">
           {filters.status !== 'all' && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
@@ -153,8 +154,9 @@ export default function OrderFilters({ filters, onFilterChange, onRefresh }) {
 
         <button
           onClick={onRefresh}
-          className="btn btn-ghost btn-sm"
+          className="btn btn-ghost min-h-11 w-full sm:w-11"
           title="Refresh orders"
+          aria-label="Refresh orders"
         >
           <RefreshCw className="w-4 h-4" />
         </button>

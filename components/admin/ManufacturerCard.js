@@ -94,7 +94,7 @@ export default function ManufacturerRow({ manufacturer, onClick }) {
             event.stopPropagation();
             onClick();
           }}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md transition-opacity hover:opacity-70"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md transition-opacity hover:opacity-70"
           style={{ color: 'rgb(var(--color-primary))' }}
           title="View manufacturer details"
           aria-label={`View details for ${manufacturer.companyName}`}

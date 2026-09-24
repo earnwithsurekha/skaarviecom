@@ -199,7 +199,7 @@ export default function SupportInbox({ title = 'Live Chat', description = 'Reply
                 <button
                   type="submit"
                   disabled={!draft.trim() || !isConnected}
-                  className="flex h-10 w-10 items-center justify-center rounded-md bg-blue-600 text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-11 w-11 items-center justify-center rounded-md bg-blue-600 text-white disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="Send reply"
                 >
                   <Send className="h-4 w-4" />

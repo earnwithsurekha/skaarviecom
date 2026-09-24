@@ -241,45 +241,45 @@ export default function SupportPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm border border-gray-200 dark:border-gray-700 w-fit">
+      <div className="grid w-full grid-cols-3 gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:flex sm:w-fit sm:gap-2">
         <button
           onClick={() => setActiveTab('tickets')}
-          className={`px-6 py-2.5 rounded-md font-medium transition-all ${
+          className={`min-w-0 rounded-md px-2 py-2.5 text-xs font-medium transition-all sm:px-6 sm:text-base ${
             activeTab === 'tickets'
               ? 'text-white shadow-sm'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           style={activeTab === 'tickets' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
             <Ticket className="h-5 w-5" />
             My Tickets
           </div>
         </button>
         <button
           onClick={() => setActiveTab('faqs')}
-          className={`px-6 py-2.5 rounded-md font-medium transition-all ${
+          className={`min-w-0 rounded-md px-2 py-2.5 text-xs font-medium transition-all sm:px-6 sm:text-base ${
             activeTab === 'faqs'
               ? 'text-white shadow-sm'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           style={activeTab === 'faqs' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
             <MessageSquare className="h-5 w-5" />
             FAQs
           </div>
         </button>
         <button
           onClick={() => setActiveTab('contact')}
-          className={`px-6 py-2.5 rounded-md font-medium transition-all ${
+          className={`min-w-0 rounded-md px-2 py-2.5 text-xs font-medium transition-all sm:px-6 sm:text-base ${
             activeTab === 'contact'
               ? 'text-white shadow-sm'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
           style={activeTab === 'contact' ? { backgroundColor: 'rgb(var(--color-primary))' } : {}}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
             <Phone className="h-5 w-5" />
             Contact
           </div>
@@ -290,7 +290,7 @@ export default function SupportPage() {
       {activeTab === 'tickets' && (
         <>
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_tickets}</p>
@@ -314,13 +314,13 @@ export default function SupportPage() {
           </div>
 
           {/* Action Bar */}
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <Filter className="h-5 w-5 text-gray-400" />
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex w-full items-center gap-3 sm:w-auto">
+              <Filter className="h-5 w-5 flex-none text-gray-400" />
               <select
                 value={ticketFilter}
                 onChange={(e) => setTicketFilter(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 sm:flex-none dark:border-gray-600 dark:bg-gray-800 dark:text-white"
               >
                 <option value="all">All Tickets</option>
                 <option value="open">Open</option>
@@ -332,7 +332,7 @@ export default function SupportPage() {
             
             <button
               onClick={() => setShowCreateTicket(!showCreateTicket)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white transition-all hover:opacity-90 sm:w-auto"
               style={{ backgroundColor: 'rgb(var(--color-primary))' }}
             >
               <Plus className="h-5 w-5" />

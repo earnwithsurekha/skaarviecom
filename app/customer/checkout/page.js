@@ -179,11 +179,11 @@ export default function CustomerCheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--color-background))' }}>
+    <div className="min-h-screen min-w-0" style={{ backgroundColor: 'rgb(var(--color-background))' }}>
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             <button
               onClick={() => router.push('/customer/cart')}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -191,9 +191,9 @@ export default function CustomerCheckoutPage() {
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <div>
-              <h1 className="text-3xl font-bold flex items-center gap-3" style={{ color: 'rgb(var(--color-text))' }}>
-                <ShoppingCart className="h-8 w-8" />
+            <div className="min-w-0">
+              <h1 className="flex items-center gap-2 text-2xl font-bold sm:gap-3 sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
+                <ShoppingCart className="h-7 w-7 flex-none sm:h-8 sm:w-8" />
                 Checkout
               </h1>
               <p className="text-sm mt-1" style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -204,12 +204,12 @@ export default function CustomerCheckoutPage() {
         </div>
       </div>
 
-      <main>
-        <div className="grid lg:grid-cols-3 gap-8">
+      <main className="min-w-0">
+        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
           {/* Checkout Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="min-w-0 space-y-4 lg:col-span-2 lg:space-y-6">
             {/* Shipping Information */}
-            <div className="rounded-lg shadow p-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+            <div className="min-w-0 rounded-lg p-4 shadow sm:p-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: 'rgb(var(--color-text))' }}>
                 <MapPin className="h-5 w-5" />
                 Delivery Information
@@ -374,38 +374,38 @@ export default function CustomerCheckoutPage() {
             </div>
 
             {/* Payment Method */}
-            <div className="rounded-lg shadow p-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+            <div className="min-w-0 rounded-lg p-4 shadow sm:p-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: 'rgb(var(--color-text))' }}>
                 <CreditCard className="h-5 w-5" />
                 Payment Method
               </h2>
 
               <div className="space-y-3">
-                <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity" style={{ borderColor: paymentMethod === 'cod' ? 'rgb(var(--color-primary))' : 'rgb(var(--color-border))' }}>
+                <label className="flex min-w-0 items-start rounded-lg border-2 p-4 transition-opacity hover:opacity-80" style={{ borderColor: paymentMethod === 'cod' ? 'rgb(var(--color-primary))' : 'rgb(var(--color-border))' }}>
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="cod"
                     checked={paymentMethod === 'cod'}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5"
+                    className="h-5 w-5 flex-none"
                   />
-                  <span className="ml-3 font-medium" style={{ color: 'rgb(var(--color-text))' }}>
+                  <span className="ml-3 min-w-0 break-words font-medium" style={{ color: 'rgb(var(--color-text))' }}>
                     Cash on Delivery (COD)
                   </span>
                 </label>
 
-                <label className="flex items-center p-4 border-2 rounded-lg cursor-not-allowed opacity-50" style={{ borderColor: 'rgb(var(--color-border))' }}>
+                <label className="flex min-w-0 items-start rounded-lg border-2 p-4 opacity-50" style={{ borderColor: 'rgb(var(--color-border))' }}>
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="razorpay"
                     checked={paymentMethod === 'razorpay'}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5"
+                    className="h-5 w-5 flex-none"
                     disabled
                   />
-                  <span className="ml-3 font-medium" style={{ color: 'rgb(var(--color-text))' }}>
+                  <span className="ml-3 min-w-0 break-words font-medium" style={{ color: 'rgb(var(--color-text))' }}>
                     Online Payment (Coming Soon)
                   </span>
                 </label>
@@ -414,8 +414,8 @@ export default function CustomerCheckoutPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="rounded-lg shadow p-6 sticky top-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
+          <div className="min-w-0 lg:col-span-1">
+            <div className="sticky top-6 min-w-0 rounded-lg p-4 shadow sm:p-6" style={{ backgroundColor: 'rgb(var(--color-surface))' }}>
               <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(var(--color-text))' }}>
                 Order Summary
               </h2>
@@ -455,15 +455,15 @@ export default function CustomerCheckoutPage() {
 
               {/* Price Breakdown */}
               <div className="space-y-3 border-t pt-4 mb-6" style={{ borderColor: 'rgb(var(--color-border))' }}>
-                <div className="flex justify-between" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                <div className="flex min-w-0 justify-between gap-3" style={{ color: 'rgb(var(--color-text-secondary))' }}>
                   <span>Subtotal</span>
                   <span className="font-semibold">{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex justify-between" style={{ color: 'rgb(var(--color-text-secondary))' }}>
-                  <span>Platform Fee ({items.reduce((sum, item) => sum + item.quantity, 0)} items × ₹5)</span>
-                  <span className="font-semibold">{formatPrice(platformFee || 0)}</span>
+                <div className="flex min-w-0 items-start justify-between gap-3" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                  <span className="min-w-0 break-words">Platform Fee ({items.reduce((sum, item) => sum + item.quantity, 0)} items × ₹5)</span>
+                  <span className="flex-none font-semibold">{formatPrice(platformFee || 0)}</span>
                 </div>
-                <div className="flex justify-between" style={{ color: 'rgb(var(--color-text-secondary))' }}>
+                <div className="flex min-w-0 justify-between gap-3" style={{ color: 'rgb(var(--color-text-secondary))' }}>
                   <span>Shipping</span>
                   <span className="font-semibold">
                     {shipping === 0 ? (
@@ -473,7 +473,7 @@ export default function CustomerCheckoutPage() {
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between text-lg font-bold border-t pt-3" style={{ 
+                <div className="flex min-w-0 justify-between gap-3 border-t pt-3 text-lg font-bold" style={{ 
                   color: 'rgb(var(--color-text))',
                   borderColor: 'rgb(var(--color-border))'
                 }}>

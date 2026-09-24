@@ -136,34 +136,35 @@ export default function ProductAnalyticsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="mx-auto max-w-7xl py-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center justify-between">
+            <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
               <button
                 onClick={() => router.push('/manufacturer/analytics')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="flex h-11 w-11 flex-none items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                aria-label="Back to analytics"
               >
                 <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <div className="min-w-0">
+                <h1 className="break-words text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
                   {analytics.productName}
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="mt-1 break-all text-xs text-gray-600 sm:text-sm dark:text-gray-400">
                   Product ID: {analytics.productId}
                 </p>
               </div>
             </div>
-            <ThemeSwitcher />
+            <div className="hidden sm:block"><ThemeSwitcher /></div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl py-4 sm:px-6 sm:py-8 lg:px-8">
         {/* Date Range Filter */}
-        <div className="mb-6 flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range:</span>
-          <div className="flex gap-2">
+        <div className="mb-6">
+          <span className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</span>
+          <div className="grid grid-cols-2 gap-2 sm:flex">
             {[
               { value: 'all', label: 'All Time' },
               { value: '7days', label: 'Last 7 Days' },
@@ -173,7 +174,7 @@ export default function ProductAnalyticsPage() {
               <button
                 key={range.value}
                 onClick={() => setDateRange(range.value)}
-                className={dateRange === range.value ? 'btn-primary btn-sm' : 'btn-outline btn-sm'}
+                className={`${dateRange === range.value ? 'btn-primary' : 'btn-outline'} min-h-11 px-3 text-sm`}
               >
                 {range.label}
               </button>

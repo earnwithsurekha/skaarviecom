@@ -37,8 +37,8 @@ export default function ReportsPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(var(--color-text))' }}>
+        <div className="mb-5 sm:mb-8">
+          <h1 className="mb-2 text-2xl font-bold sm:text-3xl" style={{ color: 'rgb(var(--color-text))' }}>
             Analytics & Reports
           </h1>
           <p style={{ color: 'rgb(var(--color-text-secondary))' }}>
@@ -48,14 +48,14 @@ export default function ReportsPage() {
 
         {/* Tabs */}
         <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex gap-4">
+          <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 font-medium border-b-2 transition-colors ${
+                  className={`min-w-0 flex-col items-center justify-center gap-1 border-b-2 px-1 py-2 text-center text-xs font-medium transition-colors sm:flex sm:flex-row sm:gap-2 sm:px-4 sm:text-base ${
                     activeTab === tab.id
                       ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                       : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -70,7 +70,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6 dark:bg-gray-800">
           {loading.sales && activeTab === 'sales' && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
