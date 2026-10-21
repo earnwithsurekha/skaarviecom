@@ -1,4 +1,6 @@
-FROM node:20-alpine AS base
+FROM public.ecr.aws/docker/library/node:20-alpine AS base
+ARG BACKEND_URL=http://127.0.0.1:5000
+ENV BACKEND_URL=${BACKEND_URL}
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -26,7 +28,6 @@ WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
-ENV BACKEND_URL https://skaarvi.shop
 ENV FIREBASE_WEB_API_KEY AIzaSyCSTe36uSQ-CfcaLg_aCeN49jF9U3XyPL8
 ENV FIREBASE_WEB_AUTH_DOMAIN skaarvi.firebaseapp.com
 ENV FIREBASE_WEB_PROJECT_ID skaarvi
