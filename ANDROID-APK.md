@@ -45,6 +45,9 @@ This APK uses Android's debug signing key and is intended for direct testing.
 A Play Store release requires a private release keystore and an Android App
 Bundle (`.aab`).
 
+For release signing, Play Console setup, policy declarations, testing tracks,
+and production submission, see [PLAY-STORE-PUBLISHING-GUIDE.md](PLAY-STORE-PUBLISHING-GUIDE.md).
+
 ## Firebase Push Notifications
 
 1. In Firebase Console, add an Android app to the same Firebase project used by
