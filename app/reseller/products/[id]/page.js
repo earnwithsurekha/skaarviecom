@@ -161,12 +161,6 @@ export default function ResellerProductDetailsPage() {
                 {formatCurrency(product.selling_price)}
               </dd>
             </div>
-            <div className="min-w-0">
-              <dt className="text-sm" style={{ color: 'rgb(var(--color-text-secondary))' }}>Reseller Margin</dt>
-              <dd className="mt-1 break-words text-xl font-bold sm:text-2xl" style={{ color: 'rgb(22, 163, 74)' }}>
-                {formatCurrency(product.reseller_profit)}
-              </dd>
-            </div>
           </dl>
 
           <div className="mt-5 space-y-3">

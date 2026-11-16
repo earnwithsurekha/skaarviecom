@@ -9,15 +9,15 @@ The idle timeout feature has been successfully implemented with the following co
 ### Backend
 1. **`backend/middleware/sessionTimeout.js`** (NEW)
    - Validates user activity timestamps
-   - Enforces 3-minute session timeout
+   - Enforces 15-minute session timeout
    - Returns `SESSION_TIMEOUT` error when expired
 
 ### Frontend
 2. **`contexts/SessionContext.js`** (NEW)
    - Tracks user activity (mouse, keyboard, scroll, touch)
-   - Starts 3-minute idle timer
+   - Starts 15-minute idle timer
    - Shows warning modal 30 seconds before logout
-   - Auto-logout after 3 minutes of inactivity
+   - Auto-logout after 15 minutes of inactivity
    - Syncs activity across browser tabs
 
 3. **`lib/apiWithTimeout.js`** (NEW)
@@ -45,10 +45,11 @@ The idle timeout feature has been successfully implemented with the following co
 - Prevents accidental timeouts
 
 ### ✅ Automatic Logout
-- After 3 minutes of inactivity
+- After 15 minutes of inactivity
 - Clears all tokens and user data
 - Redirects to login page
 - Shows appropriate toast message
+- The frontend idle timer is disabled in the native Capacitor app.
 
 ### ✅ Session Synchronization
 - Activity in one tab extends session in all tabs
@@ -60,11 +61,11 @@ The idle timeout feature has been successfully implemented with the following co
 ### Adjust Timeout Duration
 ```javascript
 // In contexts/SessionContext.js
-const IDLE_TIMEOUT = 3 * 60 * 1000; // 3 minutes
+const IDLE_TIMEOUT = 15 * 60 * 1000; // 15 minutes
 const WARNING_TIME = 30 * 1000;     // 30 seconds warning
 
 // In backend/middleware/sessionTimeout.js
-const SESSION_TIMEOUT = 3 * 60 * 1000; // Must match frontend
+const SESSION_TIMEOUT = 15 * 60 * 1000; // Must match frontend
 ```
 
 ## 🚀 How It Works
@@ -72,13 +73,13 @@ const SESSION_TIMEOUT = 3 * 60 * 1000; // Must match frontend
 ### Flow:
 1. **User logs in** → Timer starts
 2. **User is active** → Timer resets on every action
-3. **User is idle for 2:30** → Warning modal appears
+3. **User is idle for 14:30** → Warning modal appears
 4. **User clicks "Continue"** → Timer resets, modal closes
 5. **No action for 30 more seconds** → Auto-logout
 
 ### Backend Validation:
 - Every API request includes `x-last-activity` header
-- Backend checks if time since last activity > 3 minutes
+- Backend checks if time since last activity > 15 minutes
 - Returns 401 with `SESSION_TIMEOUT` code if expired
 - Frontend automatically redirects to login
 
@@ -128,8 +129,8 @@ const SESSION_TIMEOUT = 3 * 60 * 1000; // Must match frontend
 ## 🧪 Testing
 
 ### Test Scenarios:
-1. ✅ Login and stay idle for 3 minutes → Should auto-logout
-2. ✅ Warning appears at 2:30 → Click Continue → Timer resets
+1. ✅ Login and stay idle for 15 minutes → Should auto-logout
+2. ✅ Warning appears at 14:30 → Click Continue → Timer resets
 3. ✅ Open two tabs → Activity in one extends both sessions
 4. ✅ Close tab during warning → No errors on other tabs
 5. ✅ Make API call after timeout → Returns 401 SESSION_TIMEOUT
@@ -137,7 +138,7 @@ const SESSION_TIMEOUT = 3 * 60 * 1000; // Must match frontend
 ### Manual Testing:
 ```bash
 # For faster testing, temporarily reduce timeout:
-# Change to 1 minute (60000ms) instead of 3 minutes
+# Change to 1 minute (60000ms) instead of 15 minutes
 const IDLE_TIMEOUT = 60 * 1000; // 1 minute for testing
 const WARNING_TIME = 10 * 1000; // 10 seconds warning
 ```

@@ -9,6 +9,38 @@ const { uploadToS3, uploadLocally, validateImageQuality } = require('../middlewa
 const { User, Manufacturer, OTP } = require('../models/user');
 const { generateToken, generateRefreshToken } = require('../utils/jwt');
 const { sendOTPEmail, sendWelcomeEmail } = require('../utils/email');
+const { validateRegistration, validateLoginIdentifier } = require('../utils/registrationValidation');
+
+const validateRegistrationRequest = (role) => (req, res, next) => {
+  for (const [key, value] of Object.entries(req.body)) {
+    if (typeof value === 'string' && key !== 'password' && key !== 'confirmPassword') {
+      req.body[key] = value.trim();
+    }
+  }
+  const errors = validateRegistration(req.body, role);
+  if (Object.keys(errors).length) {
+    return res.status(400).json({ status: 'error', message: Object.values(errors)[0], errors });
+  }
+  next();
+};
+
+const validateManufacturerFiles = (req, res, next) => {
+  const fields = ['panCard', 'cancelledCheque', 'companyLogo'];
+  for (const field of fields) {
+    if (!req.files?.[field]?.[0]) {
+      return res.status(400).json({ status: 'error', message: `${field} is required` });
+    }
+  }
+  for (const field of ['gstCertificate', ...fields]) {
+    const file = req.files?.[field]?.[0];
+    if (!file) continue;
+    const types = field === 'companyLogo' ? ['image/jpeg', 'image/png'] : ['image/jpeg', 'image/png', 'application/pdf'];
+    if (file.size > 5 * 1024 * 1024 || !types.includes(file.mimetype)) {
+      return res.status(400).json({ status: 'error', message: `${field} must be an allowed file type and no larger than 5MB` });
+    }
+  }
+  next();
+};
 
 // ========================================
 // OTP BYPASSED - Direct login endpoint
@@ -182,6 +214,8 @@ router.post('/register',
     { name: 'cancelledCheque', maxCount: 1 },
     { name: 'companyLogo', maxCount: 1 },
   ]),
+  validateRegistrationRequest('manufacturer'),
+  validateManufacturerFiles,
   async (req, res) => {
     console.log('=== Registration Request Started ===');
     console.log('Body fields:', Object.keys(req.body));
@@ -497,6 +531,7 @@ router.post('/logout', authMiddleware, async (req, res) => {
 // @access  Public
 router.post('/register/reseller',
   upload.single('profile_photo'),
+  validateRegistrationRequest('reseller'),
   validateImageQuality,
   async (req, res) => {
     console.log('=== Reseller Registration Request Started ===');
@@ -590,19 +625,6 @@ router.post('/register/reseller',
         }
       }
 
-      // Handle profile photo upload
-      let profilePhotoUrl = null;
-      if (req.file) {
-        try {
-          // Upload to S3 or save locally
-          const uploadResult = await uploadToS3(req.file, 'reseller-profiles');
-          profilePhotoUrl = uploadResult.url;
-        } catch (uploadError) {
-          console.error('Profile photo upload error:', uploadError);
-          // Continue without profile photo if upload fails
-        }
-      }
-
       // Find sponsor if sponsor_code provided
       let sponsorId = null;
       if (sponsor_code) {
@@ -614,8 +636,23 @@ router.post('/register/reseller',
             transaction
           }
         );
-        if (sponsor) {
-          sponsorId = sponsor.id;
+        if (!sponsor) {
+          await transaction.rollback();
+          return res.status(400).json({ status: 'error', message: 'Invalid sponsor code' });
+        }
+        sponsorId = sponsor.id;
+      }
+
+      // Handle profile photo upload
+      let profilePhotoUrl = null;
+      if (req.file) {
+        try {
+          // Upload to S3 or save locally
+          const uploadResult = await uploadToS3(req.file, 'reseller-profiles');
+          profilePhotoUrl = uploadResult.url;
+        } catch (uploadError) {
+          console.error('Profile photo upload error:', uploadError);
+          // Continue without profile photo if upload fails
         }
       }
 
@@ -737,7 +774,7 @@ router.post('/register/reseller',
 // @route   POST /api/auth/register/customer
 // @desc    Customer registration with password
 // @access  Public
-router.post('/register/customer', async (req, res) => {
+router.post('/register/customer', validateRegistrationRequest('customer'), async (req, res) => {
   console.log('=== Customer Registration Request Started ===');
   console.log('Body fields:', Object.keys(req.body));
 
@@ -829,7 +866,8 @@ router.post('/register/customer', async (req, res) => {
         referredByResellerId = reseller.id;
         console.log('Referral code valid. Reseller ID:', referredByResellerId);
       } else {
-        console.log('Referral code not found:', referral_code);
+        await transaction.rollback();
+        return res.status(400).json({ status: 'error', message: 'Invalid referral code' });
       }
     }
 
@@ -1297,16 +1335,17 @@ router.post('/login/password', async (req, res) => {
   const bcrypt = require('bcryptjs');
 
   try {
-    const { identifier, password, userType } = req.body; // identifier can be email or mobile
+    const { password, userType } = req.body;
+    const identifier = typeof req.body.identifier === 'string' ? req.body.identifier.trim() : '';
 
     console.log('Identifier:', identifier);
     console.log('User Type:', userType);
 
     // Validate required fields
-    if (!identifier || !password) {
+    if (!validateLoginIdentifier(identifier) || typeof password !== 'string' || !password) {
       return res.status(400).json({
         status: 'error',
-        message: 'Email/mobile and password are required',
+        message: 'Enter a valid email or mobile number and password',
       });
     }
 

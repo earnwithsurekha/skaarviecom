@@ -4,8 +4,6 @@ export async function POST(request) {
   try {
     const formData = await request.formData();
 
-    console.log('[Reseller Registration API] Forwarding to backend:', RESELLER_REGISTRATION_URL);
-    
     const response = await fetchBackend(
       '/api/auth/register/reseller',
       {

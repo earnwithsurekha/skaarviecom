@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { logout } from '@/store/slices/authSlice';
+import { validateLoginIdentifier } from '@/backend/utils/registrationValidation';
 
 export default function PublicHeader({ showSearch = false, searchValue = '', onSearchChange }) {
   const router = useRouter();
@@ -96,6 +97,10 @@ export default function PublicHeader({ showSearch = false, searchValue = '', onS
 
   const handlePasswordLogin = async (e) => {
     e.preventDefault();
+    if (!validateLoginIdentifier(email.trim()) || !password) {
+      toast.error('Enter a valid email address and password');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -103,7 +108,7 @@ export default function PublicHeader({ showSearch = false, searchValue = '', onS
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: email,
+          identifier: email.trim(),
           password,
           userType,
         }),

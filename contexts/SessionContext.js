@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 const SessionContext = createContext({});
 
 // Configuration
-const IDLE_TIMEOUT = 3 * 60 * 1000; // 3 minutes
+const IDLE_TIMEOUT = 15 * 60 * 1000; // 15 minutes
 const WARNING_TIME = 30 * 1000; // 30 seconds before timeout
 const CHECK_INTERVAL = 1000; // Check every second
 

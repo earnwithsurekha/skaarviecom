@@ -7,6 +7,7 @@ import { Building2, ArrowRight, Loader2, Upload, Eye, EyeOff, Briefcase, Landmar
 import toast from 'react-hot-toast';
 import { authAPI } from '@/lib/api';
 import RegistrationWorkspace from '@/components/RegistrationWorkspace';
+import { STATES, validateRegistration } from '@/backend/utils/registrationValidation';
 
 const MANUFACTURER_STEPS = [
   {
@@ -101,167 +102,17 @@ export default function RegisterPage() {
   const completedFieldCount = MANUFACTURER_REQUIRED_FIELDS.filter(field => Boolean(formData[field])).length;
   const completionPercentage = Math.round((completedFieldCount / MANUFACTURER_REQUIRED_FIELDS.length) * 100);
 
-  // Validation functions
-  const validateMobile = (mobile) => {
-    const mobileRegex = /^[6-9]\d{9}$/;
-    if (!mobile) return 'Mobile number is required';
-    if (!mobileRegex.test(mobile)) return 'Mobile number must be 10 digits starting with 6-9';
-    return '';
-  };
-
-  const validateEmail = (email) => {
-    if (!email) return 'Email is required';
-    const atIndex = email.indexOf('@');
-    const lastDotIndex = email.lastIndexOf('.');
-    if (atIndex <= 0 || lastDotIndex <= atIndex + 1 || lastDotIndex === email.length - 1) {
-      return 'Please enter a valid email address';
-    }
-    return '';
-  };
-
-  const validatePAN = (pan) => {
-    if (!pan) return ''; // Optional field
-    const panRegex = /^[A-Z]{5}\d{4}[A-Z]$/;
-    if (!panRegex.test(pan.toUpperCase())) {
-      return 'Invalid PAN format. Should be like: ABCDE1234F';
-    }
-    return '';
-  };
-
-  const validateGST = (gst) => {
-    if (!gst) return ''; // Optional field
-    const gstRegex = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[\dA-Z]$/;
-    if (!gstRegex.test(gst.toUpperCase())) {
-      return 'Invalid GST format. Should be like: 22AAAAA0000A1Z5';
-    }
-    return '';
-  };
-
-  const validatePincode = (pincode) => {
-    const pincodeRegex = /^[1-9]\d{5}$/;
-    if (!pincode) return 'Pincode is required';
-    if (!pincodeRegex.test(pincode)) return 'Pincode must be 6 digits';
-    return '';
-  };
-
-  const validateIFSC = (ifsc) => {
-    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-    if (!ifsc) return 'IFSC code is required';
-    if (!ifscRegex.test(ifsc.toUpperCase())) {
-      return 'Invalid IFSC code. Should be like: SBIN0001234';
-    }
-    return '';
-  };
-
-  const validateAccountNumber = (accountNumber) => {
-    const accountRegex = /^\d{9,18}$/;
-    if (!accountNumber) return 'Account number is required';
-    if (!accountRegex.test(accountNumber)) {
-      return 'Account number must be 9-18 digits';
-    }
-    return '';
-  };
-
-  const validateUPI = (upi) => {
-    if (!upi) return ''; // Optional field
-    const upiRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
-    if (!upiRegex.test(upi)) {
-      return 'Invalid UPI ID format. Should be like: username@bank';
-    }
-    return '';
-  };
-
-  const validatePassword = (password) => {
-    if (!password) return 'Password is required';
-    if (password.length < 6) return 'Password must be at least 6 characters';
-    return '';
-  };
-
-  const validateConfirmPassword = (confirmPassword, password) => {
-    if (!confirmPassword) return 'Please confirm your password';
-    if (confirmPassword !== password) return 'Passwords do not match';
-    return '';
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Convert to uppercase for specific fields
-    let processedValue = value;
-    if (['gstNumber', 'panNumber', 'ifscCode'].includes(name)) {
-      processedValue = value.toUpperCase();
-    }
-    
-    // Update form data
-    setFormData(prev => ({ ...prev, [name]: processedValue }));
-    
-    // Validate field on change
-    let error = '';
-    switch (name) {
-      case 'mobile':
-        error = validateMobile(processedValue);
-        break;
-      case 'email':
-        error = validateEmail(processedValue);
-        break;
-      case 'panNumber':
-        error = validatePAN(processedValue);
-        break;
-      case 'gstNumber':
-        error = validateGST(processedValue);
-        break;
-      case 'pincode':
-        error = validatePincode(processedValue);
-        break;
-      case 'ifscCode':
-        error = validateIFSC(processedValue);
-        break;
-      case 'accountNumber':
-        error = validateAccountNumber(processedValue);
-        break;
-      case 'upiId':
-        error = validateUPI(processedValue);
-        break;
-      case 'password':
-        error = validatePassword(processedValue);
-        // Re-validate confirmPassword if it exists
-        if (formData.confirmPassword) {
-          setErrors(prev => ({
-            ...prev,
-            confirmPassword: validateConfirmPassword(formData.confirmPassword, processedValue)
-          }));
-        }
-        break;
-      case 'confirmPassword':
-        error = validateConfirmPassword(processedValue, formData.password);
-        break;
-      case 'companyName':
-      case 'brandName':
-      case 'contactPersonName':
-        if (!processedValue.trim()) error = 'This field is required';
-        else if (processedValue.trim().length < 2) error = 'Must be at least 2 characters';
-        break;
-      case 'address':
-        if (!processedValue.trim()) error = 'Address is required';
-        else if (processedValue.trim().length < 10) error = 'Please enter a complete address';
-        break;
-      case 'city':
-      case 'state':
-        if (!processedValue.trim()) error = 'This field is required';
-        else if (!/^[a-zA-Z\s]+$/.test(processedValue)) error = 'Only letters are allowed';
-        break;
-      case 'accountHolderName':
-      case 'bankName':
-        if (!processedValue.trim()) error = 'This field is required';
-        break;
-      default:
-        break;
-    }
-    
-    // Update errors
+    const processedValue = ['gstNumber', 'panNumber', 'ifscCode'].includes(name) ? value.toUpperCase() : value;
+    const updated = { ...formData, [name]: processedValue };
+    const validationErrors = validateRegistration(updated, 'manufacturer');
+    setFormData(updated);
     setErrors(prev => ({
       ...prev,
-      [name]: error
+      [name]: validationErrors[name] || '',
+      ...(name === 'state' && formData.pincode ? { pincode: validationErrors.pincode || '' } : {}),
+      ...(name === 'password' && formData.confirmPassword ? { confirmPassword: validationErrors.confirmPassword || '' } : {}),
     }));
   };
 
@@ -275,108 +126,36 @@ export default function RegisterPage() {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
       toast.error('File size should not exceed 5MB');
+      e.target.value = '';
+      return;
+    }
+    const types = fieldName === 'companyLogo' ? ['image/jpeg', 'image/png'] : ['image/jpeg', 'image/png', 'application/pdf'];
+    if (file && !types.includes(file.type)) {
+      toast.error(fieldName === 'companyLogo' ? 'Please select a JPG or PNG image' : 'Please select a PDF, JPG or PNG file');
+      e.target.value = '';
       return;
     }
     setFormData(prev => ({ ...prev, [fieldName]: file }));
   };
 
-  const handleNext = () => {
-    // Validate current step before proceeding
-    let hasErrors = false;
-    const newErrors = {};
-
-    if (step === 1) {
-      // Validate Basic Information
-      const requiredFields = ['companyName', 'brandName', 'contactPersonName', 'mobile', 'email', 'password', 'confirmPassword', 'address', 'city', 'state', 'pincode'];
-      
-      requiredFields.forEach(field => {
-        if (!formData[field]?.toString().trim()) {
-          newErrors[field] = 'This field is required';
-          hasErrors = true;
-        }
-      });
-
-      // Run specific validations
-      const mobileError = validateMobile(formData.mobile);
-      if (mobileError) {
-        newErrors.mobile = mobileError;
-        hasErrors = true;
-      }
-
-      const emailError = validateEmail(formData.email);
-      if (emailError) {
-        newErrors.email = emailError;
-        hasErrors = true;
-      }
-
-      const pincodeError = validatePincode(formData.pincode);
-      if (pincodeError) {
-        newErrors.pincode = pincodeError;
-        hasErrors = true;
-      }
-
-      // Optional fields validation if filled
-      if (formData.panNumber) {
-        const panError = validatePAN(formData.panNumber);
-        if (panError) {
-          newErrors.panNumber = panError;
-          hasErrors = true;
-        }
-      }
-
-      if (formData.gstNumber) {
-        const gstError = validateGST(formData.gstNumber);
-        if (gstError) {
-          newErrors.gstNumber = gstError;
-          hasErrors = true;
-        }
-      }
-    } else if (step === 2) {
-      // Validate Business Details
-      if (!formData.businessType) {
-        newErrors.businessType = 'Please select a business type';
-        hasErrors = true;
-      }
-    } else if (step === 3) {
-      // Validate Bank Details
-      const requiredFields = ['accountHolderName', 'accountNumber', 'ifscCode', 'bankName'];
-      
-      requiredFields.forEach(field => {
-        if (!formData[field]?.toString().trim()) {
-          newErrors[field] = 'This field is required';
-          hasErrors = true;
-        }
-      });
-
-      const accountError = validateAccountNumber(formData.accountNumber);
-      if (accountError) {
-        newErrors.accountNumber = accountError;
-        hasErrors = true;
-      }
-
-      const ifscError = validateIFSC(formData.ifscCode);
-      if (ifscError) {
-        newErrors.ifscCode = ifscError;
-        hasErrors = true;
-      }
-
-      // Optional UPI validation if filled
-      if (formData.upiId) {
-        const upiError = validateUPI(formData.upiId);
-        if (upiError) {
-          newErrors.upiId = upiError;
-          hasErrors = true;
-        }
-      }
-    }
-
+  const validateStep = (stepNumber) => {
+    const fields = {
+      1: ['companyName', 'brandName', 'contactPersonName', 'mobile', 'email', 'password', 'confirmPassword', 'address', 'city', 'state', 'pincode', 'panNumber', 'gstNumber'],
+      2: ['businessType'],
+      3: ['accountHolderName', 'accountNumber', 'ifscCode', 'bankName', 'upiId'],
+    };
+    const allErrors = validateRegistration(formData, 'manufacturer');
+    const newErrors = Object.fromEntries(fields[stepNumber].filter(field => allErrors[field]).map(field => [field, allErrors[field]]));
     setErrors(newErrors);
-
-    if (hasErrors) {
+    if (Object.keys(newErrors).length) {
       toast.error('Please fix all errors before proceeding');
-      return;
+      return false;
     }
+    return true;
+  };
 
+  const handleNext = () => {
+    if (!validateStep(step)) return;
     const nextStep = Math.min(step + 1, MANUFACTURER_STEPS.length);
     setStep(nextStep);
     setFurthestStep(current => Math.max(current, nextStep));
@@ -399,6 +178,12 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    for (const stepNumber of [1, 2, 3]) {
+      if (!validateStep(stepNumber)) {
+        setStep(stepNumber);
+        return;
+      }
+    }
     setLoading(true);
 
     console.log('=== Starting Registration Submission ===');
@@ -428,13 +213,11 @@ export default function RegisterPage() {
       Object.keys(formData).forEach(key => {
         if (formData[key] && typeof formData[key] !== 'object') {
           submitData.append(key, formData[key]);
-          console.log(`Added field: ${key} = ${formData[key]}`);
         }
       });
 
       // Format mobile with country code
       submitData.set('mobile', `+91${formData.mobile}`);
-      console.log('Mobile formatted:', `+91${formData.mobile}`);
 
       // Append files
       if (formData.gstCertificate) {
@@ -739,15 +522,17 @@ export default function RegisterPage() {
                     <label htmlFor="state" className="label">
                       State *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="state"
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
                       className={`input ${errors.state ? 'border-red-500' : ''}`}
                       required
-                    />
+                    >
+                      <option value="">Select state</option>
+                      {STATES.map(state => <option key={state} value={state}>{state}</option>)}
+                    </select>
                     {errors.state && (
                       <p className="text-red-500 text-xs mt-1">{errors.state}</p>
                     )}
@@ -763,9 +548,10 @@ export default function RegisterPage() {
                       name="pincode"
                       value={formData.pincode}
                       onChange={handleChange}
-                      placeholder="400001"
+                      placeholder="6-digit PIN code"
                       className={`input ${errors.pincode ? 'border-red-500' : ''}`}
                       maxLength="6"
+                      inputMode="numeric"
                       required
                     />
                     {errors.pincode && (
