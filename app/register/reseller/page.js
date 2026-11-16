@@ -25,6 +25,7 @@ import {
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
+import { STATES, validateRegistration } from '@/backend/utils/registrationValidation';
 
 const STEPS = [
   {
@@ -55,6 +56,7 @@ const REQUIRED_FIELDS = [
   'confirmPassword',
   'city',
   'state',
+  'pincode',
   'bank_name',
   'account_number',
   'ifsc_code',
@@ -116,6 +118,12 @@ export default function ResellerRegistrationPage() {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         toast.error('File size should not exceed 5MB');
+        e.target.value = '';
+        return;
+      }
+      if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
+        toast.error('Please select a JPG, PNG, GIF or WEBP image');
+        e.target.value = '';
         return;
       }
       setFormData(prev => ({ ...prev, profile_photo: file }));
@@ -127,48 +135,20 @@ export default function ResellerRegistrationPage() {
     }
   };
 
-  const validateStep1 = () => {
-    if (!formData.name || !formData.email || !formData.phone || !formData.city || !formData.state) {
-      toast.error('Please fill all required fields');
-      return false;
-    }
-    if (!formData.password || formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return false;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return false;
-    }
-    const email = formData.email.trim();
-    const atIndex = email.indexOf('@');
-    const lastDotIndex = email.lastIndexOf('.');
-    if (atIndex <= 0 || lastDotIndex <= atIndex + 1 || lastDotIndex === email.length - 1) {
-      toast.error('Invalid email format');
-      return false;
-    }
-    if (!/^\d{10}$/.test(formData.phone)) {
-      toast.error('Phone number must be 10 digits');
-      return false;
-    }
-    return true;
-  };
-
-  const validateStep3 = () => {
-    if (!formData.bank_name || !formData.account_number || !formData.ifsc_code || !formData.account_holder_name) {
-      toast.error('Please fill all payment details');
-      return false;
-    }
-    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc_code)) {
-      toast.error('Invalid IFSC code format');
-      return false;
-    }
-    return true;
+  const validateStep = (stepNumber) => {
+    const fields = {
+      1: ['name', 'email', 'phone', 'password', 'confirmPassword', 'city', 'state', 'pincode'],
+      2: ['pan_number', 'aadhar_number', 'gst_number'],
+      3: ['bank_name', 'account_number', 'ifsc_code', 'account_holder_name', 'upi_id'],
+    };
+    const errors = validateRegistration(formData, 'reseller');
+    const error = fields[stepNumber].map(field => errors[field]).find(Boolean);
+    if (error) toast.error(error);
+    return !error;
   };
 
   const handleNext = () => {
-    if (step === 1 && !validateStep1()) return;
-    if (step === 3 && !validateStep3()) return;
+    if (!validateStep(step)) return;
     const nextStep = Math.min(step + 1, STEPS.length);
     setStep(nextStep);
     setFurthestStep(current => Math.max(current, nextStep));
@@ -187,11 +167,12 @@ export default function ResellerRegistrationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep1()) {
-      setStep(1);
-      return;
+    for (const stepNumber of [1, 2, 3]) {
+      if (!validateStep(stepNumber)) {
+        setStep(stepNumber);
+        return;
+      }
     }
-    if (!validateStep3()) return;
 
     try {
       setLoading(true);
@@ -210,12 +191,7 @@ export default function ResellerRegistrationPage() {
         submitData.append('profile_photo', formData.profile_photo);
       }
 
-      const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-      const registrationUrl = isLocalhost
-        ? '/api/register/reseller'
-        : '/api/auth/register/reseller';
-
-      const response = await fetch(registrationUrl, {
+      const response = await fetch('/api/register/reseller', {
         method: 'POST',
         body: submitData
       });
@@ -384,21 +360,23 @@ export default function ResellerRegistrationPage() {
           </label>
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
+            <select
               id="state"
-              type="text"
               name="state"
               value={formData.state}
               onChange={handleInputChange}
               className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
               required
-            />
+            >
+              <option value="">Select state</option>
+              {STATES.map(state => <option key={state} value={state}>{state}</option>)}
+            </select>
           </div>
         </div>
 
         <div>
           <label htmlFor="pincode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Pincode
+            Pincode *
           </label>
           <input
             id="pincode"
@@ -407,6 +385,8 @@ export default function ResellerRegistrationPage() {
             value={formData.pincode}
             onChange={handleInputChange}
             maxLength="6"
+            inputMode="numeric"
+            required
             className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200"
           />
         </div>

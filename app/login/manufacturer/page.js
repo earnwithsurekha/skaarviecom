@@ -25,7 +25,7 @@ export default function ManufacturerLoginPage() {
     e.preventDefault();
     setError('');
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(email.trim())) {
       setError('Please enter a valid email address');
       return;
     }
@@ -42,7 +42,7 @@ export default function ManufacturerLoginPage() {
       const response = await fetch(`/api/auth/login/password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: email, password, userType: 'manufacturer' }),
+        body: JSON.stringify({ identifier: email.trim(), password, userType: 'manufacturer' }),
       });
       
       console.log('[Login] Response status:', response.status);

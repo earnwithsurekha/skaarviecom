@@ -1,7 +1,7 @@
 // Session Timeout Middleware
 // Validates user activity and enforces session timeout
 
-const SESSION_TIMEOUT = 3 * 60 * 1000; // 3 minutes in milliseconds
+const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 /**
  * Middleware to check session timeout based on last activity

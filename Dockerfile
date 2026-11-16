@@ -43,6 +43,7 @@ RUN adduser --system --uid 1001 nextjs
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/backend/utils/REGISTRATION-PINCODES.md ./REGISTRATION-PINCODES.md
 
 # Copy public folder if it exists
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public

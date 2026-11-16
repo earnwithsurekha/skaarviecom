@@ -71,7 +71,7 @@ export default function ResellerDashboard() {
       trend: stats?.monthEarnings > 0 ? `₹${stats?.monthEarnings?.toFixed(2)} this month` : null
     },
     {
-      title: 'Product Profit',
+      title: 'Avg. Commission',
       value: `₹${stats?.avgCommissionPerOrder?.toFixed(2) || '0.00'}`,
       subtitle: 'Avg. per order',
       icon: TrendingUp,

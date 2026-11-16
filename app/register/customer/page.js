@@ -8,8 +8,9 @@ import toast from 'react-hot-toast';
 import { setCredentials } from '@/store/slices/authSlice';
 import { persistor } from '@/store';
 import RegistrationWorkspace from '@/components/RegistrationWorkspace';
+import { STATES, validateRegistration } from '@/backend/utils/registrationValidation';
 
-const CUSTOMER_REQUIRED_FIELDS = ['name', 'email', 'phone', 'password', 'confirmPassword'];
+const CUSTOMER_REQUIRED_FIELDS = ['name', 'email', 'phone', 'password', 'confirmPassword', 'state', 'pincode'];
 
 const CUSTOMER_HIGHLIGHTS = [
   {
@@ -69,36 +70,10 @@ export default function CustomerRegistrationPage() {
   };
 
   const validateForm = () => {
-    if (!formData.name || formData.name.trim().length < 3) {
-      setError('Name must be at least 3 characters');
-      return false;
-    }
-
-    const email = formData.email.trim();
-    const atIndex = email.indexOf('@');
-    const lastDotIndex = email.lastIndexOf('.');
-    if (atIndex <= 0 || lastDotIndex <= atIndex + 1 || lastDotIndex === email.length - 1) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      setError('Phone number must be 10 digits');
-      return false;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
-
-    return true;
+    const errors = validateRegistration(formData, 'customer');
+    const firstError = Object.values(errors)[0];
+    if (firstError) setError(firstError);
+    return !firstError;
   };
 
   const handleSubmit = async (e) => {
@@ -374,7 +349,7 @@ export default function CustomerRegistrationPage() {
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  placeholder="Mumbai"
+                  placeholder="City"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
                   disabled={loading}
                 />
@@ -382,23 +357,25 @@ export default function CustomerRegistrationPage() {
 
               <div className="space-y-2">
                 <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                  State (Optional)
+                  State *
                 </label>
-                <input
+                <select
                   id="state"
-                  type="text"
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
-                  placeholder="Maharashtra"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
                   disabled={loading}
-                />
+                  required
+                >
+                  <option value="">Select state</option>
+                  {STATES.map(state => <option key={state} value={state}>{state}</option>)}
+                </select>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="pincode" className="block text-sm font-medium text-gray-700">
-                  Pincode (Optional)
+                  Pincode *
                 </label>
                 <input
                   id="pincode"
@@ -409,10 +386,12 @@ export default function CustomerRegistrationPage() {
                     const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                     setFormData(prev => ({ ...prev, pincode: value }));
                   }}
-                  placeholder="400001"
+                  placeholder="6-digit PIN code"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors duration-200 text-gray-900 placeholder:text-gray-400"
                   disabled={loading}
                   maxLength="6"
+                  inputMode="numeric"
+                  required
                 />
               </div>
             </div>

@@ -6,8 +6,13 @@ npm-debug.log
 .git
 .gitignore
 README.md
-backend
+backend/*
+!backend/utils
+backend/utils/*
+!backend/utils/registrationValidation.js
+!backend/utils/registrationPincodes.json
 docs
 frontend
 *.md
+!backend/utils/REGISTRATION-PINCODES.md
 .DS_Store

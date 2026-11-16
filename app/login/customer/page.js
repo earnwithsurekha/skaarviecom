@@ -7,6 +7,7 @@ import { ShoppingCart, Mail, ArrowRight, Loader2, AlertCircle, ArrowLeft, UserPl
 import toast from 'react-hot-toast';
 import { setCredentials } from '@/store/slices/authSlice';
 import { persistor } from '@/store';
+import { validateLoginIdentifier } from '@/backend/utils/registrationValidation';
 
 function CustomerLoginForm() {
   const router = useRouter();
@@ -20,18 +21,13 @@ function CustomerLoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   // Password login handler
   const handlePasswordLogin = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!identifier || !password) {
-      setError('Please enter your email/mobile and password');
+    if (!validateLoginIdentifier(identifier) || !password) {
+      setError('Enter a valid email or mobile number and password');
       return;
     }
 
@@ -43,7 +39,7 @@ function CustomerLoginForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          identifier, 
+          identifier: identifier.trim(),
           password,
           userType: 'customer' 
         }),

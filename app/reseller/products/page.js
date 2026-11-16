@@ -535,9 +535,6 @@ export default function ProductsPage() {
                   <p className="text-base font-bold text-gray-900 dark:text-white">
                     ₹{Number.parseFloat(product.selling_price).toFixed(2)}
                   </p>
-                  <p className="text-xs font-semibold text-green-600 dark:text-green-400">
-                    Earn ₹{Number.parseFloat(product.reseller_profit).toFixed(2)}
-                  </p>
                 </div>
 
                 <div className="mb-4 hidden space-y-2 sm:block">
@@ -545,12 +542,6 @@ export default function ProductsPage() {
                     <span className="text-sm text-gray-600 dark:text-gray-400">Selling Price:</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
                       ₹{Number.parseFloat(product.selling_price).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Your Profit:</span>
-                    <span className="font-semibold text-green-600 dark:text-green-400">
-                      ₹{Number.parseFloat(product.reseller_profit).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -575,7 +566,6 @@ export default function ProductsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Product</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Category</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selling Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Your Profit</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stock</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
               </tr>
@@ -611,9 +601,6 @@ export default function ProductsPage() {
                   </td>
                   <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                     ₹{Number.parseFloat(product.selling_price).toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
-                    ₹{Number.parseFloat(product.reseller_profit).toFixed(2)}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStockBadge(product.stock_status)}`}>

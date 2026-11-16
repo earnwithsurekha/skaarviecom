@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bookmark,
@@ -18,6 +18,7 @@ import {
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getProductShareMessage, getStorefrontReferralLink } from './shareUtils.mjs';
 
 export default function SavedProductsPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function SavedProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [referralLink, setReferralLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const shareRequestId = useRef(0);
 
   useEffect(() => {
     fetchSavedProducts();
@@ -102,7 +104,7 @@ export default function SavedProductsPage() {
       const data = await response.json();
       
       if (data.status === 'success') {
-        return data.data.referralLink;
+        return getStorefrontReferralLink(data.data.referralLink, window.location.origin);
       }
       return null;
 
@@ -114,26 +116,22 @@ export default function SavedProductsPage() {
   };
 
   const openShareModal = async (product) => {
+    const requestId = ++shareRequestId.current;
     setSelectedProduct(product);
+    setReferralLink('');
     setShareModalOpen(true);
     
     // Generate referral link
     const link = await generateReferralLink(product.id);
-    if (link) {
+    if (link && requestId === shareRequestId.current) {
       setReferralLink(link);
     }
   };
 
-  const getProductDescription = (product) => {
-    const desc = product.description || '';
-    return desc.length > 150 ? desc.substring(0, 150) + '...' : desc;
-  };
-
-  const getShareMessage = () => {
+  const getShareMessage = (includeImage = true) => {
     if (!selectedProduct || !referralLink) return '';
-    
-    const description = getProductDescription(selectedProduct);
-    return `🛍️ *${selectedProduct.name}*\n\n${description}\n\n💰 *Price:* ₹${selectedProduct.selling_price}\n✨ *Your Profit:* ₹${selectedProduct.reseller_profit}\n\n🔗 *Shop Now:*\n${referralLink}${selectedProduct.primary_image ? '\n\n📸 Product Image:\n' + selectedProduct.primary_image : ''}`;
+
+    return getProductShareMessage(selectedProduct, referralLink, includeImage);
   };
 
   const copyToClipboard = async (text) => {
@@ -229,12 +227,6 @@ export default function SavedProductsPage() {
                       ₹{parseFloat(product.selling_price).toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Your Profit:</span>
-                    <span className="font-semibold text-green-600 dark:text-green-400">
-                      ₹{parseFloat(product.reseller_profit).toFixed(2)}
-                    </span>
-                  </div>
                   {product.saved_at && (
                     <div className="text-xs text-gray-500 dark:text-gray-500">
                       Saved on {new Date(product.saved_at).toLocaleDateString()}
@@ -326,7 +318,7 @@ export default function SavedProductsPage() {
                   {selectedProduct.name}
                 </h4>
                 <p className="text-sm mt-1" style={{ color: 'rgb(var(--color-text) / 0.7)' }}>
-                  ₹{selectedProduct.selling_price} • Profit: ₹{selectedProduct.reseller_profit}
+                  ₹{selectedProduct.selling_price}
                 </p>
               </div>
             </div>
@@ -382,7 +374,7 @@ export default function SavedProductsPage() {
 
             {/* Copy Complete Details */}
             <button
-              onClick={() => copyToClipboard(getShareMessage())}
+              onClick={() => copyToClipboard(getShareMessage(false))}
               disabled={!referralLink}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg transition-all disabled:opacity-50"
               style={{ 
